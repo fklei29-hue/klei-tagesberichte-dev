@@ -532,7 +532,8 @@ async function initApp(){
   if(currentRole==='werkstatt')document.getElementById('btn-new-bericht').className='btn-new ws';
   buildUI();renderSB();updateSBDate();
   if(reports.length)loadReport(reports[0].id);
-  else if(currentRole==='arbeiter'||currentRole==='werkstatt')setTimeout(()=>initARForm(),200);
+ else if(currentRole==='arbeiter')setTimeout(()=>initARForm(),200);
+else if(currentRole==='werkstatt')setTimeout(()=>initWSForm(),200);
 }
 
 // ══════ MASTER COCKPIT ══════
