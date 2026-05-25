@@ -1643,3 +1643,224 @@ async function generatePDF(report){
     if(steps.length){needPage(20);T('AUSGEFUEHRTE ARBEITEN',M,y,10,true,C.gruen);y+=8;steps.forEach((s,i)=>{needPage(20);RECT(M,y,cw,7,C.heller);LINE(M,y,W-M,y,C.rahmen);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...C.gruen);doc.text(String(i+1)+'.',M+2,y+5);const sLabel=getProjektLabel(s.projektId||s.projektNr||'');if(sLabel!=='--'){doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...C.dunkel);doc.text(clean(sLabel),M+12,y+5);}if(s.pos){doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...C.blau);doc.text('Pos. '+clean(s.pos),M+100,y+5);}if(s.menge){doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...C.gruen);doc.text(clean(s.menge+' '+(s.eh||'')),W-M-4,y+5,{align:'right'});}LINE(M,y+7,W-M,y+7,C.rahmen);y+=10;const lines=W2(s.txt,M+3,y,cw-6,9,C.dunkel);y+=lines*5+3;if(s.mitarbeiter?.length){doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...C.grau);const maText='Mitarbeiter: '+s.mitarbeiter.map(m=>clean(m.name)+(m.stunden?' ('+m.stunden+'h)':'')).join(', ');const maLines=doc.splitTextToSize(maText,cw-6);doc.text(maLines,M+3,y);y+=maLines.length*4+2;}LINE(M,y,W-M,y,[220,220,220]);y+=5;});}
     const liefs=(report.lieferungen||[]).filter(l=>l.firma||l.mat);
     if(liefs.length){needPage(20);T('MATERIALLIEFERUNGEN',M,y,10,true,C.gruen
+<script>
+    );y+=7;}
+    const maengel=(report.maengel||[]).filter(m=>m.txt);
+    if(maengel.length){needPage(20);RECT(M,y,cw,8,[255,245,245]);doc.setDrawColor(...C.rot);doc.setLineWidth(2);doc.line(M,y,M,y+8);doc.setLineWidth(0.3);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...C.rot);doc.text('MAENGEL ('+maengel.length+')',M+5,y+5.5);LINE(M,y+8,W-M,y+8,C.rahmen);y+=12;maengel.forEach(m=>{needPage(15);doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...C.rot);doc.text(clean((m.schwere||'')+' - '+(m.typ||'')),M,y);y+=5;const lines=W2(m.txt,M+3,y,cw-6,9,C.dunkel);y+=lines*5+2;if(m.massnahme){doc.setFont('helvetica','italic');doc.setFontSize(8);doc.setTextColor(...C.orange);doc.text('Massnahme: '+clean(m.massnahme),M+3,y);y+=5;}LINE(M,y,W-M,y,[230,200,200]);y+=4;});}
+    if(report.naechstes){needPage(15);T('NAECHSTE SCHRITTE',M,y,10,true,C.gruen);y+=6;const lines=W2(report.naechstes,M,y,cw,9,C.dunkel);y+=lines*5+4;}
+    const fotos=fotoDataUrls.filter(Boolean);
+    if(fotos.length>0){doc.addPage();y=M;T('FOTODOKUMENTATION',M,y,10,true,C.gruen);y+=14;LINE(M,y,W-M,y,C.gruen,0.5);y+=6;const fW=(cw-6)/2,fH=fW*0.75;let col=0,rowY=y;fotos.forEach((dataUrl,i)=>{if(col===0&&i>0){rowY+=fH+14;if(rowY+fH>278){doc.addPage();y=M;rowY=y;}}const fx=M+col*(fW+6);try{doc.setDrawColor(...C.rahmen);doc.setLineWidth(0.3);doc.rect(fx,rowY,fW,fH);doc.addImage(dataUrl,'JPEG',fx,rowY,fW,fH);}catch(e){RECT(fx,rowY,fW,fH,C.heller);}doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...C.grau);doc.text('Foto '+(i+1),fx,rowY+fH+5);col++;if(col>=2)col=0;});}
+  }
+  const pageCount=doc.getNumberOfPages();
+  for(let pg=1;pg<=pageCount;pg++){doc.setPage(pg);LINE(M,284,W-M,284,C.gruen,0.6);doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...C.grau);doc.text(FIRMA_NAME+' - '+FIRMA_ADRESSE+' - '+FIRMA_TEL,M,288);doc.text('Seite '+pg+'/'+pageCount+' - '+new Date().toLocaleDateString('de-DE'),W-M,288,{align:'right'});}
+  doc.setPage(pageCount);
+  LINE(M,270,M+65,270,C.rahmen);LINE(W-M-65,270,W-M,270,C.rahmen);doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...C.hellgrau);doc.text('Unterschrift Mitarbeiter',M,274);doc.text('Unterschrift Bauleiter',W-M-65,274);
+  const sigData=unterschriftData||currentUser?.unterschrift_data||null;
+  if(sigData&&sigData.length>100){try{const sigImg=new Image();sigImg.src=sigData;await new Promise(r=>{sigImg.onload=r;setTimeout(r,500);});doc.addImage(sigData,'PNG',M,255,60,12);}catch(e){}}
+  return doc;
+}
+
+async function sendPDFMail(report,statusElId){
+  const statusEl=document.getElementById(statusElId);
+  if(statusEl){statusEl.className='send-status show sending';statusEl.textContent='PDF wird erstellt...';}
+  try{
+    const doc=await generatePDF(report);
+    const pdfBase64=doc.output('datauristring').split(',')[1];
+    const pLabel=getProjektLabel(report.projekt_id||report.projektNr||'');
+    const netto=String(report.netto||report.netto_gesamt_h||report.netto_arbeit_h||'0');
+    const{to,cc}=await getActiveEmpfaenger();
+    const payload={empfaenger:to.join(','),cc:cc.join(','),betreff:'KLEI Tagesbericht '+fmtD(report.datum)+' - '+(report.role==='ar'||report.role==='ws'?report.name||report.mitarbeiter_name:pLabel),rolle:report.role||'ar',name:report.name||report.mitarbeiter_name||'',datum:report.datum,baustelle:pLabel+(report.baustelle?' - '+report.baustelle:''),auftrag:pLabel,netto,wetter:report.wetter||'',maNr:currentUser?.mitarbeiter_nr||'',pdfBase64};
+    const res=await fetch(GAS_URL,{method:'POST',body:JSON.stringify(payload)});
+    const txt=await res.text();
+    let driveUrl='';
+    try{const json=JSON.parse(txt);driveUrl=json.driveUrl||'';}catch(e){}
+    if(res.ok&&(txt.includes('OK')||txt.includes('status'))){
+      if(statusEl){statusEl.className='send-status show ok';statusEl.textContent='PDF gesendet! '+(driveUrl?'Drive ✓':'');}
+      toast('PDF gesendet!','ok');return driveUrl;
+    }else{throw new Error(txt||'Fehler');}
+  }catch(e){
+    if(statusEl){statusEl.className='send-status show err';statusEl.textContent='Fehler: '+e.message;}
+    try{const doc=await generatePDF(report);doc.save(buildPDFName(report));}catch(e2){}
+    toast('PDF lokal gespeichert','err');return null;
+  }
+}
+
+function loadReport(id){
+  const r=reports.find(x=>x.id===id);if(!r)return;
+  currentId=id;document.querySelectorAll('.ri').forEach(el=>el.classList.toggle('act',el.dataset.id===id));
+  if(r.rolle==='ws'){
+    const sv=(elId,v)=>{const el=document.getElementById(elId);if(el)el.value=v||'';};
+    sv('ws-datum',r.datum);sv('ws-von',r.von);sv('ws-bis',r.bis);sv('ws-taetigkeit',r.taetigkeit_text||'');sv('ws-maengel',r.besonder||'');
+    const wp=document.getElementById('ws-projekt');if(wp)wp.value=r.projekt_id||'';
+    const wp2=document.getElementById('ws-pause');if(wp2)wp2.value=r.pause_min||30;
+    document.querySelectorAll('#ws-taetigkeiten-tags .tg').forEach(t=>t.classList.toggle('a',(r.taetigkeiten||[]).includes(t.textContent)));
+    calcWS();showTab('quick');
+  }else if(r.rolle==='ar'){
+    const sv=(elId,v)=>{const el=document.getElementById(elId);if(el)el.value=v||'';};
+    sv('a-datum',r.datum);sv('a-von',r.von);sv('a-bis',r.bis);sv('a-taetigkeit',r.taetigkeit_text||'');sv('a-besonder',r.besonder||'');
+    const ap=document.getElementById('a-projekt');if(ap){ap.value=r.projekt_id||'';onARProjektChange();}
+    const ps=document.getElementById('a-pause');if(ps)ps.value=r.pause_min||30;
+    curFahrtStatus=r.fahrt_status||'fahrer';
+    document.querySelectorAll('.fahrt-btn').forEach(b=>b.classList.toggle('fahrt-active',b.dataset.val===curFahrtStatus));
+    document.querySelectorAll('#ar-taetigkeiten-tags .tg').forEach(t=>t.classList.toggle('a',(r.taetigkeiten||[]).includes(t.textContent)));
+    calcAR();renderARDetail(r);showTab('quick');
+  }else{renderVADetail(r);loadVAForm(r);showTab('bericht');}
+}
+
+function loadVAForm(r){
+  const sv=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
+  sv('v-datum',r.datum);sv('v-baustelle',r.baustelle);sv('v-bauherr',r.bauherr);sv('v-projektnr',r.projektnr_intern);sv('v-bauleiter',r.bauleiter);sv('v-temp',r.temperatur||r.temp);sv('v-nied',r.nied_mm||r.nied);sv('v-besucher',r.besucher);sv('v-naechstes',r.naechstes);sv('v-bemerkungen',r.bemerkungen);
+  const vp=document.getElementById('v-projekt');if(vp)vp.value=r.projekt_id||'';
+  if(document.getElementById('v-boden'))document.getElementById('v-boden').value=r.boden||'Trocken';
+  curWeather=r.wetter||'Sonnig';const wm={Sonnig:0,Bewoelkt:1,Regen:2,'Frost/Eis':3,Sturm:4,Schnee:5};
+  document.querySelectorAll('.wc').forEach((c,i)=>c.classList.toggle('s',i===(wm[curWeather]??0)));
+  document.querySelectorAll('#va-taetigkeiten-tags .tg').forEach(t=>t.classList.toggle('a',(r.taetigkeiten||[]).includes(t.textContent)));
+  stepIdx=0;const sc=document.getElementById('steps-con');if(sc)sc.innerHTML='';
+  (r.steps||[]).forEach(s=>addStep(s));if(!(r.steps||[]).length)addStep();
+  const mgc=document.getElementById('mangel-con');if(mgc)mgc.innerHTML='';
+  (r.maengel||[]).forEach(m=>addMangel({txt:m.txt,massnahme:m.massnahme}));
+  const zb=document.getElementById('zeit-body');if(zb)zb.innerHTML='';
+  (r.zeit_rows||r.zeitRows||[]).forEach(row=>addZeitRow(row));if(!(r.zeit_rows||r.zeitRows||[]).length)addZeitRow();
+  const mb=document.getElementById('mach-body');if(mb)mb.innerHTML='';
+  (r.mach_rows||r.machRows||[]).forEach(row=>addMachRow(row));
+  liefIdx=0;const lc=document.getElementById('lief-con');if(lc)lc.innerHTML='';
+  (r.lieferungen||[]).forEach(l=>addLief(l));if(!(r.lieferungen||[]).length)addLief();
+  const mc=document.getElementById('mengen-con');if(mc)mc.innerHTML='';
+  (r.mengen||[]).forEach(m=>addMenge(m));if(!(r.mengen||[]).length)addMenge();
+  const lvb=document.getElementById('lv-body');if(lvb)lvb.innerHTML='';
+  (r.lv_rows||r.lvRows||[]).forEach(row=>addLVRow(row));if(!(r.lv_rows||r.lvRows||[]).length)addLVRow();
+  clearFotos();if(r.foto_count>0){const c=document.getElementById('v-fotos-count');if(c)c.textContent='Hinweis: '+r.foto_count+' Fotos beim letzten Speichern';}
+  setTimeout(refreshStepMAs,200);
+}
+
+function renderARDetail(r){
+  const fc={'fahrer':'var(--sky)','beifahrer':'var(--earth)','privat':'var(--m)'}[r.fahrt_status||'fahrer'];
+  const fzMin=r.fahrzeit_min||0;const satz={'fahrer':1,'beifahrer':.5,'privat':0}[r.fahrt_status||'fahrer'];
+  const fa=((fzMin/60)*satz).toFixed(2).replace('.',',');const pLabel=getProjektLabel(r.projekt_id||'');
+  document.getElementById('detailContent').innerHTML=
+    '<div class="card"><div class="card-title">'+r.mitarbeiter_name+'</div>'+
+    '<div class="card-meta"><span class="g">'+fmtD(r.datum)+'</span><span>'+pLabel+'</span></div></div>'+
+    (r.taetigkeiten?.length?'<div class="ib"><div class="ib-t">Taetigkeiten</div><div class="ib-c">'+r.taetigkeiten.join(' | ')+'</div></div>':'')+
+    '<div class="srow"><div class="sc"><div class="sv">'+(r.netto_arbeit_h||'--')+'h</div><div class="sl">Arbeit</div></div>'+
+    '<div class="sc"><div class="sv" style="color:'+fc+'">'+fa+'h</div><div class="sl">Fahrzeit</div></div>'+
+    '<div class="sc"><div class="sv" style="color:var(--gl)">'+(r.netto_gesamt_h||r.netto_arbeit_h||'--')+'h</div><div class="sl">Gesamt</div></div></div>'+
+    '<div class="ib"><div class="ib-t">Zeiten</div><div class="ib-c">'+(r.von||'--')+' - '+(r.bis||'--')+' - Pause: '+(r.pause_min||30)+'min</div></div>'+
+    (r.taetigkeit_text?'<div class="ib"><div class="ib-t">Details</div><div class="ib-c">'+r.taetigkeit_text+'</div></div>':'')+
+    (r.besonder?'<div class="ib" style="border-color:rgba(196,72,40,.25)"><div class="ib-t" style="color:var(--r)">Besonderheiten</div><div class="ib-c">'+r.besonder+'</div></div>':'')+
+    '<div class="arow"><button class="btn btn-r" style="font-size:11px" onclick="delReport(\''+r.id+'\')">Loeschen</button></div>';
+}
+
+function renderVADetail(r){
+  const hours=parseFloat(r.netto_gesamt_h||(r.zeit_rows||[]).reduce((s,w)=>s+(parseFloat((w.gesamt||'0').replace(',','.'))||0),0));
+  const pLabel=getProjektLabel(r.projekt_id||'');
+  document.getElementById('detailContent').innerHTML=
+    '<div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start">'+
+    '<div><div class="card-title">'+pLabel+'</div>'+
+    '<div class="card-meta"><span class="g">'+fmtD(r.datum)+'</span><span>'+(r.bauleiter||'--')+'</span></div></div>'+
+    '<div style="display:flex;gap:5px">'+
+    '<button class="btn" style="font-size:11px;padding:5px 9px" onclick="loadVAForm(reports.find(x=>x.id===\''+r.id+'\'));showTab(\'bericht\')">Bearbeiten</button>'+
+    '<button class="btn btn-r" style="font-size:11px;padding:5px 9px" onclick="delReport(\''+r.id+'\')">Loeschen</button></div></div></div>'+
+    '<div class="srow"><div class="sc"><div class="sv">'+hours.toFixed(1)+'h</div><div class="sl">Stunden</div></div>'+
+    '<div class="sc"><div class="sv">'+((r.zeit_rows||[]).filter(t=>t.name).length)+'</div><div class="sl">Mitarbeiter</div></div>'+
+    '<div class="sc"><div class="sv">'+((r.steps||[]).length)+'</div><div class="sl">Schritte</div></div></div>'+
+    (r.pdf_url?'<div class="ib"><div class="ib-t">Drive</div><div class="ib-c"><a href="'+r.pdf_url+'" target="_blank" style="color:var(--sky)">PDF oeffnen &#x279A;</a></div></div>':'')+
+    (r.ai_analyse?'<div class="ai-card"><div class="ai-lbl"><div class="ai-dot" style="animation:none"></div>KI</div><div class="ai-txt">'+r.ai_analyse+'</div></div>':'')+
+    '<div class="arow"><button class="btn btn-p" style="font-size:11px" onclick="resendVA(\''+r.id+'\')">PDF senden</button></div>';
+}
+
+async function resendVA(id){const r=reports.find(x=>x.id===id);if(!r)return;const reportForPDF={...r,role:r.rolle,name:r.mitarbeiter_name,projektNr:r.projekt_nr,zeitRows:r.zeit_rows,machRows:r.mach_rows};await sendPDFMail(reportForPDF,'va-send-status');}
+
+function renderSB(){
+  const el=document.getElementById('sb-list');if(!el)return;
+  const sichtbar=reports.filter(r=>r.mitarbeiter_id===currentUser.id);
+  if(!sichtbar.length){el.innerHTML='<div style="padding:20px;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m)">Keine Berichte</div>';return;}
+  el.innerHTML=sichtbar.map(r=>{
+    const h=parseFloat(r.netto_gesamt_h||r.netto_arbeit_h||0);
+    const label=r.rolle==='va'?getProjektLabel(r.projekt_id||''):(r.mitarbeiter_name||'--');
+    const tagCls=r.rolle==='va'?'tag-e':r.rolle==='ws'?'tag-ws':'tag-g';
+    const tagLbl=r.rolle==='va'?'VA':r.rolle==='ws'?'WS':'AR';
+    return'<div class="ri'+(r.id===currentId?' act':'')+'" data-id="'+r.id+'" onclick="loadReport(\''+r.id+'\')">'+
+      '<div class="ri-d">'+fmtD(r.datum)+'</div>'+
+      '<div class="ri-n">'+label+'</div>'+
+      '<div class="ri-s">'+tagLbl+' - '+h.toFixed(1)+'h</div>'+
+      '<div class="ri-tags"><span class="tag-s '+tagCls+'">'+tagLbl+'</span>'+
+      (r.gesendet?'<span class="tag-s" style="background:rgba(61,143,168,.12);color:var(--sky)">&#x2713;</span>':'')+
+      '</div></div>';
+  }).join('');
+}
+
+function buildUE(){
+  const el=document.getElementById('ue-content');if(!el)return;
+  const meineReports=reports.filter(r=>r.mitarbeiter_id===currentUser.id);
+  const totalH=meineReports.reduce((s,r)=>s+(parseFloat(r.netto_gesamt_h||r.netto_arbeit_h||0)),0);
+  el.innerHTML='<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px">'+
+    '<div class="sc"><div class="sv">'+meineReports.length+'</div><div class="sl">Berichte</div></div>'+
+    '<div class="sc"><div class="sv">'+totalH.toFixed(0)+'h</div><div class="sl">Stunden</div></div></div>'+
+    meineReports.slice(0,20).map(r=>{const h=parseFloat(r.netto_gesamt_h||r.netto_arbeit_h||0);return'<div class="ib" style="cursor:pointer" onclick="loadReport(\''+r.id+'\')"><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:12px;font-weight:600;color:var(--c)">'+(r.rolle==='va'?getProjektLabel(r.projekt_id||''):r.mitarbeiter_name)+'</div><div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--g)">'+fmtD(r.datum)+' - '+(r.rolle||'ar').toUpperCase()+'</div></div><div style="font-family:\'IBM Plex Mono\',monospace;font-size:16px;color:var(--c)">'+h.toFixed(1)+'h</div></div></div>';}).join('');
+}
+
+async function triggerAI(){const r=reports.find(x=>x.id===currentId);if(!r){toast('Erst speichern!','err');return;}showTab('ki');await runAI('zusammenfassung');}
+
+async function runAI(type){
+  const r=reports.find(x=>x.id===currentId);if(!r){toast('Kein Bericht','err');return;}
+  const prompts={zusammenfassung:'Erstelle eine kompakte Zusammenfassung dieses GaLaBau-Tagesberichts auf Deutsch.',risiken:'Analysiere Risiken und Maengel.',kosten:'Kostenschaetzung nach GaLaBau-Tariflohn.',qualitaet:'Qualitaetspruefung nach DIN 18917, DIN 18035, VOB/C.',bericht:'Formaler VOB-konformer Tagesbericht.',plan:'Wochenplanung fuer naechste 5 Werktage.'};
+  const zRows=r.zeit_rows||[];
+  const rTxt='KLEI Bericht\nDatum:'+r.datum+'|Projekt:'+getProjektLabel(r.projekt_id||'')+'|Bauleiter:'+r.bauleiter+'\nTaetigkeiten:'+(r.taetigkeiten||[]).join(',')+'|Wetter:'+r.wetter+'\nZeiten:'+zRows.map(t=>t.name+'('+t.qual+'):'+t.von+'-'+t.bis+' '+t.gesamt+'h').join('; ')+'\nArbeiten:'+(r.steps||[]).map((s,i)=>(i+1)+'. '+s.txt).join('\n')+'\nMaengel:'+(r.maengel||[]).map(m=>m.typ+': '+m.txt).join('; ');
+  const lbl={zusammenfassung:'Zusammenfassung',risiken:'Risiken',kosten:'Kosten',qualitaet:'Qualitaet',bericht:'VOB-Bericht',plan:'Wochenplanung'};
+  const out=document.getElementById('ki-out');
+  out.innerHTML='<div class="ai-card"><div class="ai-lbl"><div class="ai-dot"></div>Analysiere...</div><div class="lbar"><div class="lfill"></div></div></div>';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompts[type]+'\n\n---\n'+rTxt}]})});
+    const data=await res.json();const txt=data.content?.map(c=>c.text||'').join('\n')||'Keine Antwort.';
+    const fmt=txt.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/^#{1,3}\s(.+)$/gm,'<h3>$1</h3>');
+    out.innerHTML='<div class="ai-card"><div class="ai-lbl"><div class="ai-dot" style="animation:none"></div>'+lbl[type]+'</div><div class="ai-txt">'+fmt+'</div></div>';
+    await sb.from('berichte').update({ai_analyse:fmt}).eq('id',r.id);await loadReports();renderSB();toast('KI fertig','ok');
+  }catch(e){out.innerHTML='<div class="ai-card" style="border-color:var(--r)"><div style="color:var(--r);font-size:10px">Fehler: '+e.message+'</div></div>';toast('KI-Fehler','err');}
+}
+
+async function delReport(id){
+  if(!confirm('Bericht loeschen?'))return;
+  await sb.from('berichte').delete().eq('id',id);
+  if(currentId===id)currentId=null;
+  await loadReports();renderSB();
+  document.getElementById('detailContent').innerHTML='<div class="empty"><div class="ei">&#128465;</div><div class="et">Geloescht</div></div>';
+  toast('Geloescht','err');
+}
+
+function newReport(){
+  currentId=null;stopVoice();
+  if(currentRole==='arbeiter'){clearARForm();return;}
+  if(currentRole==='werkstatt'){clearWSForm();return;}
+  stepIdx=0;liefIdx=0;mangelIdx=0;zusatzProjektIdx=0;
+  ['v-datum','v-baustelle','v-bauherr','v-projektnr','v-bauleiter','v-temp','v-nied','v-besucher','v-naechstes','v-bemerkungen'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=id==='v-datum'?todayStr():'';});
+  ['steps-con','mangel-con','lief-con','mengen-con'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
+  const zb=document.getElementById('zeit-body');if(zb)zb.innerHTML='';
+  const mb=document.getElementById('mach-body');if(mb)mb.innerHTML='';
+  const lb=document.getElementById('lv-body');if(lb)lb.innerHTML='';
+  const vp=document.getElementById('v-projekt');if(vp)vp.value='';
+  const zw=document.getElementById('zusatz-proj-wrap');if(zw)zw.innerHTML='';
+  const st=document.getElementById('va-send-status');if(st){st.className='send-status';st.textContent='';}
+  clearFotos();
+  setTimeout(()=>{addStep();addZeitRow();addLief();addMenge();addLVRow();},50);
+  curWeather='Sonnig';document.querySelectorAll('.wc').forEach((c,i)=>c.classList.toggle('s',i===0));
+  document.querySelectorAll('#va-taetigkeiten-tags .tg').forEach(t=>t.classList.remove('a'));
+  showTab('bericht');toast('Neuer Bericht','ok');
+}
+
+function expDFCSV(){const r=reports.find(x=>x.id===currentId);if(!r){toast('Kein Bericht','err');return;}const rows=r.zeit_rows||[];const hdr='Datum;Projekt;Name;Von;Bis;Arbeit_h;Fahrt;Fahrzeit_min;Gesamt_h';const lines=rows.filter(t=>t.name).map(t=>[r.datum,r.projekt_nr,t.name,t.von||'',t.bis||'',(t.nettoArbeit||'0').replace(',','.'),t.fahrt||'fahrer',t.fahrzeitMin||0,(t.gesamt||'0').replace(',','.')].join(';'));dlFile('Dataflor_'+r.datum+'.csv',[hdr,...lines].join('\n'),'text/csv');toast('CSV exportiert','ok');}
+function expDFXML(){const r=reports.find(x=>x.id===currentId);if(!r){toast('Kein Bericht','err');return;}const rows=r.zeit_rows||[];const x=(s)=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');const xml='<?xml version="1.0" encoding="UTF-8"?>\n<DataflorZeiterfassung>\n  <Datum>'+r.datum+'</Datum>\n  <Projekt>'+x(r.projekt_nr)+'</Projekt>\n  <Personal>\n'+rows.filter(t=>t.name).map(t=>'    <Eintrag><Name>'+x(t.name)+'</Name><Von>'+(t.von||'')+'</Von><Bis>'+(t.bis||'')+'</Bis><Arbeit>'+(t.nettoArbeit||'0').replace(',','.')+'</Arbeit><Gesamt>'+(t.gesamt||'0').replace(',','.')+'</Gesamt></Eintrag>').join('\n')+'\n  </Personal>\n</DataflorZeiterfassung>';dlFile('Dataflor_'+r.datum+'.xml',xml,'application/xml');toast('XML exportiert','ok');}
+
+function showTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('act'));
+  const t=document.getElementById('tab-'+name),p=document.getElementById('panel-'+name);
+  if(t)t.classList.add('act');if(p)p.classList.add('act');
+  if(name==='ue')buildUE();
+  if(name==='bericht')setTimeout(refreshStepMAs,100);
+  if(name==='kalender'){kalMonat=new Date().getMonth();kalJahr=new Date().getFullYear();buildKalender();}
+  if(name==='fzliste')buildFZListe();
+  stopVoice();
+}
+</script>
+</body>
+</html>
