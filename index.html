@@ -3,13 +3,88 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KLEI Dev</title>
+<title>KLEI Dev - GF Login Test</title>
 <style>
-body{background:#0a0a0f;color:#c9a84c;font-family:monospace;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;flex-direction:column;gap:16px;}
+body{background:#0a0a0f;color:#c9a84c;font-family:monospace;margin:0;padding:24px;}
+.card{background:#141420;border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:24px;max-width:340px;margin:40px auto;}
+h2{color:#c9a84c;margin-bottom:16px;}
+input{width:100%;background:#1a1a2e;border:1px solid rgba(201,168,76,.2);border-radius:4px;color:#ddd;padding:12px;font-size:15px;box-sizing:border-box;margin-bottom:12px;}
+button{width:100%;background:linear-gradient(135deg,#a07830,#c9a84c);color:#000;border:none;border-radius:4px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;}
+#status{margin-top:12px;font-size:11px;min-height:16px;color:#c44828;}
+#cockpit{display:none;padding:20px;}
+.kpi{background:#141420;border:1px solid rgba(201,168,76,.2);border-radius:6px;padding:16px;margin-bottom:10px;}
 </style>
 </head>
 <body>
-<div style="font-size:24px;font-weight:700">KLEI Dev-Umgebung</div>
-<div style="font-size:12px;opacity:.6">Test läuft ✓</div>
+
+<div id="login-area">
+<div class="card">
+  <h2>&#x1F511; GF-Zugang</h2>
+  <input type="password" id="pw" placeholder="Master-Passwort" autofocus>
+  <button id="login-btn">Einloggen</button>
+  <div id="status"></div>
+</div>
+</div>
+
+<div id="cockpit">
+  <h2 style="color:#c9a84c">&#x1F4CA; Master-Cockpit</h2>
+  <div class="kpi" id="kpi-content">Lade Daten...</div>
+  <button onclick="doLogout()" style="max-width:200px;margin-top:16px">Abmelden</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPA_URL='https://nctciyyshywmdamyqvqo.supabase.co';
+const SUPA_KEY='sb_publishable_or0S3skW6i6-jfofutK_jQ_sA3urW4y';
+const{createClient}=supabase;
+const sb=createClient(SUPA_URL,SUPA_KEY);
+
+document.getElementById('login-btn').addEventListener('click',doLogin);
+document.getElementById('pw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+async function doLogin(){
+  const pw=document.getElementById('pw').value.trim();
+  const status=document.getElementById('status');
+  if(!pw){status.textContent='Passwort eingeben';return;}
+  status.textContent='Pruefe...';
+  try{
+    const{data,error}=await sb.from('gf_config').select('wert').eq('schluessel','master_passwort').single();
+    if(error){status.textContent='DB Fehler: '+error.message;return;}
+    if(pw!==data.wert){status.textContent='Falsches Passwort';return;}
+    document.getElementById('login-area').style.display='none';
+    document.getElementById('cockpit').style.display='block';
+    loadDashboard();
+  }catch(e){status.textContent='Fehler: '+e.message;}
+}
+
+async function loadDashboard(){
+  const el=document.getElementById('kpi-content');
+  const[b,ma]=await Promise.all([
+    sb.from('berichte').select('id,datum,mitarbeiter_name,netto_gesamt_h,netto_arbeit_h').order('datum',{ascending:false}).limit(10),
+    sb.from('mitarbeiter').select('id,name,rolle').eq('aktiv',true)
+  ]);
+  const berichte=b.data||[];
+  const mitarbeiter=ma.data||[];
+  const totalH=berichte.reduce((s,x)=>s+(parseFloat(x.netto_gesamt_h||x.netto_arbeit_h||0)),0);
+  el.innerHTML=
+    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">'+
+    '<div style="text-align:center"><div style="font-size:28px;font-weight:700">'+berichte.length+'</div><div style="font-size:10px;opacity:.6">BERICHTE</div></div>'+
+    '<div style="text-align:center"><div style="font-size:28px;font-weight:700">'+totalH.toFixed(0)+'h</div><div style="font-size:10px;opacity:.6">STUNDEN</div></div>'+
+    '<div style="text-align:center"><div style="font-size:28px;font-weight:700">'+mitarbeiter.length+'</div><div style="font-size:10px;opacity:.6">MITARBEITER</div></div>'+
+    '</div>'+
+    '<div style="font-size:10px;opacity:.6;margin-bottom:8px">LETZTE BERICHTE</div>'+
+    berichte.map(b=>'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(201,168,76,.1)">'+
+      '<span>'+b.mitarbeiter_name+'</span>'+
+      '<span>'+b.datum+' · '+(parseFloat(b.netto_gesamt_h||b.netto_arbeit_h||0)).toFixed(1)+'h</span>'+
+    '</div>').join('');
+}
+
+function doLogout(){
+  document.getElementById('pw').value='';
+  document.getElementById('status').textContent='';
+  document.getElementById('cockpit').style.display='none';
+  document.getElementById('login-area').style.display='block';
+}
+</script>
 </body>
 </html>
