@@ -730,7 +730,7 @@ async function sendPDFMail(report,statusElId){
     const pdfBase64=doc.output('datauristring').split(',')[1];
     const pLabel=getProjektLabel(report.projekt_id||report.projektNr||'');
     const netto=String(report.netto||report.netto_gesamt_h||report.netto_arbeit_h||'0');
-    const{to,cc}=await getActiveEmpfaenger();
+    const to=['tagesbericht@klei-galabau.de','kleizeitmanager34@gmail.com'];const cc=[];
     const payload={empfaenger:to.join(','),cc:cc.join(','),betreff:'KLEI Tagesbericht '+fmtD(report.datum)+' - '+(report.role==='ar'||report.role==='ws'?report.name||report.mitarbeiter_name:pLabel),rolle:report.role||'ar',name:report.name||report.mitarbeiter_name||'',datum:report.datum,baustelle:pLabel+(report.baustelle?' - '+report.baustelle:''),auftrag:pLabel,netto,wetter:report.wetter||'',maNr:currentUser?.mitarbeiter_nr||'',pdfBase64};
     const res=await fetch(GAS_URL,{method:'POST',body:JSON.stringify(payload)});
     const txt=await res.text();
