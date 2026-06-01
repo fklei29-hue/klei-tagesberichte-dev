@@ -14,7 +14,8 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0e1209;--s1:#141a0d;--s2:#1a2210;--s3:#202a14;--b:#2c3a1c;--g:#72b832;--gd:#4d8520;--gg:rgba(114,184,50,.1);--gl:#9ed45a;--earth:#9a6c1a;--earthg:rgba(154,108,26,.12);--sky:#3d8fa8;--skyg:rgba(61,143,168,.1);--r:#c44828;--rg:rgba(196,72,40,.1);--o:#d4782a;--c:#dce8c4;--m:#6a8848;--t:#b8cc98;--rad:4px;--ws:#8b5cf6;--wsg:rgba(139,92,246,.1);}
-body.theme-light{--bg:#f5f7f1;--s1:#ffffff;--s2:#f9faf6;--s3:#eef2e6;--b:#d4dcc6;--g:#5a9628;--gd:#3d6b1a;--gg:rgba(90,150,40,.12);--gl:#3d6b1a;--earth:#8b5e15;--earthg:rgba(139,94,21,.1);--sky:#2d6f85;--skyg:rgba(45,111,133,.08);--r:#b03d1e;--rg:rgba(176,61,30,.08);--o:#c46820;--c:#1f2a0d;--m:#7a8866;--t:#2a3520;--ws:#6d3fb8;--wsg:rgba(109,63,184,.08);}
+body.theme-light{--bg:#eef0ea;--s1:#ffffff;--s2:#ffffff;--s3:#f0f2ec;--b:#c2ccb0;--g:#4d8520;--gd:#3a6818;--gg:rgba(77,133,32,.14);--gl:#2f5614;--earth:#7a5212;--earthg:rgba(122,82,18,.12);--sky:#256075;--skyg:rgba(37,96,117,.1);--r:#a8331a;--rg:rgba(168,51,26,.1);--o:#b25e18;--c:#0d1207;--m:#5a6748;--t:#161e0c;--ws:#5e34a0;--wsg:rgba(94,52,160,.1);}
+body.theme-light{--b:#c2ccb0;}
 body.theme-light input,body.theme-light textarea,body.theme-light select{background:#ffffff;color:#1f2a0d;}
 body.theme-light .toast{box-shadow:0 6px 20px rgba(0,0,0,.15);}
 body.theme-light #sig-canvas{background:white;}
@@ -238,7 +239,7 @@ select option{background:var(--s2);}
 @media(max-width:680px){.app{grid-template-columns:1fr;}aside{display:none;}.fg.w25,.fg.w33{flex:0 0 calc(50% - 4px);}}
 </style>
 </head>
-<body>
+<body class="theme-light">
 <div id="login-screen">
   <img src="https://www.klei-sportplatzbau.de/images/logos/KLEI_LOGO_FARBIG_RGB_72DPI.png" class="login-logo" alt="KLEI" onerror="this.style.display='none'">
   <div class="login-title">Tagesberichte · Zeiterfassung · Baunatal</div>
@@ -368,6 +369,17 @@ select option{background:var(--s2);}
   </div>
 </div>
 
+<div id="mo-draft" style="position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:680;display:none;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--s1);border:2px solid var(--gd);border-radius:8px;padding:22px;width:min(440px,95vw)">
+    <div style="font-weight:700;font-size:16px;color:var(--c);margin-bottom:6px">Entwurf gefunden</div>
+    <div id="draft-restore-text" style="font-size:13px;line-height:1.6;color:var(--t);margin-bottom:18px"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-p" style="flex:1;min-width:140px;padding:13px" ontouchstart="restoreVADraft()" onclick="restoreVADraft()">Weitermachen</button>
+      <button class="btn btn-r" style="flex:1;min-width:120px;padding:13px" ontouchstart="discardVADraft()" onclick="discardVADraft()">Verwerfen</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -415,13 +427,125 @@ let voiceActive=false,voiceTarget=null,recognition=null;
 let unterschriftData=null,sigDrawing=false,sigCtx=null,sigCanvas=null;
 let isSending=false;
 
+// ══════ VA-ENTWURF (lokales Zwischenspeichern) ══════
+let draftTimer=null;
+function draftKey(){return 'klei_va_draft_'+(currentUser?currentUser.id:'anon');}
+
+// Sammelt den aktuellen Formularstand des VA-Berichts (ohne Pflichtfeld-Zwang)
+function collectVADraft(){
+  try{
+    return {
+      savedAt:new Date().toISOString(),
+      kat:document.getElementById('v-kat')?.value||'bau',
+      datum:document.getElementById('v-datum')?.value||'',
+      projekt_id:document.getElementById('v-projekt')?.value||'',
+      projektnr_intern:document.getElementById('v-projektnr')?.value||'',
+      bauleiter:document.getElementById('v-bauleiter')?.value||'',
+      bauherr:document.getElementById('v-bauherr')?.value||'',
+      baustelle:document.getElementById('v-baustelle')?.value||'',
+      temperatur:document.getElementById('v-temp')?.value||'',
+      nied_mm:document.getElementById('v-nied')?.value||'',
+      besucher:document.getElementById('v-besucher')?.value||'',
+      boden:document.getElementById('v-boden')?.value||'',
+      wetter:curWeather,
+      taetigkeiten:getVATaetigkeiten(),
+      zeit_rows:getZeitRows(),
+      mach_rows:getMachRows(),
+      steps:getSteps(),
+      lieferungen:getLiefData(),
+      mengen:getMengen(),
+      lv_rows:getLVRows(),
+      maengel:getMangelData(),
+      naechstes:document.getElementById('v-naechstes')?.value||'',
+      bemerkungen:document.getElementById('v-bemerkungen')?.value||'',
+      zusatz_projekte:getZusatzProjekte()
+    };
+  }catch(e){return null;}
+}
+
+// Prüft ob der Entwurf überhaupt Inhalt hat (damit leere Formulare nicht gespeichert werden)
+function draftHasContent(d){
+  if(!d)return false;
+  if(d.baustelle||d.bauleiter||d.bauherr||d.naechstes||d.bemerkungen||d.projekt_id)return true;
+  if((d.zeit_rows||[]).length||(d.steps||[]).length||(d.maengel||[]).length||(d.lieferungen||[]).length)return true;
+  if((d.taetigkeiten||[]).length)return true;
+  return false;
+}
+
+// Speichert den Entwurf lokal (nur wenn VA-Rolle, Bericht-Tab aktiv und Inhalt vorhanden)
+function autoSaveVADraft(){
+  if(currentRole!=='vorarbeiter')return;
+  if(currentId)return; // bereits gespeicherter/geladener Bericht -> kein Entwurf nötig
+  const d=collectVADraft();
+  if(!draftHasContent(d))return;
+  try{localStorage.setItem(draftKey(),JSON.stringify(d));
+    const ind=document.getElementById('draft-indicator');
+    if(ind){const t=new Date();ind.textContent='Entwurf gesichert '+String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0');ind.style.opacity='1';setTimeout(()=>{if(ind)ind.style.opacity='0.5';},2000);}
+  }catch(e){}
+}
+
+// Startet das automatische Speichern (alle 5 Sek bei Änderungen)
+function startVAAutoSave(){
+  stopVAAutoSave();
+  draftTimer=setInterval(autoSaveVADraft,5000);
+}
+function stopVAAutoSave(){if(draftTimer){clearInterval(draftTimer);draftTimer=null;}}
+
+// Manuelles Speichern per Button
+function manualSaveDraft(){
+  const d=collectVADraft();
+  if(!draftHasContent(d)){toast('Noch nichts zum Speichern','info');return;}
+  try{localStorage.setItem(draftKey(),JSON.stringify(d));toast('Entwurf gespeichert','ok');
+    const ind=document.getElementById('draft-indicator');if(ind){ind.textContent='Entwurf gespeichert';ind.style.opacity='1';}
+  }catch(e){toast('Speichern fehlgeschlagen','err');}
+}
+
+// Löscht den Entwurf (nach erfolgreichem Senden oder beim Verwerfen)
+function clearVADraft(){try{localStorage.removeItem(draftKey());}catch(e){}}
+
+// Prüft beim Öffnen ob ein Entwurf vorliegt und fragt nach
+function checkVADraft(){
+  if(currentRole!=='vorarbeiter')return;
+  let raw=null;try{raw=localStorage.getItem(draftKey());}catch(e){}
+  if(!raw)return;
+  let d=null;try{d=JSON.parse(raw);}catch(e){clearVADraft();return;}
+  if(!draftHasContent(d)){clearVADraft();return;}
+  const wann=d.savedAt?new Date(d.savedAt):null;
+  const wannTxt=wann?wann.toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+  document.getElementById('draft-restore-text').textContent='Du hast einen nicht abgeschickten Bericht vom '+wannTxt+'. Moechtest du dort weitermachen?';
+  document.getElementById('mo-draft').style.display='flex';
+}
+
+// Stellt den Entwurf im Formular wieder her
+function restoreVADraft(){
+  let raw=null;try{raw=localStorage.getItem(draftKey());}catch(e){}
+  if(!raw){document.getElementById('mo-draft').style.display='none';return;}
+  let d=null;try{d=JSON.parse(raw);}catch(e){document.getElementById('mo-draft').style.display='none';return;}
+  // wie ein gespeicherter Bericht ins Formular laden (loadVAForm versteht dieses Format)
+  const r={
+    datum:d.datum,projekt_id:d.projekt_id,projektnr_intern:d.projektnr_intern,
+    bauleiter:d.bauleiter,bauherr:d.bauherr,baustelle:d.baustelle,
+    temperatur:d.temperatur,nied_mm:d.nied_mm,besucher:d.besucher,boden:d.boden,
+    wetter:d.wetter,taetigkeiten:d.taetigkeiten,zeit_rows:d.zeit_rows,mach_rows:d.mach_rows,
+    steps:d.steps,lieferungen:d.lieferungen,mengen:d.mengen,lv_rows:d.lv_rows,
+    maengel:d.maengel,naechstes:d.naechstes,bemerkungen:d.bemerkungen,zusatz_projekte:d.zusatz_projekte
+  };
+  currentId=null; // Entwurf ist ein neuer, ungespeicherter Bericht
+  document.getElementById('mo-draft').style.display='none';
+  showTab('bericht');
+  setTimeout(()=>{loadVAForm(r);toast('Entwurf wiederhergestellt','ok');},150);
+}
+
+function discardVADraft(){clearVADraft();document.getElementById('mo-draft').style.display='none';toast('Entwurf verworfen','info');}
+
+
 // ══════ THEME (Hell/Dunkel) ══════
 function applyTheme(){
-  const t=localStorage.getItem('klei_theme')||'dark';
+  const t=localStorage.getItem('klei_theme')||'light';
   if(t==='light')document.body.classList.add('theme-light');else document.body.classList.remove('theme-light');
   document.querySelectorAll('.theme-btn').forEach(b=>b.innerHTML=t==='light'?'&#9728;':'&#9790;');
 }
-function toggleTheme(){const c=localStorage.getItem('klei_theme')||'dark';const n=c==='dark'?'light':'dark';localStorage.setItem('klei_theme',n);applyTheme();}
+function toggleTheme(){const c=localStorage.getItem('klei_theme')||'light';const n=c==='dark'?'light':'dark';localStorage.setItem('klei_theme',n);applyTheme();}
 applyTheme();
 
 // ══════ DATENSCHUTZ TEXTE ══════
@@ -535,6 +659,7 @@ document.getElementById('login-pw').addEventListener('keydown',e=>{if(e.key==='E
 document.getElementById('login-nr').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('login-pw').focus();});
 
 function doLogout(){
+  stopVAAutoSave();
   currentUser=null;reports=[];currentId=null;currentRole=null;unterschriftData=null;
   ['admin-screen','pl-screen'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById('login-screen').style.display='flex';
@@ -1274,6 +1399,7 @@ async function saveAndSendVA(){
   const pdfUrl=await sendPDFMail(reportForPDF,'va-send-status');
   if(pdfUrl)await sb.from('berichte').update({gesendet:true,pdf_url:pdfUrl}).eq('id',savedId);
   else await sb.from('berichte').update({gesendet:true}).eq('id',savedId);
+  clearVADraft();
   await loadReports();renderSB();currentId=null;newReport();
   }finally{isSending=false;}
 }
@@ -1823,7 +1949,7 @@ function buildUI(){
       '<div class="panel" id="panel-details"><div id="detailContent"><div class="empty"><div class="ei">&#128203;</div><div class="et">Bericht waehlen</div></div></div></div>'+
       '<div class="panel" id="panel-ki">'+buildKI()+'</div>'+
       '<div class="panel" id="panel-ue"><div id="ue-content"></div></div>';
-    setTimeout(()=>{addStep();addZeitRow();addLief();addMenge();addLVRow();const d=document.getElementById('v-datum');if(d)d.value=todayStr();},100);
+    setTimeout(()=>{addStep();addZeitRow();addLief();addMenge();addLVRow();const d=document.getElementById('v-datum');if(d)d.value=todayStr();startVAAutoSave();setTimeout(checkVADraft,600);},100);
   }
 }
 
@@ -1992,9 +2118,11 @@ function buildVABericht(){
     '<textarea id="v-naechstes" placeholder="Geplante Folgearbeiten..."></textarea>'+mkMic('v-naechstes','Naechste Schritte')+'</div>'+
     '<div class="fg" style="margin-top:8px"><label>Bemerkungen</label>'+
     '<textarea id="v-bemerkungen"></textarea>'+mkMic('v-bemerkungen','Bemerkungen')+'</div></div>'+
+    '<div style="display:flex;align-items:center;gap:8px;margin:4px 2px"><span id="draft-indicator" style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);opacity:0.5;transition:opacity .3s">Entwurf wird automatisch gesichert</span></div>'+
     '<div class="send-status" id="va-send-status"></div>'+
     '<div class="arow">'+
     '<button class="btn btn-p" ontouchstart="saveAndSendVA()" onclick="saveAndSendVA()">Speichern und PDF senden</button>'+
+    '<button class="btn btn-e" ontouchstart="manualSaveDraft()" onclick="manualSaveDraft()">Entwurf speichern</button>'+
     '<button class="btn" style="background:var(--gg);border-color:var(--gd);color:var(--gl)" ontouchstart="triggerAI()" onclick="triggerAI()">KI</button>'+
     '<button class="btn" ontouchstart="newReport()" onclick="newReport()">Neu</button></div>';
 }
