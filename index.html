@@ -1758,7 +1758,6 @@ function renderVADetail(r){
     '<div class="sc"><div class="sv">'+((r.steps||[]).length)+'</div><div class="sl">Schritte</div></div>'+
     '</div>'+
     (r.pdf_url?'<div class="ib"><div class="ib-t">Drive</div><a href="'+r.pdf_url+'" target="_blank" style="color:var(--sky);font-size:12px">PDF in Drive oeffnen &#x279A;</a></div>':'')+
-    (r.ai_analyse?'<div class="ai-card"><div class="ai-lbl"><div class="ai-dot" style="animation:none"></div>KI</div><div class="ai-txt">'+r.ai_analyse+'</div></div>':'')+
     '<div class="arow"><button class="btn btn-p" style="font-size:11px" ontouchstart="resendVA(\''+r.id+'\')" onclick="resendVA(\''+r.id+'\')">PDF senden</button></div>';
 }
 
@@ -1780,7 +1779,6 @@ function renderSB(){
       '<div class="ri-tags">'+
       '<span class="tag-s '+tagCls+'">'+tagLbl+'</span>'+
       (r.pdf_url?'<span class="tag-s" style="background:rgba(61,143,168,.12);color:var(--sky)">Drive</span>':'')+
-      (r.ai_analyse?'<span class="tag-s tag-g">KI</span>':'')+
       (r.gesendet?'<span class="tag-s" style="background:rgba(61,143,168,.12);color:var(--sky)">&#x2713;</span>':'')+
       '</div></div>';
   }).join('');
@@ -1799,25 +1797,6 @@ function buildUE(){
       '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--g)">'+fmtD(r.datum)+' - '+(r.rolle||'ar').toUpperCase()+'</div></div>'+
       '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:16px;color:var(--c)">'+h.toFixed(1)+'h</div></div></div>';
     }).join('');
-}
-
-async function triggerAI(){const r=reports.find(x=>x.id===currentId);if(!r){toast('Erst speichern!','err');return;}showTab('ki');await runAI('zusammenfassung');}
-async function runAI(type){
-  const r=reports.find(x=>x.id===currentId);if(!r){toast('Kein Bericht','err');return;}
-  const prompts={zusammenfassung:'Erstelle eine kompakte Zusammenfassung dieses GaLaBau-Tagesberichts auf Deutsch.',risiken:'Analysiere Risiken und Maengel.',kosten:'Kostenschaetzung nach GaLaBau-Tariflohn.',qualitaet:'Qualitaetspruefung nach DIN 18917, DIN 18035, VOB/C.',bericht:'Formaler VOB-konformer Tagesbericht.',plan:'Wochenplanung fuer naechste 5 Werktage.'};
-  const zRows=r.zeit_rows||[];
-  const rTxt='KLEI Bericht\nDatum:'+r.datum+'|Projekt:'+getProjektLabel(r.projekt_id||'')+'|Bauleiter:'+r.bauleiter+'\nTaetigkeiten:'+(r.taetigkeiten||[]).join(',')+'\nWetter:'+r.wetter+','+r.temperatur+'C\nZeiten:'+zRows.map(t=>t.name+'('+t.qual+'):'+t.von+'-'+t.bis+' '+t.gesamt+'h').join('; ')+'\nArbeiten:'+(r.steps||[]).map((s,i)=>(i+1)+'. '+s.txt+' '+(s.menge||'')).join('\n')+'\nMaengel:'+(r.maengel||[]).map(m=>m.typ+': '+m.txt).join('; ')+'\nNaechstes:'+(r.naechstes||'--');
-  const lbl={zusammenfassung:'Zusammenfassung',risiken:'Risiken',kosten:'Kosten',qualitaet:'Qualitaet',bericht:'VOB-Bericht',plan:'Wochenplanung'};
-  const out=document.getElementById('ki-out');
-  out.innerHTML='<div class="ai-card"><div class="ai-lbl"><div class="ai-dot"></div>Analysiere...</div><div class="lbar"><div class="lfill"></div></div></div>';
-  try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompts[type]+'\n\n---\n'+rTxt}]})});
-    const data=await res.json();
-    const txt=data.content?.map(c=>c.text||'').join('\n')||'Keine Antwort.';
-    const fmt=txt.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/^#{1,3}\s(.+)$/gm,'<h3>$1</h3>');
-    out.innerHTML='<div class="ai-card"><div class="ai-lbl"><div class="ai-dot" style="animation:none"></div>'+lbl[type]+'</div><div class="ai-txt">'+fmt+'</div></div>';
-    await sb.from('berichte').update({ai_analyse:fmt}).eq('id',r.id);await loadReports();renderSB();toast('KI fertig','ok');
-  }catch(e){out.innerHTML='<div class="ai-card" style="border-color:var(--r)"><div style="color:var(--r);font-size:10px">Fehler: '+e.message+'</div></div>';toast('KI-Fehler','err');}
 }
 
 async function delReport(id){if(!confirm('Bericht loeschen?'))return;await sb.from('berichte').delete().eq('id',id);if(currentId===id)currentId=null;await loadReports();renderSB();document.getElementById('detailContent').innerHTML='<div class="empty"><div class="ei">&#128465;</div><div class="et">Geloescht</div></div>';toast('Geloescht','err');}
@@ -1939,7 +1918,6 @@ function buildUI(){
       '<div class="tab" id="tab-material" ontouchstart="showTab(\'material\')" onclick="showTab(\'material\')">Material</div>'+
       '<div class="tab" id="tab-kalender" ontouchstart="showTab(\'kalender\')" onclick="showTab(\'kalender\')">Kalender</div>'+
       '<div class="tab" id="tab-details" ontouchstart="showTab(\'details\')" onclick="showTab(\'details\')">Details</div>'+
-      '<div class="tab" id="tab-ki" ontouchstart="showTab(\'ki\')" onclick="showTab(\'ki\')">KI</div>'+
       '<div class="tab" id="tab-ue" ontouchstart="showTab(\'ue\')" onclick="showTab(\'ue\')">Uebersicht</div>';
     content.innerHTML=
       '<div class="panel act" id="panel-bericht">'+buildVABericht()+'</div>'+
@@ -1947,7 +1925,6 @@ function buildUI(){
       '<div class="panel" id="panel-material">'+buildVAMaterial()+'</div>'+
       '<div class="panel" id="panel-kalender"><div id="kalender-content"></div></div>'+
       '<div class="panel" id="panel-details"><div id="detailContent"><div class="empty"><div class="ei">&#128203;</div><div class="et">Bericht waehlen</div></div></div></div>'+
-      '<div class="panel" id="panel-ki">'+buildKI()+'</div>'+
       '<div class="panel" id="panel-ue"><div id="ue-content"></div></div>';
     setTimeout(()=>{addStep();addZeitRow();addLief();addMenge();addLVRow();const d=document.getElementById('v-datum');if(d)d.value=todayStr();startVAAutoSave();setTimeout(checkVADraft,600);},100);
   }
@@ -2123,7 +2100,6 @@ function buildVABericht(){
     '<div class="arow">'+
     '<button class="btn btn-p" ontouchstart="saveAndSendVA()" onclick="saveAndSendVA()">Speichern und PDF senden</button>'+
     '<button class="btn btn-e" ontouchstart="manualSaveDraft()" onclick="manualSaveDraft()">Entwurf speichern</button>'+
-    '<button class="btn" style="background:var(--gg);border-color:var(--gd);color:var(--gl)" ontouchstart="triggerAI()" onclick="triggerAI()">KI</button>'+
     '<button class="btn" ontouchstart="newReport()" onclick="newReport()">Neu</button></div>';
 }
 
@@ -2209,17 +2185,7 @@ function buildVAMaterial(){
     '<div class="arow"><button class="btn btn-p" ontouchstart="saveAndSendVA()" onclick="saveAndSendVA()">Speichern und PDF senden</button></div>';
 }
 
-function buildKI(){
-  return'<div class="sh">KI-Analyse</div>'+
-    '<div class="ai-acts">'+
-    '<button class="ai-ab" ontouchstart="runAI(\'zusammenfassung\')" onclick="runAI(\'zusammenfassung\')">Zusammenfassung</button>'+
-    '<button class="ai-ab" ontouchstart="runAI(\'risiken\')" onclick="runAI(\'risiken\')">Risiken</button>'+
-    '<button class="ai-ab" ontouchstart="runAI(\'kosten\')" onclick="runAI(\'kosten\')">Kosten</button>'+
-    '<button class="ai-ab" ontouchstart="runAI(\'qualitaet\')" onclick="runAI(\'qualitaet\')">Qualitaet DIN</button>'+
-    '<button class="ai-ab" ontouchstart="runAI(\'bericht\')" onclick="runAI(\'bericht\')">VOB-Bericht</button>'+
-    '<button class="ai-ab" ontouchstart="runAI(\'plan\')" onclick="runAI(\'plan\')">Wochenplanung</button>'+
-    '</div><div id="ki-out"><div class="empty"><div class="ei">&#127807;</div><div class="et">Bericht laden und analysieren</div></div></div>';
-}
+function buildKI(){return'';}
 
 // ══════ ZEITERFASSUNG ══════
 function getZeitRowsSimple(){return[...document.querySelectorAll('#zeit-body tr')].map(tr=>({name:tr.querySelector('.zeit-name')?.value||'',qual:tr.querySelector('.zeit-qual')?.value||''})).filter(r=>r.name);}
