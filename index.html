@@ -121,6 +121,8 @@ main{display:flex;flex-direction:column;overflow:hidden;}
 .tab{padding:12px 14px;font-size:11px;font-weight:600;color:var(--m);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;}
 .tab.act{color:var(--gl);border-bottom-color:var(--g);}
 .tab.act.ws-tab{color:var(--ws);border-bottom-color:var(--ws);}
+.projcell-filter{width:100%;box-sizing:border-box;font-size:9px;padding:2px 4px;margin-bottom:2px;border:1px solid var(--b);border-radius:3px;background:var(--s2);color:var(--t);}
+.projcell-filter::placeholder{color:var(--m);}
 .content{flex:1;overflow-y:auto;padding:12px 14px;padding-bottom:70px;}
 .panel{display:none;}.panel.act{display:block;}
 .vbar{background:rgba(196,72,40,.15);border:1px solid rgba(196,72,40,.4);border-radius:var(--rad);padding:10px 14px;margin-bottom:10px;display:none;align-items:center;gap:10px;position:sticky;top:0;z-index:50;}
@@ -359,13 +361,28 @@ select option{background:var(--s2);}
 </div>
 
 <div id="mo-df" style="position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;">
-  <div style="background:var(--s1);border:1px solid var(--b);border-radius:8px;padding:18px;width:min(400px,94vw)">
+  <div style="background:var(--s1);border:1px solid var(--b);border-radius:8px;padding:18px;width:min(440px,94vw);max-height:90vh;overflow:auto">
     <button onclick="closeMo('mo-df')" style="float:right;background:none;border:none;color:var(--m);font-size:18px;cursor:pointer">&#x2715;</button>
-    <div style="font-weight:700;font-size:14px;color:var(--c);margin-bottom:12px">Dataflor Export</div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap">
-      <button class="btn btn-e" ontouchstart="expDFCSV()" onclick="expDFCSV()">CSV Export</button>
-      <button class="btn btn-e" ontouchstart="expDFXML()" onclick="expDFXML()">XML Export</button>
+    <div style="font-weight:700;font-size:14px;color:var(--c);margin-bottom:4px">DATAflor NK-Import (Stunden)</div>
+    <div style="font-size:11px;color:var(--m);line-height:1.5;margin-bottom:12px">Erzeugt eine schema-konforme XML-Datei (DFNKImport) zum Import in die DATAflor-Nachkalkulation. Diese Datei in den von DATAflor ueberwachten Ordner legen.</div>
+    <div class="fg" style="margin-bottom:10px">
+      <label style="font-size:11px;color:var(--t)">Lohnart-Nr. (von DATAflor) <span style="color:var(--r)">*</span></label>
+      <input id="df-lohnart" type="number" inputmode="numeric" placeholder="z.B. 100" style="width:100%;box-sizing:border-box">
+      <div style="font-size:10px;color:var(--m);margin-top:2px">Pflichtfeld. Ohne gueltige Lohnart-Nummer lehnt DATAflor die Datei ab. Nummer beim DATAflor-Support erfragen.</div>
     </div>
+    <div style="border-top:1px solid var(--b);margin:10px 0;padding-top:10px">
+      <div style="font-weight:600;font-size:12px;color:var(--t);margin-bottom:6px">Aktueller Bericht</div>
+      <button class="btn btn-e" style="width:100%" ontouchstart="expDFNKCurrent()" onclick="expDFNKCurrent()">Diesen Bericht als XML</button>
+    </div>
+    <div style="border-top:1px solid var(--b);margin:10px 0;padding-top:10px">
+      <div style="font-weight:600;font-size:12px;color:var(--t);margin-bottom:6px">Zeitraum (alle Berichte)</div>
+      <div class="row" style="gap:6px">
+        <div class="fg w50"><label style="font-size:11px">Von</label><input id="df-von" type="date" style="width:100%;box-sizing:border-box"></div>
+        <div class="fg w50"><label style="font-size:11px">Bis</label><input id="df-bis" type="date" style="width:100%;box-sizing:border-box"></div>
+      </div>
+      <button class="btn btn-e" style="width:100%;margin-top:6px" ontouchstart="expDFNKRange()" onclick="expDFNKRange()">Zeitraum als XML</button>
+    </div>
+    <div id="df-status" style="font-size:11px;margin-top:10px;line-height:1.5"></div>
   </div>
 </div>
 
@@ -419,7 +436,7 @@ const GERAETE=[
 ];
 const PAUSEN=[0,15,30,45,60,75,90];
 
-let currentUser=null,PROJEKTE=[],reports=[],FAHRZEUGE=[];
+let currentUser=null,PROJEKTE=[],reports=[],FAHRZEUGE=[],MALISTE=[];
 let currentId=null,currentRole=null,curWeather='Sonnig';
 let stepIdx=0,liefIdx=0,mangelIdx=0,curFahrtStatus='fahrer';
 let fotoDataUrls=[],kalMonat=new Date().getMonth(),kalJahr=new Date().getFullYear();
@@ -670,6 +687,7 @@ function doLogout(){
 
 async function loadProjekte(){const{data}=await sb.from('projekte').select('*').eq('aktiv',true).order('nr');if(data)PROJEKTE=data;}
 async function loadFahrzeuge(){const{data}=await sb.from('fahrzeuge').select('*').eq('aktiv',true).order('kennzeichen');if(data)FAHRZEUGE=data;}
+async function loadMitarbeiterListe(){const{data}=await sb.from('mitarbeiter').select('id,name,mitarbeiter_nr,aktiv');if(data)MALISTE=data;}
 
 async function loadReports(){
   let q=sb.from('berichte').select('*').order('datum',{ascending:false}).order('erstellt_am',{ascending:false});
@@ -680,7 +698,7 @@ async function loadReports(){
 
 async function initApp(){
   currentRole=currentUser.rolle;
-  await loadReports();await loadFahrzeuge();
+  await loadReports();await loadFahrzeuge();await loadMitarbeiterListe();
   const b=document.getElementById('role-badge');
   b.className='role-badge '+(currentRole==='werkstatt'?'werkstatt':currentRole);
   b.textContent={arbeiter:'Arbeiter',vorarbeiter:'Vorarbeiter',werkstatt:'Werkstatt'}[currentRole]||currentRole;
@@ -1102,7 +1120,7 @@ async function renderAdminExp(){
     '<div class="fg w50"><label>Bis</label><input type="date" id="exp-bis"></div></div>'+
     '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
     '<button class="btn btn-sky" ontouchstart="expBuchhaltungCSV()" onclick="expBuchhaltungCSV()">CSV Buchhaltung</button>'+
-    '<button class="btn btn-e" ontouchstart="expDFCSVAdmin()" onclick="expDFCSVAdmin()">Dataflor CSV</button></div></div>'+
+    '<button class="btn btn-e" ontouchstart="expDFCSVAdmin()" onclick="expDFCSVAdmin()">Dataflor XML</button></div></div>'+
     '<div class="a-sec"><div class="a-sec-title">Statistik</div><div id="exp-stats"><div class="empty"><div class="spin"></div></div></div></div>';
   loadExpStats();
 }
@@ -1137,15 +1155,25 @@ async function expBuchhaltungCSV(){
 }
 
 async function expDFCSVAdmin(){
+  // DATAflor NK-Import XML (validiert gegen DFNKImport.xsd) ueber Zeitraum aus Admin-Feldern.
   const von=document.getElementById('exp-von').value,bis=document.getElementById('exp-bis').value;
+  const laRaw=prompt('DATAflor Lohnart-Nr. fuer normale Arbeitsstunden:\n(beim DATAflor-Support erfragen)');
+  if(laRaw===null)return;
+  const lohnart=parseInt(laRaw);
+  if(isNaN(lohnart)||lohnart<=0){toast('Ungueltige Lohnart-Nr.','err');return;}
+  if(!MALISTE.length){await loadMitarbeiterListe();}
   let q=sb.from('berichte').select('*').order('datum');
   if(von)q=q.gte('datum',von);if(bis)q=q.lte('datum',bis);
   const{data}=await q;if(!data?.length){toast('Keine Daten','err');return;}
-  const hdr='Mandant;Datum;Projekt;Name;MA-Nr;Von;Bis;Arbeit_h;Fahrt;Fahrzeit_min;Gesamt_h';
-  const rows=[];
-  data.forEach(b=>{const zr=b.zeit_rows||[];if(zr.length){zr.forEach(t=>{if(t.name)rows.push(['001',b.datum,b.projekt_nr,t.name,b.mitarbeiter_nr||'',t.von||'',t.bis||'',(t.nettoArbeit||'0').replace(',','.'),t.fahrt||'fahrer',t.fahrzeitMin||0,(t.gesamt||'0').replace(',','.')].join(';'));});}else{rows.push(['001',b.datum,b.projekt_nr,b.mitarbeiter_name,b.mitarbeiter_nr||'',b.von||'',b.bis||'',b.netto_arbeit_h||'0','fahrer',b.fahrzeit_min||0,b.netto_gesamt_h||'0'].join(';'));}});
-  dlFile('KLEI_Dataflor_'+new Date().toISOString().split('T')[0]+'.csv',[hdr,...rows].join('\n'),'text/csv;charset=utf-8');
-  toast('Dataflor CSV exportiert','ok');
+  const {xml,count,warn}=buildDFNKImportLohn(data,lohnart);
+  if(count===0){toast('Nichts exportierbar (siehe Hinweise)','err');alert('Keine exportierbaren Zeilen.\n\nProbleme:\n'+warn.slice(0,20).join('\n'));return;}
+  dlFile('DFNKImport_'+(von||'alle')+'_'+(bis||'')+'.xml',xml,'application/xml');
+  if(warn.length){
+    toast(count+' exportiert, '+warn.length+' uebersprungen','ok');
+    alert(count+' Datensaetze exportiert.\n\n'+warn.length+' Zeile(n) NICHT exportiert (meist Name != Stammdaten):\n\n'+warn.slice(0,20).join('\n')+(warn.length>20?'\n… und '+(warn.length-20)+' weitere':''));
+  } else {
+    toast(count+' Datensaetze exportiert','ok');
+  }
 }
 
 // ══════ PROJEKTLEITER ══════
@@ -1284,7 +1312,7 @@ async function saveAndSendWS(){
   const d={
     mitarbeiter_id:currentUser.id,mitarbeiter_name:currentUser.name,mitarbeiter_nr:currentUser.mitarbeiter_nr,
     datum:document.getElementById('ws-datum').value,projekt_id:projektId||null,projekt_nr:projekt?.nr||'',
-    rolle:'ws',wetter:document.getElementById('ws-wetter').value,taetigkeiten:getWSTaetigkeiten(),
+    rolle:'ws',wetter:'',taetigkeiten:getWSTaetigkeiten(),
     von:document.getElementById('ws-von').value,bis:document.getElementById('ws-bis').value,
     pause_min:parseInt(document.getElementById('ws-pause')?.value)||30,
     fahrzeit_min:0,fahrt_status:'fahrer',netto_arbeit_h:nettoVal,netto_gesamt_h:nettoVal,
@@ -1718,6 +1746,35 @@ function loadVAForm(r){
   clearFotos();setTimeout(refreshStepMAs,200);
 }
 
+// Vorlagen Variante A: bestehenden Bericht als Vorlage fuer einen NEUEN Bericht nutzen.
+// Uebernimmt nur das Grundgeruest (Projekt, Mitarbeiter/Zeiten, Arbeitsschritte).
+// Maengel, Lieferungen, Mengen, LV-Zeilen, Bemerkungen, Naechstes, Besucher, Fotos bleiben leer.
+function useAsTemplate(id){
+  const r=reports.find(x=>x.id===id);if(!r){toast('Bericht nicht gefunden','err');return;}
+  stopVoice();
+  // Reduzierte Vorlage zusammenstellen: nur Projekt + Zeiten + Schritte uebernehmen.
+  const vorlage={
+    datum:todayStr(),
+    projekt_id:r.projekt_id,
+    baustelle:r.baustelle,
+    bauherr:r.bauherr,
+    projektnr_intern:r.projektnr_intern,
+    bauleiter:r.bauleiter,
+    zeit_rows:r.zeit_rows||[],
+    mach_rows:r.mach_rows||[],
+    steps:r.steps||[],
+    zusatz_projekte:r.zusatz_projekte||[]
+    // bewusst NICHT: maengel, lieferungen, mengen, lv_rows, bemerkungen, naechstes, besucher, temperatur, nied_mm, fotos
+  };
+  loadVAForm(vorlage);
+  currentId=null; // wichtig: es entsteht ein NEUER Bericht, der alte wird nicht ueberschrieben
+  document.querySelectorAll('.ri').forEach(el=>el.classList.remove('act'));
+  const dEl=document.getElementById('v-datum');if(dEl)dEl.value=todayStr();
+  const st=document.getElementById('va-send-status');if(st){st.className='send-status';st.textContent='';}
+  showTab('bericht');
+  toast('Als Vorlage geladen - neuer Bericht','ok');
+}
+
 function renderARDetail(r){
   const fc={'fahrer':'var(--sky)','beifahrer':'var(--earth)','privat':'var(--m)'}[r.fahrt_status||'fahrer'];
   const fzMin=r.fahrzeit_min||0;const satz={'fahrer':1,'beifahrer':.5,'privat':0}[r.fahrt_status||'fahrer'];
@@ -1750,6 +1807,7 @@ function renderVADetail(r){
     '<div class="card-meta"><span class="g">'+fmtD(r.datum)+'</span><span>'+(r.bauleiter||'--')+'</span></div></div>'+
     '<div style="display:flex;gap:5px">'+
     '<button class="btn" style="font-size:11px;padding:5px 9px" ontouchstart="loadVAForm(reports.find(x=>x.id===\''+r.id+'\'));showTab(\'bericht\')" onclick="loadVAForm(reports.find(x=>x.id===\''+r.id+'\'));showTab(\'bericht\')">Bearb.</button>'+
+    '<button class="btn" style="font-size:11px;padding:5px 9px" ontouchstart="useAsTemplate(\''+r.id+'\')" onclick="useAsTemplate(\''+r.id+'\')">Vorlage</button>'+
     '<button class="btn btn-r" style="font-size:11px;padding:5px 9px" ontouchstart="delReport(\''+r.id+'\')" onclick="delReport(\''+r.id+'\')">&#x2715;</button>'+
     '</div></div></div>'+
     '<div class="srow">'+
@@ -1778,6 +1836,7 @@ function renderSB(){
       '<div class="ri-s">'+tagLbl+' - '+h.toFixed(1)+'h</div>'+
       '<div class="ri-tags">'+
       '<span class="tag-s '+tagCls+'">'+tagLbl+'</span>'+
+      (r.rolle==='va'?'<span class="tag-s" style="background:var(--earthg);color:var(--earth);cursor:pointer" ontouchstart="event.stopPropagation();event.preventDefault();useAsTemplate(\''+r.id+'\')" onclick="event.stopPropagation();useAsTemplate(\''+r.id+'\')">&#x2398; Vorlage</span>':'')+
       (r.pdf_url?'<span class="tag-s" style="background:rgba(61,143,168,.12);color:var(--sky)">Drive</span>':'')+
       (r.gesendet?'<span class="tag-s" style="background:rgba(61,143,168,.12);color:var(--sky)">&#x2713;</span>':'')+
       '</div></div>';
@@ -1822,6 +1881,25 @@ function katSelectHTML(id,onchange,selKat){
 function rowProjektOpts(kat,sel){
   const list=PROJEKTE.filter(p=>(p.kategorie||'bau')===kat);
   return'<option value="">-</option>'+list.map(p=>'<option value="'+p.id+'" '+(sel===p.id?'selected':'')+'>'+(p.nr||p.name.substring(0,14))+'</option>').join('');
+}
+// Live-Filter fuer die Projekt-Spalte: tippt man im Suchfeld, werden die Optionen
+// des zugehoerigen <select> neu aufgebaut (nur passende). Robust auf iPad/Safari,
+// weil Optionen neu gesetzt statt nur versteckt werden.
+function filterRowProj(inp){
+  const cell=inp.closest('td');if(!cell)return;
+  const sel=cell.querySelector('select.row-pr');if(!sel)return;
+  const kat=sel.getAttribute('data-kat')||'bau';
+  const q=inp.value.trim().toLowerCase();
+  const cur=sel.value;
+  const list=PROJEKTE.filter(p=>(p.kategorie||'bau')===kat).filter(p=>{
+    if(!q)return true;
+    const hay=((p.nr||'')+' '+(p.name||'')).toLowerCase();
+    return hay.includes(q);
+  });
+  let html='<option value="">-</option>'+list.map(p=>'<option value="'+p.id+'" '+(cur===p.id?'selected':'')+'>'+(p.nr||p.name.substring(0,14))+'</option>').join('');
+  // falls aktuelle Auswahl rausgefiltert wurde, trotzdem behalten, damit sie nicht verloren geht
+  if(cur&&!list.some(p=>p.id===cur)){const cp=PROJEKTE.find(p=>p.id===cur);if(cp)html+='<option value="'+cp.id+'" selected>'+(cp.nr||cp.name.substring(0,14))+'</option>';}
+  sel.innerHTML=html;
 }
 // Aktuell im VA-Hauptprojekt gewaehlte Kategorie
 function currentVAKat(){return document.getElementById('v-kat')?.value||'bau';}
@@ -1913,15 +1991,15 @@ function buildUI(){
       '<div class="panel" id="panel-details"><div id="detailContent"><div class="empty"><div class="ei">&#128203;</div><div class="et">Bericht waehlen</div></div></div></div>';
   }else{
     tabs.innerHTML=
-      '<div class="tab act" id="tab-bericht" ontouchstart="showTab(\'bericht\')" onclick="showTab(\'bericht\')">Bericht</div>'+
-      '<div class="tab" id="tab-zeit" ontouchstart="showTab(\'zeit\')" onclick="showTab(\'zeit\')">Zeiten</div>'+
+      '<div class="tab act" id="tab-zeit" ontouchstart="showTab(\'zeit\')" onclick="showTab(\'zeit\')">Zeiten</div>'+
+      '<div class="tab" id="tab-bericht" ontouchstart="showTab(\'bericht\')" onclick="showTab(\'bericht\')">Bericht</div>'+
       '<div class="tab" id="tab-material" ontouchstart="showTab(\'material\')" onclick="showTab(\'material\')">Material</div>'+
       '<div class="tab" id="tab-kalender" ontouchstart="showTab(\'kalender\')" onclick="showTab(\'kalender\')">Kalender</div>'+
       '<div class="tab" id="tab-details" ontouchstart="showTab(\'details\')" onclick="showTab(\'details\')">Details</div>'+
       '<div class="tab" id="tab-ue" ontouchstart="showTab(\'ue\')" onclick="showTab(\'ue\')">Uebersicht</div>';
     content.innerHTML=
-      '<div class="panel act" id="panel-bericht">'+buildVABericht()+'</div>'+
-      '<div class="panel" id="panel-zeit">'+buildVAZeit()+'</div>'+
+      '<div class="panel act" id="panel-zeit">'+buildVAZeit()+'</div>'+
+      '<div class="panel" id="panel-bericht">'+buildVABericht()+'</div>'+
       '<div class="panel" id="panel-material">'+buildVAMaterial()+'</div>'+
       '<div class="panel" id="panel-kalender"><div id="kalender-content"></div></div>'+
       '<div class="panel" id="panel-details"><div id="detailContent"><div class="empty"><div class="ei">&#128203;</div><div class="et">Bericht waehlen</div></div></div></div>'+
@@ -1937,8 +2015,7 @@ function buildWS(){
     '<div class="row"><div class="fg w50"><label>Datum</label><input type="date" id="ws-datum"></div>'+
     '<div class="fg w50"><label>Name</label><input type="text" id="ws-name" readonly style="color:var(--ws);background:var(--s3)"></div>'+
     '<div class="fg w50"><label>Bereich</label>'+katSelectHTML('ws-kat','onWSKatChange()','bau')+'</div>'+
-    '<div class="fg w50"><label>Projekt / Einsatzort</label><select id="ws-projekt">'+projektOptsByKat('bau','')+'</select></div>'+
-    '<div class="fg w50"><label>Wetter</label><select id="ws-wetter"><option>Sonnig</option><option>Bewoelkt</option><option>Regen</option><option>Frost</option></select></div></div></div>'+
+    '<div class="fg w50"><label>Projekt / Einsatzort</label><select id="ws-projekt">'+projektOptsByKat('bau','')+'</select></div></div></div>'+
     '<div class="qsec" style="border-color:rgba(139,92,246,.2)"><div class="qsec-t" style="color:var(--ws)">Taetigkeiten</div>'+
     '<div class="tags" id="ws-taetigkeiten-tags">'+taetigkeitenTags([],TAETIGKEITEN_WS)+'</div></div>'+
     '<div class="qsec" style="border-color:rgba(139,92,246,.2)"><div class="qsec-t" style="color:var(--ws)">Fahrzeug</div>'+
@@ -2216,7 +2293,7 @@ function addZeitRow(data={}){
     '<td><input class="zeit-fahrzeit" type="number" value="'+fzVal+'" min="0" style="width:60px;background:var(--s2);border:1px solid var(--b);border-radius:3px;padding:3px 6px;color:var(--earth);font-family:\'IBM Plex Mono\',monospace" oninput="calcZR(this)"></td>'+
     '<td><input class="zeit-anteil" type="text" readonly value="'+(data.fahrtAnteil||'')+'" style="width:48px;color:var(--earth);font-family:\'IBM Plex Mono\',monospace;font-weight:600"></td>'+
     '<td><input class="zeit-gesamt" type="text" readonly value="'+(data.gesamt||'')+'" style="width:56px;color:var(--gl);font-family:\'IBM Plex Mono\',monospace;font-weight:700;font-size:12px"></td>'+
-    '<td><select class="row-pr" style="font-size:9px;min-width:90px" onchange="onZeitProjektChange(this)">'+prOpts+'</select></td>'+
+    '<td><input class="projcell-filter" type="text" placeholder="suchen..." oninput="filterRowProj(this)"><select class="row-pr" data-kat="'+rowKat+'" style="font-size:9px;min-width:90px" onchange="onZeitProjektChange(this)">'+prOpts+'</select></td>'+
     '<td><select class="row-tae" style="font-size:9px;min-width:110px">'+taeOpts+'</select></td>'+
     '<td><button class="delbtn" ontouchstart="this.closest(\'tr\').remove();updZeitTotal();refreshStepMAs()" onclick="this.closest(\'tr\').remove();updZeitTotal();refreshStepMAs()">&#x2715;</button></td>';
   tbody.appendChild(tr);calcZR(tr.querySelector('.zeit-von'));setTimeout(refreshStepMAs,50);
@@ -2335,11 +2412,104 @@ function newReport(){
   setTimeout(()=>{addStep();addZeitRow();addLief();addMenge();addLVRow();},50);
   curWeather='Sonnig';document.querySelectorAll('.wc').forEach((c,i)=>c.classList.toggle('s',i===0));
   document.querySelectorAll('#va-taetigkeiten-tags .tg').forEach(t=>t.classList.remove('a'));
-  showTab('bericht');toast('Neuer Bericht','ok');
+  showTab('zeit');toast('Neuer Bericht','ok');
 }
 
-function expDFCSV(){const r=reports.find(x=>x.id===currentId);if(!r){toast('Kein Bericht','err');return;}const rows=r.zeit_rows||[];const hdr='Datum;Projekt;Name;Von;Bis;Arbeit_h;Fahrt;Fahrzeit_min;Gesamt_h';const lines=rows.filter(t=>t.name).map(t=>[r.datum,r.projekt_nr,t.name,t.von||'',t.bis||'',(t.nettoArbeit||'0').replace(',','.'),t.fahrt||'fahrer',t.fahrzeitMin||0,(t.gesamt||'0').replace(',','.')].join(';'));dlFile('Dataflor_'+r.datum+'.csv',[hdr,...lines].join('\n'),'text/csv');toast('CSV exportiert','ok');}
-function expDFXML(){const r=reports.find(x=>x.id===currentId);if(!r){toast('Kein Bericht','err');return;}const rows=r.zeit_rows||[];const x=(s)=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');const xml='<?xml version="1.0" encoding="UTF-8"?>\n<DataflorZeiterfassung>\n  <Datum>'+r.datum+'</Datum>\n  <Projekt>'+x(r.projekt_nr)+'</Projekt>\n  <Personal>\n'+rows.filter(t=>t.name).map(t=>'    <Eintrag><Name>'+x(t.name)+'</Name><Von>'+(t.von||'')+'</Von><Bis>'+(t.bis||'')+'</Bis><Arbeit>'+(t.nettoArbeit||'0').replace(',','.')+'</Arbeit><Gesamt>'+(t.gesamt||'0').replace(',','.')+'</Gesamt></Eintrag>').join('\n')+'\n  </Personal>\n</DataflorZeiterfassung>';dlFile('Dataflor_'+r.datum+'.xml',xml,'application/xml');toast('XML exportiert','ok');}
+// ===== DATAflor NK-Import (XML) – validiert gegen offizielles Schema DFNKImport.xsd =====
+// Quelle: github.com/dataflor-ag/NK-Import
+function _dfEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function _dfNum(v){return (parseFloat(String(v==null?'':v).replace(',','.'))||0);}
+function _dfCut(s,n){s=String(s==null?'':s);return s.length>n?s.substring(0,n):s;}
+// xs:time verlangt hh:mm:ss
+function _dfTime(t){if(!t)return '';const m=String(t).match(/^(\d{1,2}):(\d{2})/);if(!m)return '';return m[1].padStart(2,'0')+':'+m[2]+':00';}
+// Name -> Personalnummer aus MALISTE (Gross/Klein + Mehrfach-Leerzeichen normalisiert)
+function _dfNorm(s){return String(s==null?'':s).toLowerCase().replace(/\s+/g,' ').trim();}
+function _dfPersNr(name){
+  const key=_dfNorm(name);
+  const hit=MALISTE.find(m=>_dfNorm(m.name)===key);
+  return hit?String(hit.mitarbeiter_nr||''):'';
+}
+// Baut die XML + sammelt nicht zuordenbare Zeilen (warn).
+function buildDFNKImportLohn(berichte, lohnart){
+  let body='', count=0; const warn=[];
+  berichte.forEach(b=>{
+    const datum=b.datum||'';
+    const zr=Array.isArray(b.zeit_rows)?b.zeit_rows:[];
+    const mkRec=(persNr,lvNr,stunden,von,bis,pauseStd,bem,erf)=>{
+      let r='  <Lohn>\n';
+      r+='    <Kennung>KLEI-Tagesberichte</Kennung>\n';
+      r+='    <Datum>'+_dfEsc(datum)+'</Datum>\n';
+      r+='    <LVNr>'+_dfEsc(_dfCut(lvNr,16))+'</LVNr>\n';
+      if(bem) r+='    <Bemerkung>'+_dfEsc(_dfCut(bem,60))+'</Bemerkung>\n';
+      if(erf) r+='    <ErfasstVon>'+_dfEsc(_dfCut(erf,60))+'</ErfasstVon>\n';
+      r+='    <PersonalNr>'+_dfEsc(persNr)+'</PersonalNr>\n';
+      r+='    <Lohnart>'+parseInt(lohnart)+'</Lohnart>\n';
+      if(von && bis){r+='    <von>'+von+'</von>\n    <bis>'+bis+'</bis>\n    <Pause>'+pauseStd+'</Pause>\n';}
+      r+='    <Stunden>'+stunden+'</Stunden>\n  </Lohn>\n';
+      return r;
+    };
+    if(zr.length){
+      zr.forEach(t=>{
+        if(!t||!t.name)return;
+        const persNr=_dfPersNr(t.name);
+        const lvNr=t.projektNr||b.projekt_nr||'';
+        const stunden=_dfNum(t.gesamt!==undefined&&t.gesamt!==''?t.gesamt:t.nettoArbeit);
+        if(!persNr){warn.push((datum||'?')+': "'+t.name+'" – keine Personalnummer gefunden');return;}
+        if(!lvNr){warn.push((datum||'?')+': "'+t.name+'" – kein Projekt/LV');return;}
+        if(!(stunden>0)){warn.push((datum||'?')+': "'+t.name+'" – 0 Stunden');return;}
+        body+=mkRec(persNr,lvNr,stunden,_dfTime(t.von),_dfTime(t.bis),_dfNum(t.pause)/60,t.tae,b.mitarbeiter_name);
+        count++;
+      });
+    } else {
+      const persNr=_dfPersNr(b.mitarbeiter_name)||String(b.mitarbeiter_nr||'');
+      const lvNr=b.projekt_nr||'';
+      const stunden=_dfNum(b.netto_gesamt_h||b.netto_arbeit_h);
+      if(!persNr){warn.push((datum||'?')+': "'+(b.mitarbeiter_name||'?')+'" – keine Personalnummer');}
+      else if(!lvNr){warn.push((datum||'?')+': kein Projekt/LV');}
+      else if(stunden>0){body+=mkRec(persNr,lvNr,stunden,_dfTime(b.von),_dfTime(b.bis),_dfNum(b.pause_min)/60,'',b.mitarbeiter_name);count++;}
+    }
+  });
+  const xml='<?xml version="1.0" encoding="UTF-8"?>\n<DFNKImport>\n'+body+'</DFNKImport>\n';
+  return {xml,count,warn};
+}
+function _dfGetLohnart(){
+  const v=document.getElementById('df-lohnart')?.value;
+  const n=parseInt(v);
+  if(!v||isNaN(n)||n<=0){toast('Bitte Lohnart-Nr. eintragen','err');return null;}
+  return n;
+}
+function _dfShowStatus(count,warn){
+  const el=document.getElementById('df-status');if(!el)return;
+  let h='<div style="color:var(--g)">'+count+' Datensatz/Datensaetze exportiert.</div>';
+  if(warn.length){
+    h+='<div style="color:var(--r);margin-top:6px;font-weight:600">'+warn.length+' Zeile(n) NICHT exportiert:</div>';
+    h+='<ul style="margin:4px 0 0 16px;padding:0;color:var(--r)">'+warn.slice(0,12).map(w=>'<li>'+_dfEsc(w)+'</li>').join('')+'</ul>';
+    if(warn.length>12)h+='<div style="color:var(--r)">… und '+(warn.length-12)+' weitere</div>';
+    h+='<div style="color:var(--m);margin-top:4px">Tipp: Namen in der Zeiterfassung muessen exakt den Mitarbeiter-Stammdaten entsprechen.</div>';
+  }
+  el.innerHTML=h;
+}
+function expDFNKCurrent(){
+  const lohnart=_dfGetLohnart();if(lohnart===null)return;
+  const r=reports.find(x=>x.id===currentId);
+  if(!r){toast('Kein Bericht offen','err');return;}
+  const {xml,count,warn}=buildDFNKImportLohn([r],lohnart);
+  if(count===0){_dfShowStatus(0,warn);toast('Nichts zu exportieren','err');return;}
+  dlFile('DFNKImport_'+(r.datum||'bericht')+'.xml',xml,'application/xml');
+  _dfShowStatus(count,warn);toast('XML exportiert','ok');
+}
+function expDFNKRange(){
+  const lohnart=_dfGetLohnart();if(lohnart===null)return;
+  const von=document.getElementById('df-von')?.value;
+  const bis=document.getElementById('df-bis')?.value;
+  if(!von||!bis){toast('Bitte Zeitraum waehlen','err');return;}
+  const sel=reports.filter(r=>r.datum&&r.datum>=von&&r.datum<=bis);
+  if(!sel.length){toast('Keine Berichte im Zeitraum','err');return;}
+  const {xml,count,warn}=buildDFNKImportLohn(sel,lohnart);
+  if(count===0){_dfShowStatus(0,warn);toast('Nichts zu exportieren','err');return;}
+  dlFile('DFNKImport_'+von+'_bis_'+bis+'.xml',xml,'application/xml');
+  _dfShowStatus(count,warn);toast(count+' Datensaetze exportiert','ok');
+}
 
 function showTab(name){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));
