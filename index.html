@@ -261,6 +261,7 @@ select option{background:var(--s2);}
     <span class="admin-badge badge-admin">Admin</span>
     <span id="admin-user-name" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--m)"></span>
     <button class="theme-btn" style="margin-left:auto" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
+    <select id="role-switch-admin" class="hbtn" style="display:none" onchange="switchRole(this)"></select>
     <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
   </div>
   <div class="admin-tabs">
@@ -287,6 +288,7 @@ select option{background:var(--s2);}
     <span class="admin-badge badge-pl">Projektleiter</span>
     <span id="pl-user-name" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--m)"></span>
     <button class="theme-btn" style="margin-left:auto" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
+    <select id="role-switch-pl" class="hbtn" style="display:none" onchange="switchRole(this)"></select>
     <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
   </div>
   <div class="admin-tabs">
@@ -308,6 +310,7 @@ select option{background:var(--s2);}
   <span class="h-user" id="h-user-name"></span>
   <div class="h-right">
     <button class="theme-btn" id="theme-btn" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
+    <select id="role-switch-main" class="hbtn" style="display:none" onchange="switchRole(this)"></select>
     <button class="hbtn" id="profil-btn" ontouchstart="openProfil()" onclick="openProfil()">Profil</button>
     <button class="hbtn va-only" ontouchstart="openMo('mo-df')" onclick="openMo('mo-df')">Dataflor</button>
     <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
@@ -658,6 +661,42 @@ function checkErstLogin(){
   document.getElementById('mo-erst-login').style.display='flex';
 }
 
+// ══════ ROLLEN-UMSCHALTER ══════
+// Eine Person kann neben ihrer Hauptrolle (Spalte rolle) weitere freigegebene
+// Rollen haben (Spalte rollen, text[]). Umschalten im Header ohne neuen Login.
+const ROLLEN_LABELS={arbeiter:'Arbeiter',vorarbeiter:'Vorarbeiter',werkstatt:'Werkstatt',projektleiter:'Projektleiter',verwaltung:'Verwaltung',admin:'Admin'};
+function allowedRoles(){
+  if(!currentUser)return[];
+  const base=currentUser._baseRolle||currentUser.rolle;
+  const extra=Array.isArray(currentUser.rollen)?currentUser.rollen:[];
+  return[...new Set([base,...extra])].filter(r=>ROLLEN_LABELS[r]);
+}
+function updateRoleSwitchers(active){
+  const roles=allowedRoles();
+  ['role-switch-main','role-switch-admin','role-switch-pl'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    if(roles.length<2){el.style.display='none';return;}
+    el.style.display='';
+    el.innerHTML=roles.map(r=>'<option value="'+r+'" '+(r===active?'selected':'')+'>'+ROLLEN_LABELS[r]+'</option>').join('');
+  });
+}
+async function switchRole(sel){
+  const r=sel.value;
+  const cur=currentRole||currentUser?.rolle;
+  if(!currentUser||r===cur)return;
+  if(!allowedRoles().includes(r)){toast('Keine Freigabe fuer diese Rolle','err');sel.value=cur;return;}
+  if(!confirm('Zur Rolle "'+(ROLLEN_LABELS[r]||r)+'" wechseln? Nicht gespeicherte Eingaben gehen verloren.')){sel.value=cur;return;}
+  try{stopVAAutoSave();}catch(e){}
+  document.getElementById('admin-screen').style.display='none';
+  document.getElementById('pl-screen').style.display='none';
+  currentUser.rolle=r; // gilt nur fuer diese Sitzung, nicht in der Datenbank
+  if(r==='admin'){currentRole='admin';openAdmin();}
+  else if(r==='projektleiter'){currentRole='projektleiter';openPL();}
+  else{await initApp();}
+  updateRoleSwitchers(r);
+  toast('Rolle: '+(ROLLEN_LABELS[r]||r),'ok');
+}
+
 // ══════ LOGIN ══════
 async function doLogin(){
   const nr=document.getElementById('login-nr').value.trim();
@@ -671,12 +710,14 @@ async function doLogin(){
     const{data,error}=await sb.from('mitarbeiter').select('*').eq('mitarbeiter_nr',nr).eq('passwort_hash',pw).eq('aktiv',true).single();
     if(error||!data){errEl.textContent='Falsche Mitarbeiternummer oder Passwort';btn.innerHTML='Anmelden';btn.disabled=false;return;}
     currentUser=data;
+    currentUser._baseRolle=data.rolle;
     unterschriftData=data.unterschrift_data||null;
     document.getElementById('login-screen').style.display='none';
     await loadProjekte();
     if(data.rolle==='admin')openAdmin();
     else if(data.rolle==='projektleiter')openPL();
     else await initApp();
+    updateRoleSwitchers(data.rolle);
     setTimeout(()=>checkErstLogin(),400);
   }catch(e){errEl.textContent='Verbindungsfehler: '+e.message;btn.innerHTML='Anmelden';btn.disabled=false;}
 }
@@ -712,7 +753,7 @@ async function initApp(){
   b.textContent={arbeiter:'Arbeiter',vorarbeiter:'Vorarbeiter',werkstatt:'Werkstatt'}[currentRole]||currentRole;
   document.getElementById('h-user-name').textContent=currentUser.name+' #'+currentUser.mitarbeiter_nr;
   document.querySelectorAll('.va-only').forEach(el=>el.style.display=currentRole==='vorarbeiter'?'':'none');
-  if(currentRole==='werkstatt')document.getElementById('btn-new-bericht').className='btn-new ws';
+  document.getElementById('btn-new-bericht').className=currentRole==='werkstatt'?'btn-new ws':'btn-new';
   buildUI();renderSB();updateSBDate();
   if(reports.length)loadReport(reports[0].id);
   else if(currentRole==='arbeiter'||currentRole==='werkstatt')setTimeout(()=>initARForm(),200);
@@ -790,7 +831,7 @@ async function renderAdminMA(){
     '<div class="fg w50"><label>Name</label><input id="new-ma-name" placeholder="Max Mustermann"></div>'+
     '<div class="fg w25"><label>Kuerzel</label><input id="new-ma-kuerzel" placeholder="MM"></div></div>'+
     '<div class="row"><div class="fg w50"><label>Qualifikation</label><select id="new-ma-qual"><option>Facharbeiter GaLa</option><option>Helfer</option><option>Azubi</option><option>Subunternehmer</option><option>VA</option><option>Werkstatt</option></select></div>'+
-    '<div class="fg w50"><label>Rolle</label><select id="new-ma-rolle"><option value="arbeiter">Arbeiter</option><option value="vorarbeiter">Vorarbeiter</option><option value="werkstatt">Werkstatt</option><option value="projektleiter">Projektleiter</option><option value="admin">Admin</option></select></div></div>'+
+    '<div class="fg w50"><label>Rolle</label><select id="new-ma-rolle"><option value="arbeiter">Arbeiter</option><option value="vorarbeiter">Vorarbeiter</option><option value="werkstatt">Werkstatt</option><option value="projektleiter">Projektleiter</option><option value="verwaltung">Verwaltung</option><option value="admin">Admin</option></select></div></div>'+
     '<div class="row"><div class="fg w50"><label>Passwort</label><input id="new-ma-pw" placeholder="Initiales Passwort" type="text"></div></div>'+
     '<button class="btn btn-sky" ontouchstart="adminAddMA()" onclick="adminAddMA()">+ Mitarbeiter anlegen</button></div>'+
     '<div class="a-sec"><div class="a-sec-title">Alle Mitarbeiter (<span id="ma-count">...</span>)</div><div id="ma-list"><div class="empty"><div class="spin"></div></div></div></div>';
@@ -829,8 +870,15 @@ async function editMA(id){
     '<div class="row"><div class="fg w33"><label>Qualifikation</label><select id="edit-qual-'+id+'">'+
     ['Facharbeiter GaLa','Helfer','Azubi','Subunternehmer','VA','Werkstatt'].map(q=>'<option '+(data.qualifikation===q?'selected':'')+'>'+q+'</option>').join('')+'</select></div>'+
     '<div class="fg w33"><label>Rolle</label><select id="edit-rolle-'+id+'">'+
-    ['arbeiter','vorarbeiter','werkstatt','projektleiter','admin'].map(r=>'<option value="'+r+'" '+(data.rolle===r?'selected':'')+'>'+r+'</option>').join('')+'</select></div>'+
+    ['arbeiter','vorarbeiter','werkstatt','projektleiter','verwaltung','admin'].map(r=>'<option value="'+r+'" '+(data.rolle===r?'selected':'')+'>'+r+'</option>').join('')+'</select></div>'+
     '<div class="fg w33"><label>Neues Passwort</label><input id="edit-pw-'+id+'" placeholder="Leer = unveraendert" type="text"></div></div>'+
+    ('rollen' in data?
+      '<div class="row"><div class="fg" style="width:100%"><label>Zusaetzliche Rollen (Umschalter im Header)</label>'+
+      '<div style="display:flex;gap:12px;flex-wrap:wrap;padding:6px 0">'+
+      ['arbeiter','vorarbeiter','werkstatt','projektleiter','verwaltung','admin'].map(r=>
+        '<label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t);cursor:pointer"><input type="checkbox" class="edit-rollen-'+id+'" value="'+r+'" '+((Array.isArray(data.rollen)?data.rollen:[]).includes(r)?'checked':'')+'>'+(ROLLEN_LABELS[r]||r)+'</label>'
+      ).join('')+'</div></div></div>'
+      :'<div class="row"><div style="font-size:10px;color:var(--m);padding:4px 0">Zusatz-Rollen: erst das SQL-Update fuer die Spalte "rollen" ausfuehren.</div></div>')+
     '<div style="display:flex;gap:6px"><button class="btn btn-sky" ontouchstart="saveEditMA(\''+id+'\')" onclick="saveEditMA(\''+id+'\')">Speichern</button>'+
     '<button class="btn" ontouchstart="renderAdminMA()" onclick="renderAdminMA()">Abbrechen</button></div></div>';
 }
@@ -838,6 +886,8 @@ async function editMA(id){
 async function saveEditMA(id){
   const updates={mitarbeiter_nr:document.getElementById('edit-nr-'+id).value.trim(),name:document.getElementById('edit-name-'+id).value.trim(),kuerzel:document.getElementById('edit-kuerzel-'+id).value.trim(),qualifikation:document.getElementById('edit-qual-'+id).value,rolle:document.getElementById('edit-rolle-'+id).value};
   const pw=document.getElementById('edit-pw-'+id).value.trim();if(pw)updates.passwort_hash=pw;
+  const cbs=[...document.querySelectorAll('.edit-rollen-'+id+':checked')];
+  if(document.querySelector('.edit-rollen-'+id))updates.rollen=cbs.map(c=>c.value);
   const{error}=await sb.from('mitarbeiter').update(updates).eq('id',id);
   if(error){toast('Fehler: '+error.message,'err');return;}
   toast('Gespeichert','ok');renderAdminMA();
