@@ -386,6 +386,14 @@ select option{background:var(--s2);}
   </div>
 </div>
 
+<div id="mo-ma-detail" style="position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:520;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;">
+  <div style="background:var(--s1);border:1px solid var(--b);border-radius:8px;padding:18px;width:min(460px,94vw);max-height:85vh;display:flex;flex-direction:column">
+    <button onclick="closeMo('mo-ma-detail')" style="float:right;background:none;border:none;color:var(--m);font-size:18px;cursor:pointer;align-self:flex-end">&#x2715;</button>
+    <div id="ma-det-title" style="font-weight:700;font-size:14px;color:var(--c);margin-bottom:10px"></div>
+    <div id="ma-det-body" style="overflow:auto"></div>
+  </div>
+</div>
+
 <div id="mo-draft" style="position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:680;display:none;align-items:center;justify-content:center;padding:16px;">
   <div style="background:var(--s1);border:2px solid var(--gd);border-radius:8px;padding:22px;width:min(440px,95vw)">
     <div style="font-weight:700;font-size:16px;color:var(--c);margin-bottom:6px">Entwurf gefunden</div>
@@ -1116,8 +1124,8 @@ function buildPDFName(data){
 async function renderAdminExp(){
   const el=document.getElementById('apanel-exp');
   el.innerHTML='<div class="a-sec"><div class="a-sec-title">Buchhaltungs-Export</div>'+
-    '<div class="row"><div class="fg w50"><label>Von</label><input type="date" id="exp-von"></div>'+
-    '<div class="fg w50"><label>Bis</label><input type="date" id="exp-bis"></div></div>'+
+    '<div class="row"><div class="fg w50"><label>Von</label><input type="date" id="exp-von" onchange="loadExpStats()"></div>'+
+    '<div class="fg w50"><label>Bis</label><input type="date" id="exp-bis" onchange="loadExpStats()"></div></div>'+
     '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
     '<button class="btn btn-sky" ontouchstart="expBuchhaltungCSV()" onclick="expBuchhaltungCSV()">CSV Buchhaltung</button>'+
     '<button class="btn btn-e" ontouchstart="expDFCSVAdmin()" onclick="expDFCSVAdmin()">Dataflor XML</button></div></div>'+
@@ -1125,21 +1133,65 @@ async function renderAdminExp(){
   loadExpStats();
 }
 
+// Pro-Person-Statistik: aggregiert aus zeit_rows (jede Person einzeln),
+// Fallback auf Berichtsebene fuer Berichte ohne zeit_rows (AR/WS).
+let EXPSTAT_LIST=[];
 async function loadExpStats(){
-  const{data}=await sb.from('berichte').select('mitarbeiter_name,mitarbeiter_nr,netto_gesamt_h,netto_arbeit_h,datum,rolle').order('datum',{ascending:false}).limit(500);
-  if(!data){document.getElementById('exp-stats').innerHTML='<div style="color:var(--m);font-size:10px;padding:8px">Keine Daten</div>';return;}
+  if(!MALISTE.length){await loadMitarbeiterListe();}
+  const von=document.getElementById('exp-von')?.value,bis=document.getElementById('exp-bis')?.value;
+  let q=sb.from('berichte').select('mitarbeiter_name,mitarbeiter_nr,netto_gesamt_h,netto_arbeit_h,datum,rolle,projekt_nr,zeit_rows').order('datum',{ascending:false}).limit(2000);
+  if(von)q=q.gte('datum',von);if(bis)q=q.lte('datum',bis);
+  const{data}=await q;
+  if(!data?.length){document.getElementById('exp-stats').innerHTML='<div style="color:var(--m);font-size:10px;padding:8px">Keine Daten</div>';return;}
   const totalH=data.reduce((s,b)=>s+(parseFloat(b.netto_gesamt_h||b.netto_arbeit_h||0)),0);
-  const maMap={};
-  data.forEach(b=>{const key=b.mitarbeiter_name+(b.mitarbeiter_nr?' #'+b.mitarbeiter_nr:'');if(!maMap[key])maMap[key]=0;maMap[key]+=(parseFloat(b.netto_gesamt_h||b.netto_arbeit_h||0));});
+  const pNum=v=>(parseFloat(String(v==null?'':v).replace(',','.'))||0);
+  const agg={}; // key: normalisierter Name -> {label, total, entries[]}
+  const add=(name,datum,projekt,stunden,vonT,bisT)=>{
+    if(!name||!(stunden>0))return;
+    const key=_dfNorm(name);
+    if(!agg[key]){
+      const ma=MALISTE.find(m=>_dfNorm(m.name)===key);
+      agg[key]={label:(ma?ma.name+' #'+ma.mitarbeiter_nr:name),total:0,entries:[]};
+    }
+    agg[key].total+=stunden;
+    agg[key].entries.push({datum:datum||'',projekt:projekt||'',stunden,von:vonT||'',bis:bisT||''});
+  };
+  data.forEach(b=>{
+    const zr=Array.isArray(b.zeit_rows)?b.zeit_rows:[];
+    if(zr.length){
+      zr.forEach(t=>{if(!t||!t.name)return;add(t.name,b.datum,t.projektNr||b.projekt_nr,pNum(t.gesamt!==undefined&&t.gesamt!==''?t.gesamt:t.nettoArbeit),t.von,t.bis);});
+    } else {
+      add(b.mitarbeiter_name,b.datum,b.projekt_nr,pNum(b.netto_gesamt_h||b.netto_arbeit_h),b.von,b.bis);
+    }
+  });
+  EXPSTAT_LIST=Object.values(agg).sort((a,b)=>b.total-a.total);
+  EXPSTAT_LIST.forEach(p=>p.entries.sort((a,b)=>(b.datum||'').localeCompare(a.datum||'')));
   document.getElementById('exp-stats').innerHTML=
-    '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px">'+
+    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">'+
     '<div class="sc"><div class="sv">'+data.length+'</div><div class="sl">Berichte</div></div>'+
-    '<div class="sc"><div class="sv">'+totalH.toFixed(0)+'h</div><div class="sl">Stunden</div></div></div>'+
-    Object.entries(maMap).sort((a,b)=>b[1]-a[1]).map(([name,h])=>
-      '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--b)">'+
-      '<span style="font-size:12px;color:var(--c)">'+name+'</span>'+
-      '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:var(--gl)">'+h.toFixed(1)+'h</span></div>'
+    '<div class="sc"><div class="sv">'+totalH.toFixed(0)+'h</div><div class="sl">Stunden</div></div>'+
+    '<div class="sc"><div class="sv">'+EXPSTAT_LIST.length+'</div><div class="sl">Personen</div></div></div>'+
+    '<div style="font-size:10px;color:var(--m);margin-bottom:6px">Stunden je Person (aus den Zeit-Zeilen der Berichte). Antippen fuer Einzelbuchungen.</div>'+
+    EXPSTAT_LIST.map((p,i)=>
+      '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 4px;border-bottom:1px solid var(--b);cursor:pointer" ontouchstart="showMADetail('+i+')" onclick="showMADetail('+i+')">'+
+      '<span style="font-size:12px;color:var(--c)">'+_dfEsc(p.label)+'</span>'+
+      '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:var(--gl)">'+p.total.toFixed(1)+'h <span style="color:var(--m)">&#x203A;</span></span></div>'
     ).join('');
+}
+function showMADetail(i){
+  const p=EXPSTAT_LIST[i];if(!p)return;
+  document.getElementById('ma-det-title').textContent=p.label+' - '+p.total.toFixed(1)+'h';
+  const max=60;
+  document.getElementById('ma-det-body').innerHTML=
+    '<table class="tbl"><thead><tr><th>Datum</th><th>Projekt</th><th>Von-Bis</th><th style="text-align:right">Std</th></tr></thead><tbody>'+
+    p.entries.slice(0,max).map(e=>
+      '<tr><td>'+(e.datum?e.datum.split('-').reverse().join('.'):'')+'</td>'+
+      '<td>'+_dfEsc(e.projekt)+'</td>'+
+      '<td>'+(e.von&&e.bis?e.von+'-'+e.bis:'')+'</td>'+
+      '<td style="text-align:right;font-family:\'IBM Plex Mono\',monospace">'+e.stunden.toFixed(2)+'</td></tr>'
+    ).join('')+'</tbody></table>'+
+    (p.entries.length>max?'<div style="font-size:10px;color:var(--m);margin-top:6px">… und '+(p.entries.length-max)+' weitere (Zeitraum eingrenzen)</div>':'');
+  openMo('mo-ma-detail');
 }
 
 async function expBuchhaltungCSV(){
@@ -2524,3 +2576,4 @@ function showTab(name){
 </script>
 </body>
 </html>
+
