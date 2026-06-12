@@ -695,7 +695,7 @@ function doLogout(){
 
 async function loadProjekte(){const{data}=await sb.from('projekte').select('*').eq('aktiv',true).order('nr');if(data)PROJEKTE=data;}
 async function loadFahrzeuge(){const{data}=await sb.from('fahrzeuge').select('*').eq('aktiv',true).order('kennzeichen');if(data)FAHRZEUGE=data;}
-async function loadMitarbeiterListe(){const{data}=await sb.from('mitarbeiter').select('id,name,mitarbeiter_nr,aktiv');if(data)MALISTE=data;}
+async function loadMitarbeiterListe(){const{data}=await sb.from('mitarbeiter').select('id,name,mitarbeiter_nr,qualifikation,aktiv');if(data)MALISTE=data;}
 
 async function loadReports(){
   let q=sb.from('berichte').select('*').order('datum',{ascending:false}).order('erstellt_am',{ascending:false});
@@ -1148,9 +1148,9 @@ async function loadExpStats(){
   const agg={}; // key: normalisierter Name -> {label, total, entries[]}
   const add=(name,datum,projekt,stunden,vonT,bisT)=>{
     if(!name||!(stunden>0))return;
-    const key=_dfNorm(name);
+    const ma=_dfFindMA(name);
+    const key=ma?('id:'+ma.id):_dfNorm(name);
     if(!agg[key]){
-      const ma=MALISTE.find(m=>_dfNorm(m.name)===key);
       agg[key]={label:(ma?ma.name+' #'+ma.mitarbeiter_nr:name),total:0,entries:[]};
     }
     agg[key].total+=stunden;
@@ -1953,6 +1953,40 @@ function filterRowProj(inp){
   if(cur&&!list.some(p=>p.id===cur)){const cp=PROJEKTE.find(p=>p.id===cur);if(cp)html+='<option value="'+cp.id+'" selected>'+(cp.nr||cp.name.substring(0,14))+'</option>';}
   sel.innerHTML=html;
 }
+// Mitarbeiter-Auswahl fuer die Zeiten-Zeile: Optionen aus den Stammdaten (MALISTE),
+// Anzeige mit Personalnummer. Ein bereits gesetzter Name (z.B. aus altem Bericht
+// oder von inaktivem Mitarbeiter) bleibt als Option erhalten.
+function maRowOpts(sel){
+  const list=MALISTE.filter(m=>m.aktiv!==false&&m.name);
+  let html='<option value="">- Name -</option>'+list.map(m=>'<option value="'+_dfEsc(m.name)+'" '+(sel===m.name?'selected':'')+'>'+_dfEsc(m.name)+(m.mitarbeiter_nr?' #'+m.mitarbeiter_nr:'')+'</option>').join('');
+  if(sel&&!list.some(m=>m.name===sel))html+='<option value="'+_dfEsc(sel)+'" selected>'+_dfEsc(sel)+'</option>';
+  return html;
+}
+// Live-Filter fuer die Mitarbeiter-Spalte (gleiche Bedienung wie Projektsuche):
+// tippt man Buchstaben oder die Personalnummer, bleiben nur passende Mitarbeiter.
+function filterRowMA(inp){
+  const cell=inp.closest('td');if(!cell)return;
+  const sel=cell.querySelector('select.zeit-name');if(!sel)return;
+  const q=inp.value.trim().toLowerCase();
+  const cur=sel.value;
+  const list=MALISTE.filter(m=>m.aktiv!==false&&m.name).filter(m=>{
+    if(!q)return true;
+    return ((m.name||'')+' '+(m.mitarbeiter_nr||'')).toLowerCase().includes(q);
+  });
+  let html='<option value="">- Name -</option>'+list.map(m=>'<option value="'+_dfEsc(m.name)+'" '+(cur===m.name?'selected':'')+'>'+_dfEsc(m.name)+(m.mitarbeiter_nr?' #'+m.mitarbeiter_nr:'')+'</option>').join('');
+  if(cur&&!list.some(m=>m.name===cur))html+='<option value="'+_dfEsc(cur)+'" selected>'+_dfEsc(cur)+'</option>';
+  sel.innerHTML=html;
+}
+// Bei Auswahl eines Mitarbeiters: Qualifikation aus den Stammdaten vorbelegen
+// (nur wenn dort eine der bekannten Stufen hinterlegt ist) und Arbeitsschritte aktualisieren.
+function onZeitNameChange(sel){
+  const ma=MALISTE.find(m=>m.name===sel.value);
+  if(ma&&ma.qualifikation&&['VA','Facharbeiter','Helfer','Azubi','Sub'].includes(ma.qualifikation)){
+    const tr=sel.closest('tr');const q=tr?tr.querySelector('.zeit-qual'):null;
+    if(q)q.value=ma.qualifikation;
+  }
+  refreshStepMAs();
+}
 // Aktuell im VA-Hauptprojekt gewaehlte Kategorie
 function currentVAKat(){return document.getElementById('v-kat')?.value||'bau';}
 function taetigkeitenTags(sel,liste){const list=liste||TAETIGKEITEN;return list.map(t=>'<div class="tg'+((sel||[]).includes(t)?' a':'')+'" ontouchstart="event.preventDefault();togTg(this)" onclick="togTg(this)">'+t+'</div>').join('');}
@@ -2331,7 +2365,7 @@ function addZeitRow(data={}){
   const prOpts=rowProjektOpts(rowKat,autoProjId);
   const taeOpts='<option value="">-</option>'+TAETIGKEITEN.map(t=>'<option value="'+t+'" '+(data.tae===t?'selected':'')+'>'+t+'</option>').join('');
   tr.innerHTML=
-    '<td><input class="zeit-name" type="text" value="'+(data.name||'')+'" placeholder="Name" style="min-width:80px" oninput="refreshStepMAs()"></td>'+
+    '<td><input class="projcell-filter" type="text" placeholder="suchen..." oninput="filterRowMA(this)"><select class="zeit-name" style="font-size:10px;min-width:100px" onchange="onZeitNameChange(this)">'+maRowOpts(data.name||'')+'</select></td>'+
     '<td><select class="zeit-qual" style="font-size:10px">'+['VA','Facharbeiter','Helfer','Azubi','Sub'].map(q=>'<option'+(data.qual===q?' selected':'')+'>'+q+'</option>').join('')+'</select></td>'+
     '<td><input class="zeit-von" type="time" value="'+(data.von||'07:00')+'" style="width:76px" oninput="calcZR(this)"></td>'+
     '<td><input class="zeit-bis" type="time" value="'+(data.bis||'16:00')+'" style="width:76px" oninput="calcZR(this)"></td>'+
@@ -2476,9 +2510,17 @@ function _dfCut(s,n){s=String(s==null?'':s);return s.length>n?s.substring(0,n):s
 function _dfTime(t){if(!t)return '';const m=String(t).match(/^(\d{1,2}):(\d{2})/);if(!m)return '';return m[1].padStart(2,'0')+':'+m[2]+':00';}
 // Name -> Personalnummer aus MALISTE (Gross/Klein + Mehrfach-Leerzeichen normalisiert)
 function _dfNorm(s){return String(s==null?'':s).toLowerCase().replace(/\s+/g,' ').trim();}
+// Name -> Mitarbeiter aus MALISTE: erst exakter Treffer, sonst eindeutiger Nachname
+// (so finden auch alte Berichte mit Kurz-Namen wie "Tye" den Eintrag "Tye, Cedric").
+function _dfFindMA(name){
+  const key=_dfNorm(name);if(!key)return null;
+  let hit=MALISTE.find(m=>_dfNorm(m.name)===key);
+  if(hit)return hit;
+  const hits=MALISTE.filter(m=>_dfNorm(m.name).split(',')[0].trim()===key);
+  return hits.length===1?hits[0]:null;
+}
 function _dfPersNr(name){
-  const key=_dfNorm(name);
-  const hit=MALISTE.find(m=>_dfNorm(m.name)===key);
+  const hit=_dfFindMA(name);
   return hit?String(hit.mitarbeiter_nr||''):'';
 }
 // Baut die XML + sammelt nicht zuordenbare Zeilen (warn).
@@ -2576,4 +2618,3 @@ function showTab(name){
 </script>
 </body>
 </html>
-
