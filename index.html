@@ -271,10 +271,12 @@ select option{background:var(--s2);}
     <span class="admin-badge badge-admin">Admin</span>
     <span id="admin-user-name" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--m)"></span>
     <button class="theme-btn" style="margin-left:auto" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
+    <button class="hbtn" ontouchstart="openProfil()" onclick="openProfil()">Profil</button>
     <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
   </div>
   <div class="admin-tabs">
-    <div class="admin-tab act" id="atab-ma" ontouchstart="showAdminTab('ma')" onclick="showAdminTab('ma')">Mitarbeiter</div>
+    <div class="admin-tab act" id="atab-frei" ontouchstart="showAdminTab('frei')" onclick="showAdminTab('frei')">Freigabe</div>
+    <div class="admin-tab" id="atab-ma" ontouchstart="showAdminTab('ma')" onclick="showAdminTab('ma')">Mitarbeiter</div>
     <div class="admin-tab" id="atab-proj" ontouchstart="showAdminTab('proj')" onclick="showAdminTab('proj')">Projekte</div>
     <div class="admin-tab" id="atab-fz" ontouchstart="showAdminTab('fz')" onclick="showAdminTab('fz')">Fahrzeuge</div>
     <div class="admin-tab" id="atab-email" ontouchstart="showAdminTab('email')" onclick="showAdminTab('email')">E-Mail</div>
@@ -282,7 +284,8 @@ select option{background:var(--s2);}
     <div class="admin-tab" id="atab-exp" ontouchstart="showAdminTab('exp')" onclick="showAdminTab('exp')">Export</div>
   </div>
   <div class="admin-content">
-    <div class="admin-panel act" id="apanel-ma"></div>
+    <div class="admin-panel act" id="apanel-frei"></div>
+    <div class="admin-panel" id="apanel-ma"></div>
     <div class="admin-panel" id="apanel-proj"></div>
     <div class="admin-panel" id="apanel-fz"></div>
     <div class="admin-panel" id="apanel-email"></div>
@@ -662,6 +665,7 @@ async function doLogin(){
     document.getElementById('login-screen').style.display='none';
     await loadProjekte();
     if(data.rolle==='admin')openAdmin();
+    else if(data.rolle==='verwaltung')openAdmin();
     else if(data.rolle==='projektleiter')openPL();
     else await initApp();
     setTimeout(()=>checkErstLogin(),400);
@@ -761,13 +765,114 @@ async function clearSig(){
 }
 
 // ══════ ADMIN ══════
-function openAdmin(){document.getElementById('admin-screen').style.display='flex';document.getElementById('admin-user-name').textContent=currentUser.name;showAdminTab('ma');}
+function openAdmin(){
+  document.getElementById('admin-screen').style.display='flex';
+  document.getElementById('admin-user-name').textContent=currentUser.name;
+  // Buchhaltung (verwaltung) sieht NUR den Freigabe-Tab; Admin sieht alles.
+  const nurBuchhaltung=(currentUser.rolle==='verwaltung');
+  const badge=document.querySelector('#admin-screen .admin-badge');
+  if(badge)badge.textContent=nurBuchhaltung?'Buchhaltung':'Admin';
+  ['ma','proj','fz','email','ber','exp'].forEach(t=>{
+    const el=document.getElementById('atab-'+t);if(el)el.style.display=nurBuchhaltung?'none':'';
+  });
+  showAdminTab('frei');
+}
 function showAdminTab(name){
   document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('act'));
   document.querySelectorAll('#admin-screen .admin-panel').forEach(p=>p.classList.remove('act'));
   document.getElementById('atab-'+name).classList.add('act');document.getElementById('apanel-'+name).classList.add('act');
+  if(name==='frei')renderAdminFreigabe();
   if(name==='ma')renderAdminMA();if(name==='proj')renderAdminProj();if(name==='fz')renderAdminFZ();
   if(name==='email')renderAdminEmail();if(name==='ber')renderAdminBer();if(name==='exp')renderAdminExp();
+}
+
+// ══════ BUCHHALTUNGS-FREIGABE (finale Instanz) ══════
+function renderAdminFreigabe(){
+  const el=document.getElementById('apanel-frei');
+  const heute=todayStr();
+  const vor30=new Date(Date.now()-30*864e5).toISOString().split('T')[0];
+  el.innerHTML='<div class="a-sec"><div class="a-sec-title">Berichte freigeben (Buchhaltung)</div>'+
+    '<div style="font-size:11px;color:var(--m);line-height:1.6;margin-bottom:10px">Hier gibt die Buchhaltung Berichte final frei. Erst freigegebene Berichte koennen nach DATAflor exportiert werden. Die Bauleiter-Abnahme ist optional und wird separat angezeigt.</div>'+
+    (unterschriftData?'<div style="font-size:10px;color:var(--g);margin-bottom:8px">Freigabe-Unterschrift hinterlegt &#x2713; <button class="btn" style="font-size:10px;padding:3px 8px;margin-left:6px" ontouchstart="openProfil()" onclick="openProfil()">aendern</button></div>':'<div style="font-size:11px;color:var(--r);margin-bottom:8px">Noch keine Unterschrift hinterlegt. <button class="btn btn-p" style="font-size:10px;padding:3px 8px" ontouchstart="openProfil()" onclick="openProfil()">Jetzt zeichnen</button></div>')+
+    '<div class="row"><div class="fg w33"><label>Von</label><input type="date" id="frei-von" value="'+vor30+'"></div>'+
+    '<div class="fg w33"><label>Bis</label><input type="date" id="frei-bis" value="'+heute+'"></div>'+
+    '<div class="fg w33"><label>Status</label><select id="frei-status"><option value="offen">Noch nicht freigegeben</option><option value="frei">Freigegeben</option><option value="">Alle</option></select></div></div>'+
+    '<button class="btn btn-sky" ontouchstart="ladeFreigabe()" onclick="ladeFreigabe()">Suchen</button></div>'+
+    '<div id="frei-list"><div style="color:var(--m);font-size:10px;padding:8px">Filter anwenden</div></div>';
+  ladeFreigabe();
+}
+
+async function ladeFreigabe(){
+  const von=document.getElementById('frei-von')?.value,bis=document.getElementById('frei-bis')?.value;
+  const status=document.getElementById('frei-status')?.value;
+  let q=sb.from('berichte').select('*').order('datum',{ascending:false}).limit(300);
+  if(von)q=q.gte('datum',von);if(bis)q=q.lte('datum',bis);
+  if(status==='offen')q=q.eq('bh_freigegeben',false);
+  if(status==='frei')q=q.eq('bh_freigegeben',true);
+  const{data}=await q;
+  const el=document.getElementById('frei-list');if(!el)return;
+  if(!data?.length){el.innerHTML='<div style="color:var(--m);font-size:11px;padding:12px">Keine Berichte</div>';return;}
+  el.innerHTML='<div class="a-sec"><div class="a-sec-title">'+data.length+' Bericht(e)</div>'+data.map(b=>{
+    const bl=b.abgenommen;const bh=b.bh_freigegeben;
+    const pLabel=getProjektLabel(b.projekt_id||b.projekt_nr||'');
+    return '<div style="background:var(--s3);border:1px solid '+(bh?'var(--gd)':'var(--b)')+';border-radius:var(--rad);padding:10px;margin-bottom:6px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">'+
+      '<div style="flex:1;min-width:140px">'+
+      '<div style="font-size:12px;font-weight:600;color:var(--c)">'+pLabel+'</div>'+
+      '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--g)">'+fmtD(b.datum)+' · '+b.mitarbeiter_name+' · '+(b.netto_gesamt_h||b.netto_arbeit_h||'--')+'h · '+(b.rolle==='va'?'VA':b.rolle==='ws'?'WS':'AR')+'</div>'+
+      '<div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap">'+
+      '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;padding:2px 7px;border-radius:8px;'+(bl?'background:var(--earthg);color:var(--earth)':'background:var(--s2);color:var(--m)')+'">'+(bl?'BL abgenommen ✓ ('+(b.abgenommen_von||'')+')':'BL offen')+'</span>'+
+      '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;padding:2px 7px;border-radius:8px;'+(bh?'background:var(--gg);color:var(--gl)':'background:var(--rg);color:var(--r)')+'">'+(bh?'BH freigegeben ✓ ('+(b.bh_freigegeben_von||'')+')':'BH offen')+'</span>'+
+      '</div></div>'+
+      '<div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end">'+
+      '<button class="btn" style="font-size:10px;padding:5px 9px" ontouchstart="freigabeAnsehen(\''+b.id+'\')" onclick="freigabeAnsehen(\''+b.id+'\')">Ansehen (PDF)</button>'+
+      (bh?
+        '<button class="btn btn-r" style="font-size:10px;padding:5px 9px" ontouchstart="freigabeZurueck(\''+b.id+'\')" onclick="freigabeZurueck(\''+b.id+'\')">Freigabe zurueck</button>':
+        '<button class="btn btn-p" style="font-size:10px;padding:5px 9px" ontouchstart="freigabeErteilen(\''+b.id+'\')" onclick="freigabeErteilen(\''+b.id+'\')">Freigeben &#x2713;</button>'
+      )+
+      '</div></div></div>';
+  }).join('')+'</div>';
+}
+
+// Bericht als PDF ansehen (mit aktuellem Unterschriften-Stand)
+async function freigabeAnsehen(id){
+  const{data}=await sb.from('berichte').select('*').eq('id',id).single();if(!data)return;
+  toast('PDF wird erstellt...','info');
+  try{
+    const{data:ma}=await sb.from('mitarbeiter').select('unterschrift_data').eq('id',data.mitarbeiter_id).single();
+    const sigBackup=unterschriftData;
+    if(ma?.unterschrift_data)unterschriftData=ma.unterschrift_data;
+    const reportForPDF={...data,role:data.rolle,name:data.mitarbeiter_name,projektNr:data.projekt_nr,zeitRows:data.zeit_rows,machRows:data.mach_rows,zusatzProjekte:data.zusatz_projekte};
+    const doc=await generatePDF(reportForPDF);
+    doc.save(buildPDFName(data));
+    unterschriftData=sigBackup;
+    toast('PDF erstellt','ok');
+  }catch(e){toast('Fehler: '+e.message,'err');}
+}
+
+// Finale Buchhaltungs-Freigabe: zentrale Unterschrift speichern, neues PDF erzeugen + senden
+async function freigabeErteilen(id){
+  if(!unterschriftData){toast('Bitte zuerst Ihre Unterschrift im Profil zeichnen','err');openProfil();return;}
+  if(!confirm('Diesen Bericht final fuer die Buchhaltung freigeben?'))return;
+  const{data}=await sb.from('berichte').select('*').eq('id',id).single();if(!data)return;
+  const upd={bh_freigegeben:true,bh_freigegeben_von:currentUser.name,bh_freigegeben_am:new Date().toISOString()};
+  const{error}=await sb.from('berichte').update(upd).eq('id',id);
+  if(error){toast('Fehler: '+error.message,'err');return;}
+  toast('Freigegeben ✓ — PDF wird erzeugt...','ok');
+  // Neues PDF mit zentraler Buchhaltungs-Unterschrift erzeugen und senden
+  try{
+    const merged={...data,...upd};
+    const reportForPDF={...merged,role:merged.rolle,name:merged.mitarbeiter_name,projektNr:merged.projekt_nr,zeitRows:merged.zeit_rows,machRows:merged.mach_rows,zusatzProjekte:merged.zusatz_projekte};
+    const pdfUrl=await sendPDFMail(reportForPDF,null);
+    if(pdfUrl)await sb.from('berichte').update({pdf_url:pdfUrl}).eq('id',id);
+  }catch(e){toast('PDF/Mail-Fehler: '+e.message,'err');}
+  ladeFreigabe();
+}
+
+async function freigabeZurueck(id){
+  if(!confirm('Freigabe wirklich zuruecknehmen?'))return;
+  await sb.from('berichte').update({bh_freigegeben:false,bh_freigegeben_von:null,bh_freigegeben_am:null}).eq('id',id);
+  toast('Freigabe zurueckgenommen','info');ladeFreigabe();
 }
 
 async function renderAdminMA(){
