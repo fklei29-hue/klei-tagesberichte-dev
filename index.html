@@ -290,6 +290,7 @@ select option{background:var(--s2);}
     <span class="admin-badge badge-pl">Projektleiter</span>
     <span id="pl-user-name" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--m)"></span>
     <button class="theme-btn" style="margin-left:auto" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
+    <button class="hbtn" ontouchstart="openProfil()" onclick="openProfil()">Profil</button>
     <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
   </div>
   <div class="admin-tabs">
@@ -330,7 +331,7 @@ select option{background:var(--s2);}
   </main>
 </div>
 
-<div id="mo-profil" style="position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:600;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;">
+<div id="mo-profil" style="position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:10010;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;">
   <div style="background:var(--s1);border:1px solid var(--b);border-radius:8px;padding:20px;width:min(380px,94vw);max-height:85vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
       <div style="font-weight:700;font-size:15px;color:var(--c)">Mein Profil</div>
@@ -340,7 +341,7 @@ select option{background:var(--s2);}
   </div>
 </div>
 
-<div id="mo-datenschutz" style="position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:650;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;">
+<div id="mo-datenschutz" style="position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:10011;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;">
   <div style="background:var(--s1);border:1px solid var(--b);border-radius:8px;padding:20px;width:min(560px,95vw);max-height:90vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
       <div style="font-weight:700;font-size:15px;color:var(--c)">Datenschutz &amp; Information</div>
@@ -777,51 +778,93 @@ function showAdminTab(name){
 }
 
 // ══════ BUCHHALTUNGS-FREIGABE (finale Instanz) ══════
+let freiAnsicht='liste'; // 'liste' | 'projekt'
+let freiLimit=10;
 function renderAdminFreigabe(){
   const el=document.getElementById('apanel-frei');
-  const heute=todayStr();
-  const vor30=new Date(Date.now()-30*864e5).toISOString().split('T')[0];
+  const projOpts='<option value="">Alle Projekte</option>'+PROJEKTE.slice().sort((a,b)=>(a.nr||'').localeCompare(b.nr||'','de')).map(p=>'<option value="'+p.id+'">'+(p.nr?p.nr+' - ':'')+p.name+'</option>').join('');
   el.innerHTML='<div class="a-sec"><div class="a-sec-title">Berichte freigeben (Buchhaltung)</div>'+
-    '<div style="font-size:11px;color:var(--m);line-height:1.6;margin-bottom:10px">Hier gibt die Buchhaltung Berichte final frei. Erst freigegebene Berichte koennen nach DATAflor exportiert werden. Die Bauleiter-Abnahme ist optional und wird separat angezeigt.</div>'+
-    (unterschriftData?'<div style="font-size:10px;color:var(--g);margin-bottom:8px">Freigabe-Unterschrift hinterlegt &#x2713; <button class="btn" style="font-size:10px;padding:3px 8px;margin-left:6px" ontouchstart="openProfil()" onclick="openProfil()">aendern</button></div>':'<div style="font-size:11px;color:var(--r);margin-bottom:8px">Noch keine Unterschrift hinterlegt. <button class="btn btn-p" style="font-size:10px;padding:3px 8px" ontouchstart="openProfil()" onclick="openProfil()">Jetzt zeichnen</button></div>')+
-    '<div class="row"><div class="fg w33"><label>Von</label><input type="date" id="frei-von" value="'+vor30+'"></div>'+
-    '<div class="fg w33"><label>Bis</label><input type="date" id="frei-bis" value="'+heute+'"></div>'+
-    '<div class="fg w33"><label>Status</label><select id="frei-status"><option value="offen">Noch nicht freigegeben</option><option value="frei">Freigegeben</option><option value="">Alle</option></select></div></div>'+
-    '<button class="btn btn-sky" ontouchstart="ladeFreigabe()" onclick="ladeFreigabe()">Suchen</button></div>'+
-    '<div id="frei-list"><div style="color:var(--m);font-size:10px;padding:8px">Filter anwenden</div></div>';
+    '<div style="font-size:11px;color:var(--m);line-height:1.5;margin-bottom:10px">Final freigeben = bereit fuer DATAflor. Bauleiter-Abnahme ist optional und wird separat angezeigt.</div>'+
+    (unterschriftData?'<div style="font-size:10px;color:var(--g);margin-bottom:10px">Freigabe-Unterschrift hinterlegt &#x2713; <button class="btn" style="font-size:10px;padding:3px 8px;margin-left:6px" ontouchstart="openProfil()" onclick="openProfil()">aendern</button></div>':'<div style="font-size:11px;color:var(--r);margin-bottom:10px">Noch keine Unterschrift hinterlegt. <button class="btn btn-p" style="font-size:10px;padding:3px 8px" ontouchstart="openProfil()" onclick="openProfil()">Jetzt zeichnen</button></div>')+
+    // Ansicht-Umschalter
+    '<div style="display:flex;gap:6px;margin-bottom:10px">'+
+    '<button class="btn '+(freiAnsicht==='liste'?'btn-sky':'')+'" style="font-size:11px;flex:1;justify-content:center" ontouchstart="setFreiAnsicht(\'liste\')" onclick="setFreiAnsicht(\'liste\')">Neueste Berichte</button>'+
+    '<button class="btn '+(freiAnsicht==='projekt'?'btn-sky':'')+'" style="font-size:11px;flex:1;justify-content:center" ontouchstart="setFreiAnsicht(\'projekt\')" onclick="setFreiAnsicht(\'projekt\')">Nach Projekt</button>'+
+    '</div>'+
+    // Filterzeile
+    '<div class="row"><div class="fg w50"><label>Mitarbeiter suchen</label><input id="frei-ma" placeholder="Name..." oninput="ladeFreigabe()"></div>'+
+    '<div class="fg w50"><label>Status</label><select id="frei-status" onchange="ladeFreigabe()"><option value="offen">Noch offen</option><option value="frei">Freigegeben</option><option value="">Alle</option></select></div></div>'+
+    '<div class="row" id="frei-projrow" style="'+(freiAnsicht==='projekt'?'':'display:none')+'"><div class="fg w100"><label>Projekt</label><select id="frei-proj" onchange="ladeFreigabe()">'+projOpts+'</select></div></div>'+
+    '</div>'+
+    '<div id="frei-list"><div style="color:var(--m);font-size:10px;padding:8px">Lade...</div></div>';
+  freiLimit=10;
   ladeFreigabe();
 }
+function setFreiAnsicht(a){freiAnsicht=a;freiLimit=10;renderAdminFreigabe();}
 
 async function ladeFreigabe(){
-  const von=document.getElementById('frei-von')?.value,bis=document.getElementById('frei-bis')?.value;
+  const ma=(document.getElementById('frei-ma')?.value||'').trim();
   const status=document.getElementById('frei-status')?.value;
-  let q=sb.from('berichte').select('*').order('datum',{ascending:false}).limit(300);
-  if(von)q=q.gte('datum',von);if(bis)q=q.lte('datum',bis);
+  const proj=document.getElementById('frei-proj')?.value||'';
+  let q=sb.from('berichte').select('*').order('datum',{ascending:false}).order('id',{ascending:false});
   if(status==='offen')q=q.eq('bh_freigegeben',false);
   if(status==='frei')q=q.eq('bh_freigegeben',true);
+  if(ma)q=q.ilike('mitarbeiter_name','%'+ma+'%');
+  if(freiAnsicht==='projekt'&&proj)q=q.eq('projekt_id',proj);
+  // In Listenansicht serverseitig begrenzen; in Projektansicht mehr holen zum Gruppieren
+  q=q.limit(freiAnsicht==='liste'?freiLimit:500);
   const{data}=await q;
   const el=document.getElementById('frei-list');if(!el)return;
   if(!data?.length){el.innerHTML='<div style="color:var(--m);font-size:11px;padding:12px">Keine Berichte</div>';return;}
-  el.innerHTML='<div class="a-sec"><div class="a-sec-title">'+data.length+' Bericht(e)</div>'+data.map(b=>{
-    const bl=b.abgenommen;const bh=b.bh_freigegeben;
-    const pLabel=getProjektLabel(b.projekt_id||b.projekt_nr||'');
-    return '<div style="background:var(--s3);border:1px solid '+(bh?'var(--gd)':'var(--b)')+';border-radius:var(--rad);padding:10px;margin-bottom:6px">'+
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">'+
-      '<div style="flex:1;min-width:140px">'+
-      '<div style="font-size:12px;font-weight:600;color:var(--c)">'+pLabel+'</div>'+
-      '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--g)">'+fmtD(b.datum)+' · '+b.mitarbeiter_name+' · '+(b.netto_gesamt_h||b.netto_arbeit_h||'--')+'h · '+(b.rolle==='va'?'VA':b.rolle==='ws'?'WS':'AR')+'</div>'+
-      '<div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap">'+
-      '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;padding:2px 7px;border-radius:8px;'+(bl?'background:var(--earthg);color:var(--earth)':'background:var(--s2);color:var(--m)')+'">'+(bl?'BL abgenommen ✓ ('+(b.abgenommen_von||'')+')':'BL offen')+'</span>'+
-      '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;padding:2px 7px;border-radius:8px;'+(bh?'background:var(--gg);color:var(--gl)':'background:var(--rg);color:var(--r)')+'">'+(bh?'BH freigegeben ✓ ('+(b.bh_freigegeben_von||'')+')':'BH offen')+'</span>'+
-      '</div></div>'+
-      '<div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end">'+
-      '<button class="btn" style="font-size:10px;padding:5px 9px" ontouchstart="freigabeAnsehen(\''+b.id+'\')" onclick="freigabeAnsehen(\''+b.id+'\')">Ansehen (PDF)</button>'+
-      (bh?
-        '<button class="btn btn-r" style="font-size:10px;padding:5px 9px" ontouchstart="freigabeZurueck(\''+b.id+'\')" onclick="freigabeZurueck(\''+b.id+'\')">Freigabe zurueck</button>':
-        '<button class="btn btn-p" style="font-size:10px;padding:5px 9px" ontouchstart="freigabeErteilen(\''+b.id+'\')" onclick="freigabeErteilen(\''+b.id+'\')">Freigeben &#x2713;</button>'
-      )+
-      '</div></div></div>';
-  }).join('')+'</div>';
+  if(freiAnsicht==='projekt'){el.innerHTML=renderFreiProjekt(data);return;}
+  // Listenansicht: neueste zuerst, "mehr laden"-Button
+  el.innerHTML='<div class="a-sec"><div class="a-sec-title">'+data.length+' Bericht(e) (neueste zuerst)</div>'+
+    data.map(b=>freiBerichtCard(b)).join('')+
+    (data.length>=freiLimit?'<button class="btn" style="width:100%;justify-content:center;font-size:11px;margin-top:6px" ontouchstart="freiMehr()" onclick="freiMehr()">Mehr laden</button>':'')+
+    '</div>';
+}
+function freiMehr(){freiLimit+=10;ladeFreigabe();}
+
+// Gruppierung nach Projekt (Ordnerstruktur)
+function renderFreiProjekt(data){
+  const groups={};
+  data.forEach(b=>{const key=b.projekt_id||b.projekt_nr||'ohne';(groups[key]=groups[key]||[]).push(b);});
+  const keys=Object.keys(groups).sort((a,b)=>getProjektLabel(a).localeCompare(getProjektLabel(b),'de'));
+  return keys.map((k,idx)=>{
+    const items=groups[k];
+    const offen=items.filter(b=>!b.bh_freigegeben).length;
+    const label=getProjektLabel(k);
+    return '<div class="a-sec" style="margin-bottom:8px">'+
+      '<div class="a-sec-title" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center" ontouchstart="toggleFreiGroup('+idx+')" onclick="toggleFreiGroup('+idx+')">'+
+      '<span>'+label+'</span>'+
+      '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:'+(offen?'var(--r)':'var(--g)')+'">'+items.length+' Ber. · '+(offen?offen+' offen':'alle frei ✓')+' ▾</span>'+
+      '</div>'+
+      '<div id="freigroup-'+idx+'" style="'+(idx===0?'':'display:none')+'">'+items.map(b=>freiBerichtCard(b)).join('')+'</div>'+
+      '</div>';
+  }).join('');
+}
+function toggleFreiGroup(idx){const el=document.getElementById('freigroup-'+idx);if(el)el.style.display=el.style.display==='none'?'block':'none';}
+
+// Eine Bericht-Karte (wird in beiden Ansichten genutzt)
+function freiBerichtCard(b){
+  const bl=b.abgenommen;const bh=b.bh_freigegeben;
+  const pLabel=getProjektLabel(b.projekt_id||b.projekt_nr||'');
+  return '<div style="background:var(--s3);border:1px solid '+(bh?'var(--gd)':'var(--b)')+';border-radius:var(--rad);padding:10px;margin-bottom:6px">'+
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">'+
+    '<div style="flex:1;min-width:140px">'+
+    '<div style="font-size:12px;font-weight:600;color:var(--c)">'+pLabel+'</div>'+
+    '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--g)">'+fmtD(b.datum)+' · '+b.mitarbeiter_name+' · '+(b.netto_gesamt_h||b.netto_arbeit_h||'--')+'h · '+(b.rolle==='va'?'VA':b.rolle==='ws'?'WS':'AR')+'</div>'+
+    '<div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap">'+
+    '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;padding:2px 7px;border-radius:8px;'+(bl?'background:var(--earthg);color:var(--earth)':'background:var(--s2);color:var(--m)')+'">'+(bl?'BL abgenommen ✓ ('+(b.abgenommen_von||'')+')':'BL offen')+'</span>'+
+    '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;padding:2px 7px;border-radius:8px;'+(bh?'background:var(--gg);color:var(--gl)':'background:var(--rg);color:var(--r)')+'">'+(bh?'BH freigegeben ✓ ('+(b.bh_freigegeben_von||'')+')':'BH offen')+'</span>'+
+    '</div></div>'+
+    '<div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end">'+
+    '<button class="btn" style="font-size:10px;padding:5px 9px" ontouchstart="freigabeAnsehen(\''+b.id+'\')" onclick="freigabeAnsehen(\''+b.id+'\')">Ansehen (PDF)</button>'+
+    (bh?
+      '<button class="btn btn-r" style="font-size:10px;padding:5px 9px" ontouchstart="freigabeZurueck(\''+b.id+'\')" onclick="freigabeZurueck(\''+b.id+'\')">Freigabe zurueck</button>':
+      '<button class="btn btn-p" style="font-size:10px;padding:5px 9px" ontouchstart="freigabeErteilen(\''+b.id+'\')" onclick="freigabeErteilen(\''+b.id+'\')">Freigeben &#x2713;</button>'
+    )+
+    '</div></div></div>';
 }
 
 // Bericht als PDF ansehen (mit aktuellem Unterschriften-Stand)
@@ -1296,6 +1339,7 @@ async function filterPLBer(){
     '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">'+
     '<div class="pl-check '+(b.abgenommen?'done':'')+'" ontouchstart="event.stopPropagation();plToggleAbnahme(\''+b.id+'\','+b.abgenommen+')" onclick="event.stopPropagation();plToggleAbnahme(\''+b.id+'\','+b.abgenommen+')">'+(b.abgenommen?'&#x2713;':'')+'</div>'+
     (b.abgenommen?'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;color:var(--g)">'+b.abgenommen_von+'</div>':'')+
+    (b.bh_freigegeben?'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;padding:1px 6px;border-radius:7px;background:var(--gg);color:var(--gl)">BH frei ✓</div>':'')+
     (b.pdf_url?'<a href="'+b.pdf_url+'" target="_blank" style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;color:var(--sky);text-decoration:none" ontouchstart="event.stopPropagation()" onclick="event.stopPropagation()">Drive &#x279A;</a>':'')+
     '</div></div>'+(b.pl_notiz?'<div style="font-size:11px;color:var(--m);margin-top:6px;padding-top:6px;border-top:1px solid var(--b)">'+b.pl_notiz+'</div>':'')+
     '</div>'
@@ -1303,9 +1347,27 @@ async function filterPLBer(){
 }
 
 async function plToggleAbnahme(id,aktuell){
-  const updates=aktuell?{abgenommen:false,abgenommen_von:null,abgenommen_am:null}:{abgenommen:true,abgenommen_von:currentUser.name,abgenommen_am:new Date().toISOString()};
-  await sb.from('berichte').update(updates).eq('id',id);
-  toast(aktuell?'Abnahme zurueckgenommen':'Abgenommen ✓','ok');filterPLBer();
+  if(aktuell){
+    // Abnahme zuruecknehmen
+    if(!confirm('Abnahme zuruecknehmen?'))return;
+    await sb.from('berichte').update({abgenommen:false,abgenommen_von:null,abgenommen_am:null,abgenommen_sig:null}).eq('id',id);
+    toast('Abnahme zurueckgenommen','info');filterPLBer();return;
+  }
+  // Abnehmen: eigene Unterschrift noetig
+  if(!unterschriftData){toast('Bitte zuerst Ihre Unterschrift im Profil zeichnen','err');openProfil();return;}
+  if(!confirm('Diesen Bericht als Bauleiter abnehmen (mit Ihrer Unterschrift)?'))return;
+  const{data}=await sb.from('berichte').select('*').eq('id',id).single();if(!data)return;
+  const upd={abgenommen:true,abgenommen_von:currentUser.name,abgenommen_am:new Date().toISOString(),abgenommen_sig:unterschriftData};
+  const{error}=await sb.from('berichte').update(upd).eq('id',id);
+  if(error){toast('Fehler: '+error.message,'err');return;}
+  toast('Abgenommen ✓ — PDF wird erzeugt...','ok');
+  try{
+    const merged={...data,...upd};
+    const reportForPDF={...merged,role:merged.rolle,name:merged.mitarbeiter_name,projektNr:merged.projekt_nr,zeitRows:merged.zeit_rows,machRows:merged.mach_rows,zusatzProjekte:merged.zusatz_projekte};
+    const pdfUrl=await sendPDFMail(reportForPDF,null);
+    if(pdfUrl)await sb.from('berichte').update({pdf_url:pdfUrl}).eq('id',id);
+  }catch(e){toast('PDF/Mail-Fehler: '+e.message,'err');}
+  filterPLBer();
 }
 
 async function plOpenBericht(id){
