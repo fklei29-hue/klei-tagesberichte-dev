@@ -1563,8 +1563,16 @@ async function saveAndSendVA(){
   // (leere projektId -> Hauptprojekt zugeordnet). Aufteilung NUR bei neuem Bericht.
   const projIds=[...new Set(zeitRows.map(z=>z.projektId||projektId).filter(Boolean))];
   if(!currentId && projIds.length>1){
+    toast(projIds.length+' Projekte erkannt — erstelle '+projIds.length+' getrennte Berichte','info');
     await saveAndSendVASplit(d,zeitRows,projektId,projIds);
     return;
+  }
+  if(!currentId && projIds.length<=1){
+    // Hinweis falls evtl. mehrere Baustellen gemeint waren, aber nur 1 Projekt erkannt
+    const distinctRowProj=[...new Set(zeitRows.map(z=>z.projektId).filter(Boolean))];
+    if(distinctRowProj.length<=1 && zeitRows.length>1){
+      // nur informativ, kein Abbruch
+    }
   }
 
   const st=document.getElementById('va-send-status');
@@ -2670,4 +2678,3 @@ function showTab(name){
 </script>
 </body>
 </html>
-
