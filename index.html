@@ -121,8 +121,6 @@ main{display:flex;flex-direction:column;overflow:hidden;}
 .tab{padding:12px 14px;font-size:11px;font-weight:600;color:var(--m);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;}
 .tab.act{color:var(--gl);border-bottom-color:var(--g);}
 .tab.act.ws-tab{color:var(--ws);border-bottom-color:var(--ws);}
-.projcell-filter{width:100%;box-sizing:border-box;font-size:9px;padding:2px 4px;margin-bottom:2px;border:1px solid var(--b);border-radius:3px;background:var(--s2);color:var(--t);}
-.projcell-filter::placeholder{color:var(--m);}
 .content{flex:1;overflow-y:auto;padding:12px 14px;padding-bottom:70px;}
 .panel{display:none;}.panel.act{display:block;}
 .vbar{background:rgba(196,72,40,.15);border:1px solid rgba(196,72,40,.4);border-radius:var(--rad);padding:10px 14px;margin-bottom:10px;display:none;align-items:center;gap:10px;position:sticky;top:0;z-index:50;}
@@ -152,6 +150,8 @@ select option{background:var(--s2);}
 .tg{background:var(--s2);border:1px solid var(--b);border-radius:10px;padding:5px 12px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--m);cursor:pointer;user-select:none;}
 .tg.a{background:var(--gg);border-color:var(--gd);color:var(--gl);}
 .zusatz-projekt-block{background:var(--s2);border:1px solid rgba(154,108,26,.3);border-radius:6px;padding:12px;margin-top:10px;}
+.projcell-filter{width:100%;box-sizing:border-box;font-size:9px;padding:2px 4px;margin-bottom:2px;border:1px solid var(--b);border-radius:3px;background:var(--s2);color:var(--t);}
+.projcell-filter::placeholder{color:var(--m);}
 .tbl{width:100%;border-collapse:collapse;font-size:11px;}
 .tbl th{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--m);padding:5px 6px;border-bottom:1px solid var(--b);text-align:left;}
 .tbl td{padding:4px 3px;border-bottom:1px solid rgba(44,58,28,.4);}
@@ -261,7 +261,6 @@ select option{background:var(--s2);}
     <span class="admin-badge badge-admin">Admin</span>
     <span id="admin-user-name" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--m)"></span>
     <button class="theme-btn" style="margin-left:auto" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
-    <select id="role-switch-admin" class="hbtn" style="display:none" onchange="switchRole(this)"></select>
     <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
   </div>
   <div class="admin-tabs">
@@ -288,7 +287,6 @@ select option{background:var(--s2);}
     <span class="admin-badge badge-pl">Projektleiter</span>
     <span id="pl-user-name" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--m)"></span>
     <button class="theme-btn" style="margin-left:auto" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
-    <select id="role-switch-pl" class="hbtn" style="display:none" onchange="switchRole(this)"></select>
     <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
   </div>
   <div class="admin-tabs">
@@ -310,7 +308,6 @@ select option{background:var(--s2);}
   <span class="h-user" id="h-user-name"></span>
   <div class="h-right">
     <button class="theme-btn" id="theme-btn" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
-    <select id="role-switch-main" class="hbtn" style="display:none" onchange="switchRole(this)"></select>
     <button class="hbtn" id="profil-btn" ontouchstart="openProfil()" onclick="openProfil()">Profil</button>
     <button class="hbtn va-only" ontouchstart="openMo('mo-df')" onclick="openMo('mo-df')">Dataflor</button>
     <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
@@ -364,36 +361,13 @@ select option{background:var(--s2);}
 </div>
 
 <div id="mo-df" style="position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;">
-  <div style="background:var(--s1);border:1px solid var(--b);border-radius:8px;padding:18px;width:min(440px,94vw);max-height:90vh;overflow:auto">
+  <div style="background:var(--s1);border:1px solid var(--b);border-radius:8px;padding:18px;width:min(400px,94vw)">
     <button onclick="closeMo('mo-df')" style="float:right;background:none;border:none;color:var(--m);font-size:18px;cursor:pointer">&#x2715;</button>
-    <div style="font-weight:700;font-size:14px;color:var(--c);margin-bottom:4px">DATAflor NK-Import (Stunden)</div>
-    <div style="font-size:11px;color:var(--m);line-height:1.5;margin-bottom:12px">Erzeugt eine schema-konforme XML-Datei (DFNKImport) zum Import in die DATAflor-Nachkalkulation. Diese Datei in den von DATAflor ueberwachten Ordner legen.</div>
-    <div class="fg" style="margin-bottom:10px">
-      <label style="font-size:11px;color:var(--t)">Lohnart-Nr. (von DATAflor) <span style="color:var(--r)">*</span></label>
-      <input id="df-lohnart" type="number" inputmode="numeric" placeholder="z.B. 100" style="width:100%;box-sizing:border-box">
-      <div style="font-size:10px;color:var(--m);margin-top:2px">Pflichtfeld. Ohne gueltige Lohnart-Nummer lehnt DATAflor die Datei ab. Nummer beim DATAflor-Support erfragen.</div>
+    <div style="font-weight:700;font-size:14px;color:var(--c);margin-bottom:12px">Dataflor Export</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn btn-e" ontouchstart="expDFCSV()" onclick="expDFCSV()">CSV Export</button>
+      <button class="btn btn-e" ontouchstart="expDFXML()" onclick="expDFXML()">XML Export</button>
     </div>
-    <div style="border-top:1px solid var(--b);margin:10px 0;padding-top:10px">
-      <div style="font-weight:600;font-size:12px;color:var(--t);margin-bottom:6px">Aktueller Bericht</div>
-      <button class="btn btn-e" style="width:100%" ontouchstart="expDFNKCurrent()" onclick="expDFNKCurrent()">Diesen Bericht als XML</button>
-    </div>
-    <div style="border-top:1px solid var(--b);margin:10px 0;padding-top:10px">
-      <div style="font-weight:600;font-size:12px;color:var(--t);margin-bottom:6px">Zeitraum (alle Berichte)</div>
-      <div class="row" style="gap:6px">
-        <div class="fg w50"><label style="font-size:11px">Von</label><input id="df-von" type="date" style="width:100%;box-sizing:border-box"></div>
-        <div class="fg w50"><label style="font-size:11px">Bis</label><input id="df-bis" type="date" style="width:100%;box-sizing:border-box"></div>
-      </div>
-      <button class="btn btn-e" style="width:100%;margin-top:6px" ontouchstart="expDFNKRange()" onclick="expDFNKRange()">Zeitraum als XML</button>
-    </div>
-    <div id="df-status" style="font-size:11px;margin-top:10px;line-height:1.5"></div>
-  </div>
-</div>
-
-<div id="mo-ma-detail" style="position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:520;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;">
-  <div style="background:var(--s1);border:1px solid var(--b);border-radius:8px;padding:18px;width:min(460px,94vw);max-height:85vh;display:flex;flex-direction:column">
-    <button onclick="closeMo('mo-ma-detail')" style="float:right;background:none;border:none;color:var(--m);font-size:18px;cursor:pointer;align-self:flex-end">&#x2715;</button>
-    <div id="ma-det-title" style="font-weight:700;font-size:14px;color:var(--c);margin-bottom:10px"></div>
-    <div id="ma-det-body" style="overflow:auto"></div>
   </div>
 </div>
 
@@ -661,42 +635,6 @@ function checkErstLogin(){
   document.getElementById('mo-erst-login').style.display='flex';
 }
 
-// ══════ ROLLEN-UMSCHALTER ══════
-// Eine Person kann neben ihrer Hauptrolle (Spalte rolle) weitere freigegebene
-// Rollen haben (Spalte rollen, text[]). Umschalten im Header ohne neuen Login.
-const ROLLEN_LABELS={arbeiter:'Arbeiter',vorarbeiter:'Vorarbeiter',werkstatt:'Werkstatt',projektleiter:'Projektleiter',verwaltung:'Verwaltung',admin:'Admin'};
-function allowedRoles(){
-  if(!currentUser)return[];
-  const base=currentUser._baseRolle||currentUser.rolle;
-  const extra=Array.isArray(currentUser.rollen)?currentUser.rollen:[];
-  return[...new Set([base,...extra])].filter(r=>ROLLEN_LABELS[r]);
-}
-function updateRoleSwitchers(active){
-  const roles=allowedRoles();
-  ['role-switch-main','role-switch-admin','role-switch-pl'].forEach(id=>{
-    const el=document.getElementById(id);if(!el)return;
-    if(roles.length<2){el.style.display='none';return;}
-    el.style.display='';
-    el.innerHTML=roles.map(r=>'<option value="'+r+'" '+(r===active?'selected':'')+'>'+ROLLEN_LABELS[r]+'</option>').join('');
-  });
-}
-async function switchRole(sel){
-  const r=sel.value;
-  const cur=currentRole||currentUser?.rolle;
-  if(!currentUser||r===cur)return;
-  if(!allowedRoles().includes(r)){toast('Keine Freigabe fuer diese Rolle','err');sel.value=cur;return;}
-  if(!confirm('Zur Rolle "'+(ROLLEN_LABELS[r]||r)+'" wechseln? Nicht gespeicherte Eingaben gehen verloren.')){sel.value=cur;return;}
-  try{stopVAAutoSave();}catch(e){}
-  document.getElementById('admin-screen').style.display='none';
-  document.getElementById('pl-screen').style.display='none';
-  currentUser.rolle=r; // gilt nur fuer diese Sitzung, nicht in der Datenbank
-  if(r==='admin'){currentRole='admin';openAdmin();}
-  else if(r==='projektleiter'){currentRole='projektleiter';openPL();}
-  else{await initApp();}
-  updateRoleSwitchers(r);
-  toast('Rolle: '+(ROLLEN_LABELS[r]||r),'ok');
-}
-
 // ══════ LOGIN ══════
 async function doLogin(){
   const nr=document.getElementById('login-nr').value.trim();
@@ -710,14 +648,12 @@ async function doLogin(){
     const{data,error}=await sb.from('mitarbeiter').select('*').eq('mitarbeiter_nr',nr).eq('passwort_hash',pw).eq('aktiv',true).single();
     if(error||!data){errEl.textContent='Falsche Mitarbeiternummer oder Passwort';btn.innerHTML='Anmelden';btn.disabled=false;return;}
     currentUser=data;
-    currentUser._baseRolle=data.rolle;
     unterschriftData=data.unterschrift_data||null;
     document.getElementById('login-screen').style.display='none';
     await loadProjekte();
     if(data.rolle==='admin')openAdmin();
     else if(data.rolle==='projektleiter')openPL();
     else await initApp();
-    updateRoleSwitchers(data.rolle);
     setTimeout(()=>checkErstLogin(),400);
   }catch(e){errEl.textContent='Verbindungsfehler: '+e.message;btn.innerHTML='Anmelden';btn.disabled=false;}
 }
@@ -753,7 +689,7 @@ async function initApp(){
   b.textContent={arbeiter:'Arbeiter',vorarbeiter:'Vorarbeiter',werkstatt:'Werkstatt'}[currentRole]||currentRole;
   document.getElementById('h-user-name').textContent=currentUser.name+' #'+currentUser.mitarbeiter_nr;
   document.querySelectorAll('.va-only').forEach(el=>el.style.display=currentRole==='vorarbeiter'?'':'none');
-  document.getElementById('btn-new-bericht').className=currentRole==='werkstatt'?'btn-new ws':'btn-new';
+  if(currentRole==='werkstatt')document.getElementById('btn-new-bericht').className='btn-new ws';
   buildUI();renderSB();updateSBDate();
   if(reports.length)loadReport(reports[0].id);
   else if(currentRole==='arbeiter'||currentRole==='werkstatt')setTimeout(()=>initARForm(),200);
@@ -831,7 +767,7 @@ async function renderAdminMA(){
     '<div class="fg w50"><label>Name</label><input id="new-ma-name" placeholder="Max Mustermann"></div>'+
     '<div class="fg w25"><label>Kuerzel</label><input id="new-ma-kuerzel" placeholder="MM"></div></div>'+
     '<div class="row"><div class="fg w50"><label>Qualifikation</label><select id="new-ma-qual"><option>Facharbeiter GaLa</option><option>Helfer</option><option>Azubi</option><option>Subunternehmer</option><option>VA</option><option>Werkstatt</option></select></div>'+
-    '<div class="fg w50"><label>Rolle</label><select id="new-ma-rolle"><option value="arbeiter">Arbeiter</option><option value="vorarbeiter">Vorarbeiter</option><option value="werkstatt">Werkstatt</option><option value="projektleiter">Projektleiter</option><option value="verwaltung">Verwaltung</option><option value="admin">Admin</option></select></div></div>'+
+    '<div class="fg w50"><label>Rolle</label><select id="new-ma-rolle"><option value="arbeiter">Arbeiter</option><option value="vorarbeiter">Vorarbeiter</option><option value="werkstatt">Werkstatt</option><option value="projektleiter">Projektleiter</option><option value="admin">Admin</option></select></div></div>'+
     '<div class="row"><div class="fg w50"><label>Passwort</label><input id="new-ma-pw" placeholder="Initiales Passwort" type="text"></div></div>'+
     '<button class="btn btn-sky" ontouchstart="adminAddMA()" onclick="adminAddMA()">+ Mitarbeiter anlegen</button></div>'+
     '<div class="a-sec"><div class="a-sec-title">Alle Mitarbeiter (<span id="ma-count">...</span>)</div><div id="ma-list"><div class="empty"><div class="spin"></div></div></div></div>';
@@ -870,15 +806,8 @@ async function editMA(id){
     '<div class="row"><div class="fg w33"><label>Qualifikation</label><select id="edit-qual-'+id+'">'+
     ['Facharbeiter GaLa','Helfer','Azubi','Subunternehmer','VA','Werkstatt'].map(q=>'<option '+(data.qualifikation===q?'selected':'')+'>'+q+'</option>').join('')+'</select></div>'+
     '<div class="fg w33"><label>Rolle</label><select id="edit-rolle-'+id+'">'+
-    ['arbeiter','vorarbeiter','werkstatt','projektleiter','verwaltung','admin'].map(r=>'<option value="'+r+'" '+(data.rolle===r?'selected':'')+'>'+r+'</option>').join('')+'</select></div>'+
+    ['arbeiter','vorarbeiter','werkstatt','projektleiter','admin'].map(r=>'<option value="'+r+'" '+(data.rolle===r?'selected':'')+'>'+r+'</option>').join('')+'</select></div>'+
     '<div class="fg w33"><label>Neues Passwort</label><input id="edit-pw-'+id+'" placeholder="Leer = unveraendert" type="text"></div></div>'+
-    ('rollen' in data?
-      '<div class="row"><div class="fg" style="width:100%"><label>Zusaetzliche Rollen (Umschalter im Header)</label>'+
-      '<div style="display:flex;gap:12px;flex-wrap:wrap;padding:6px 0">'+
-      ['arbeiter','vorarbeiter','werkstatt','projektleiter','verwaltung','admin'].map(r=>
-        '<label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t);cursor:pointer"><input type="checkbox" class="edit-rollen-'+id+'" value="'+r+'" '+((Array.isArray(data.rollen)?data.rollen:[]).includes(r)?'checked':'')+'>'+(ROLLEN_LABELS[r]||r)+'</label>'
-      ).join('')+'</div></div></div>'
-      :'<div class="row"><div style="font-size:10px;color:var(--m);padding:4px 0">Zusatz-Rollen: erst das SQL-Update fuer die Spalte "rollen" ausfuehren.</div></div>')+
     '<div style="display:flex;gap:6px"><button class="btn btn-sky" ontouchstart="saveEditMA(\''+id+'\')" onclick="saveEditMA(\''+id+'\')">Speichern</button>'+
     '<button class="btn" ontouchstart="renderAdminMA()" onclick="renderAdminMA()">Abbrechen</button></div></div>';
 }
@@ -886,8 +815,6 @@ async function editMA(id){
 async function saveEditMA(id){
   const updates={mitarbeiter_nr:document.getElementById('edit-nr-'+id).value.trim(),name:document.getElementById('edit-name-'+id).value.trim(),kuerzel:document.getElementById('edit-kuerzel-'+id).value.trim(),qualifikation:document.getElementById('edit-qual-'+id).value,rolle:document.getElementById('edit-rolle-'+id).value};
   const pw=document.getElementById('edit-pw-'+id).value.trim();if(pw)updates.passwort_hash=pw;
-  const cbs=[...document.querySelectorAll('.edit-rollen-'+id+':checked')];
-  if(document.querySelector('.edit-rollen-'+id))updates.rollen=cbs.map(c=>c.value);
   const{error}=await sb.from('mitarbeiter').update(updates).eq('id',id);
   if(error){toast('Fehler: '+error.message,'err');return;}
   toast('Gespeichert','ok');renderAdminMA();
@@ -1174,74 +1101,30 @@ function buildPDFName(data){
 async function renderAdminExp(){
   const el=document.getElementById('apanel-exp');
   el.innerHTML='<div class="a-sec"><div class="a-sec-title">Buchhaltungs-Export</div>'+
-    '<div class="row"><div class="fg w50"><label>Von</label><input type="date" id="exp-von" onchange="loadExpStats()"></div>'+
-    '<div class="fg w50"><label>Bis</label><input type="date" id="exp-bis" onchange="loadExpStats()"></div></div>'+
+    '<div class="row"><div class="fg w50"><label>Von</label><input type="date" id="exp-von"></div>'+
+    '<div class="fg w50"><label>Bis</label><input type="date" id="exp-bis"></div></div>'+
     '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
     '<button class="btn btn-sky" ontouchstart="expBuchhaltungCSV()" onclick="expBuchhaltungCSV()">CSV Buchhaltung</button>'+
-    '<button class="btn btn-e" ontouchstart="expDFCSVAdmin()" onclick="expDFCSVAdmin()">Dataflor XML</button></div></div>'+
+    '<button class="btn btn-e" ontouchstart="expDFCSVAdmin()" onclick="expDFCSVAdmin()">Dataflor CSV</button></div></div>'+
     '<div class="a-sec"><div class="a-sec-title">Statistik</div><div id="exp-stats"><div class="empty"><div class="spin"></div></div></div></div>';
   loadExpStats();
 }
 
-// Pro-Person-Statistik: aggregiert aus zeit_rows (jede Person einzeln),
-// Fallback auf Berichtsebene fuer Berichte ohne zeit_rows (AR/WS).
-let EXPSTAT_LIST=[];
 async function loadExpStats(){
-  if(!MALISTE.length){await loadMitarbeiterListe();}
-  const von=document.getElementById('exp-von')?.value,bis=document.getElementById('exp-bis')?.value;
-  let q=sb.from('berichte').select('mitarbeiter_name,mitarbeiter_nr,netto_gesamt_h,netto_arbeit_h,datum,rolle,projekt_nr,zeit_rows').order('datum',{ascending:false}).limit(2000);
-  if(von)q=q.gte('datum',von);if(bis)q=q.lte('datum',bis);
-  const{data}=await q;
-  if(!data?.length){document.getElementById('exp-stats').innerHTML='<div style="color:var(--m);font-size:10px;padding:8px">Keine Daten</div>';return;}
+  const{data}=await sb.from('berichte').select('mitarbeiter_name,mitarbeiter_nr,netto_gesamt_h,netto_arbeit_h,datum,rolle').order('datum',{ascending:false}).limit(500);
+  if(!data){document.getElementById('exp-stats').innerHTML='<div style="color:var(--m);font-size:10px;padding:8px">Keine Daten</div>';return;}
   const totalH=data.reduce((s,b)=>s+(parseFloat(b.netto_gesamt_h||b.netto_arbeit_h||0)),0);
-  const pNum=v=>(parseFloat(String(v==null?'':v).replace(',','.'))||0);
-  const agg={}; // key: normalisierter Name -> {label, total, entries[]}
-  const add=(name,datum,projekt,stunden,vonT,bisT)=>{
-    if(!name||!(stunden>0))return;
-    const ma=_dfFindMA(name);
-    const key=ma?('id:'+ma.id):_dfNorm(name);
-    if(!agg[key]){
-      agg[key]={label:(ma?ma.name+' #'+ma.mitarbeiter_nr:name),total:0,entries:[]};
-    }
-    agg[key].total+=stunden;
-    agg[key].entries.push({datum:datum||'',projekt:projekt||'',stunden,von:vonT||'',bis:bisT||''});
-  };
-  data.forEach(b=>{
-    const zr=Array.isArray(b.zeit_rows)?b.zeit_rows:[];
-    if(zr.length){
-      zr.forEach(t=>{if(!t||!t.name)return;add(t.name,b.datum,t.projektNr||b.projekt_nr,pNum(t.gesamt!==undefined&&t.gesamt!==''?t.gesamt:t.nettoArbeit),t.von,t.bis);});
-    } else {
-      add(b.mitarbeiter_name,b.datum,b.projekt_nr,pNum(b.netto_gesamt_h||b.netto_arbeit_h),b.von,b.bis);
-    }
-  });
-  EXPSTAT_LIST=Object.values(agg).sort((a,b)=>b.total-a.total);
-  EXPSTAT_LIST.forEach(p=>p.entries.sort((a,b)=>(b.datum||'').localeCompare(a.datum||'')));
+  const maMap={};
+  data.forEach(b=>{const key=b.mitarbeiter_name+(b.mitarbeiter_nr?' #'+b.mitarbeiter_nr:'');if(!maMap[key])maMap[key]=0;maMap[key]+=(parseFloat(b.netto_gesamt_h||b.netto_arbeit_h||0));});
   document.getElementById('exp-stats').innerHTML=
-    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">'+
+    '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px">'+
     '<div class="sc"><div class="sv">'+data.length+'</div><div class="sl">Berichte</div></div>'+
-    '<div class="sc"><div class="sv">'+totalH.toFixed(0)+'h</div><div class="sl">Stunden</div></div>'+
-    '<div class="sc"><div class="sv">'+EXPSTAT_LIST.length+'</div><div class="sl">Personen</div></div></div>'+
-    '<div style="font-size:10px;color:var(--m);margin-bottom:6px">Stunden je Person (aus den Zeit-Zeilen der Berichte). Antippen fuer Einzelbuchungen.</div>'+
-    EXPSTAT_LIST.map((p,i)=>
-      '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 4px;border-bottom:1px solid var(--b);cursor:pointer" ontouchstart="showMADetail('+i+')" onclick="showMADetail('+i+')">'+
-      '<span style="font-size:12px;color:var(--c)">'+_dfEsc(p.label)+'</span>'+
-      '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:var(--gl)">'+p.total.toFixed(1)+'h <span style="color:var(--m)">&#x203A;</span></span></div>'
+    '<div class="sc"><div class="sv">'+totalH.toFixed(0)+'h</div><div class="sl">Stunden</div></div></div>'+
+    Object.entries(maMap).sort((a,b)=>b[1]-a[1]).map(([name,h])=>
+      '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--b)">'+
+      '<span style="font-size:12px;color:var(--c)">'+name+'</span>'+
+      '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:var(--gl)">'+h.toFixed(1)+'h</span></div>'
     ).join('');
-}
-function showMADetail(i){
-  const p=EXPSTAT_LIST[i];if(!p)return;
-  document.getElementById('ma-det-title').textContent=p.label+' - '+p.total.toFixed(1)+'h';
-  const max=60;
-  document.getElementById('ma-det-body').innerHTML=
-    '<table class="tbl"><thead><tr><th>Datum</th><th>Projekt</th><th>Von-Bis</th><th style="text-align:right">Std</th></tr></thead><tbody>'+
-    p.entries.slice(0,max).map(e=>
-      '<tr><td>'+(e.datum?e.datum.split('-').reverse().join('.'):'')+'</td>'+
-      '<td>'+_dfEsc(e.projekt)+'</td>'+
-      '<td>'+(e.von&&e.bis?e.von+'-'+e.bis:'')+'</td>'+
-      '<td style="text-align:right;font-family:\'IBM Plex Mono\',monospace">'+e.stunden.toFixed(2)+'</td></tr>'
-    ).join('')+'</tbody></table>'+
-    (p.entries.length>max?'<div style="font-size:10px;color:var(--m);margin-top:6px">… und '+(p.entries.length-max)+' weitere (Zeitraum eingrenzen)</div>':'');
-  openMo('mo-ma-detail');
 }
 
 async function expBuchhaltungCSV(){
@@ -1257,25 +1140,15 @@ async function expBuchhaltungCSV(){
 }
 
 async function expDFCSVAdmin(){
-  // DATAflor NK-Import XML (validiert gegen DFNKImport.xsd) ueber Zeitraum aus Admin-Feldern.
   const von=document.getElementById('exp-von').value,bis=document.getElementById('exp-bis').value;
-  const laRaw=prompt('DATAflor Lohnart-Nr. fuer normale Arbeitsstunden:\n(beim DATAflor-Support erfragen)');
-  if(laRaw===null)return;
-  const lohnart=parseInt(laRaw);
-  if(isNaN(lohnart)||lohnart<=0){toast('Ungueltige Lohnart-Nr.','err');return;}
-  if(!MALISTE.length){await loadMitarbeiterListe();}
   let q=sb.from('berichte').select('*').order('datum');
   if(von)q=q.gte('datum',von);if(bis)q=q.lte('datum',bis);
   const{data}=await q;if(!data?.length){toast('Keine Daten','err');return;}
-  const {xml,count,warn}=buildDFNKImportLohn(data,lohnart);
-  if(count===0){toast('Nichts exportierbar (siehe Hinweise)','err');alert('Keine exportierbaren Zeilen.\n\nProbleme:\n'+warn.slice(0,20).join('\n'));return;}
-  dlFile('DFNKImport_'+(von||'alle')+'_'+(bis||'')+'.xml',xml,'application/xml');
-  if(warn.length){
-    toast(count+' exportiert, '+warn.length+' uebersprungen','ok');
-    alert(count+' Datensaetze exportiert.\n\n'+warn.length+' Zeile(n) NICHT exportiert (meist Name != Stammdaten):\n\n'+warn.slice(0,20).join('\n')+(warn.length>20?'\n… und '+(warn.length-20)+' weitere':''));
-  } else {
-    toast(count+' Datensaetze exportiert','ok');
-  }
+  const hdr='Mandant;Datum;Projekt;Name;MA-Nr;Von;Bis;Arbeit_h;Fahrt;Fahrzeit_min;Gesamt_h';
+  const rows=[];
+  data.forEach(b=>{const zr=b.zeit_rows||[];if(zr.length){zr.forEach(t=>{if(t.name)rows.push(['001',b.datum,b.projekt_nr,t.name,b.mitarbeiter_nr||'',t.von||'',t.bis||'',(t.nettoArbeit||'0').replace(',','.'),t.fahrt||'fahrer',t.fahrzeitMin||0,(t.gesamt||'0').replace(',','.')].join(';'));});}else{rows.push(['001',b.datum,b.projekt_nr,b.mitarbeiter_name,b.mitarbeiter_nr||'',b.von||'',b.bis||'',b.netto_arbeit_h||'0','fahrer',b.fahrzeit_min||0,b.netto_gesamt_h||'0'].join(';'));}});
+  dlFile('KLEI_Dataflor_'+new Date().toISOString().split('T')[0]+'.csv',[hdr,...rows].join('\n'),'text/csv;charset=utf-8');
+  toast('Dataflor CSV exportiert','ok');
 }
 
 // ══════ PROJEKTLEITER ══════
@@ -1414,7 +1287,7 @@ async function saveAndSendWS(){
   const d={
     mitarbeiter_id:currentUser.id,mitarbeiter_name:currentUser.name,mitarbeiter_nr:currentUser.mitarbeiter_nr,
     datum:document.getElementById('ws-datum').value,projekt_id:projektId||null,projekt_nr:projekt?.nr||'',
-    rolle:'ws',wetter:'',taetigkeiten:getWSTaetigkeiten(),
+    rolle:'ws',wetter:document.getElementById('ws-wetter').value,taetigkeiten:getWSTaetigkeiten(),
     von:document.getElementById('ws-von').value,bis:document.getElementById('ws-bis').value,
     pause_min:parseInt(document.getElementById('ws-pause')?.value)||30,
     fahrzeit_min:0,fahrt_status:'fahrer',netto_arbeit_h:nettoVal,netto_gesamt_h:nettoVal,
@@ -1848,35 +1721,6 @@ function loadVAForm(r){
   clearFotos();setTimeout(refreshStepMAs,200);
 }
 
-// Vorlagen Variante A: bestehenden Bericht als Vorlage fuer einen NEUEN Bericht nutzen.
-// Uebernimmt nur das Grundgeruest (Projekt, Mitarbeiter/Zeiten, Arbeitsschritte).
-// Maengel, Lieferungen, Mengen, LV-Zeilen, Bemerkungen, Naechstes, Besucher, Fotos bleiben leer.
-function useAsTemplate(id){
-  const r=reports.find(x=>x.id===id);if(!r){toast('Bericht nicht gefunden','err');return;}
-  stopVoice();
-  // Reduzierte Vorlage zusammenstellen: nur Projekt + Zeiten + Schritte uebernehmen.
-  const vorlage={
-    datum:todayStr(),
-    projekt_id:r.projekt_id,
-    baustelle:r.baustelle,
-    bauherr:r.bauherr,
-    projektnr_intern:r.projektnr_intern,
-    bauleiter:r.bauleiter,
-    zeit_rows:r.zeit_rows||[],
-    mach_rows:r.mach_rows||[],
-    steps:r.steps||[],
-    zusatz_projekte:r.zusatz_projekte||[]
-    // bewusst NICHT: maengel, lieferungen, mengen, lv_rows, bemerkungen, naechstes, besucher, temperatur, nied_mm, fotos
-  };
-  loadVAForm(vorlage);
-  currentId=null; // wichtig: es entsteht ein NEUER Bericht, der alte wird nicht ueberschrieben
-  document.querySelectorAll('.ri').forEach(el=>el.classList.remove('act'));
-  const dEl=document.getElementById('v-datum');if(dEl)dEl.value=todayStr();
-  const st=document.getElementById('va-send-status');if(st){st.className='send-status';st.textContent='';}
-  showTab('bericht');
-  toast('Als Vorlage geladen - neuer Bericht','ok');
-}
-
 function renderARDetail(r){
   const fc={'fahrer':'var(--sky)','beifahrer':'var(--earth)','privat':'var(--m)'}[r.fahrt_status||'fahrer'];
   const fzMin=r.fahrzeit_min||0;const satz={'fahrer':1,'beifahrer':.5,'privat':0}[r.fahrt_status||'fahrer'];
@@ -1909,7 +1753,6 @@ function renderVADetail(r){
     '<div class="card-meta"><span class="g">'+fmtD(r.datum)+'</span><span>'+(r.bauleiter||'--')+'</span></div></div>'+
     '<div style="display:flex;gap:5px">'+
     '<button class="btn" style="font-size:11px;padding:5px 9px" ontouchstart="loadVAForm(reports.find(x=>x.id===\''+r.id+'\'));showTab(\'bericht\')" onclick="loadVAForm(reports.find(x=>x.id===\''+r.id+'\'));showTab(\'bericht\')">Bearb.</button>'+
-    '<button class="btn" style="font-size:11px;padding:5px 9px" ontouchstart="useAsTemplate(\''+r.id+'\')" onclick="useAsTemplate(\''+r.id+'\')">Vorlage</button>'+
     '<button class="btn btn-r" style="font-size:11px;padding:5px 9px" ontouchstart="delReport(\''+r.id+'\')" onclick="delReport(\''+r.id+'\')">&#x2715;</button>'+
     '</div></div></div>'+
     '<div class="srow">'+
@@ -1938,7 +1781,6 @@ function renderSB(){
       '<div class="ri-s">'+tagLbl+' - '+h.toFixed(1)+'h</div>'+
       '<div class="ri-tags">'+
       '<span class="tag-s '+tagCls+'">'+tagLbl+'</span>'+
-      (r.rolle==='va'?'<span class="tag-s" style="background:var(--earthg);color:var(--earth);cursor:pointer" ontouchstart="event.stopPropagation();event.preventDefault();useAsTemplate(\''+r.id+'\')" onclick="event.stopPropagation();useAsTemplate(\''+r.id+'\')">&#x2398; Vorlage</span>':'')+
       (r.pdf_url?'<span class="tag-s" style="background:rgba(61,143,168,.12);color:var(--sky)">Drive</span>':'')+
       (r.gesendet?'<span class="tag-s" style="background:rgba(61,143,168,.12);color:var(--sky)">&#x2713;</span>':'')+
       '</div></div>';
@@ -1984,6 +1826,17 @@ function rowProjektOpts(kat,sel){
   const list=PROJEKTE.filter(p=>(p.kategorie||'bau')===kat);
   return'<option value="">-</option>'+list.map(p=>'<option value="'+p.id+'" '+(sel===p.id?'selected':'')+'>'+(p.nr||p.name.substring(0,14))+'</option>').join('');
 }
+// Hilfsfunktionen fuer Namens-/Projektsuche (Escaping + Normalisierung)
+function _dfEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function _dfNorm(s){return String(s==null?'':s).toLowerCase().replace(/\s+/g,' ').trim();}
+// Name -> Mitarbeiter aus MALISTE: erst exakter Treffer, sonst eindeutiger Nachname
+function _dfFindMA(name){
+  const key=_dfNorm(name);if(!key)return null;
+  let hit=MALISTE.find(m=>_dfNorm(m.name)===key);
+  if(hit)return hit;
+  const hits=MALISTE.filter(m=>_dfNorm(m.name).split(',')[0].trim()===key);
+  return hits.length===1?hits[0]:null;
+}
 // Live-Filter fuer die Projekt-Spalte: tippt man im Suchfeld, werden die Optionen
 // des zugehoerigen <select> neu aufgebaut (nur passende). Robust auf iPad/Safari,
 // weil Optionen neu gesetzt statt nur versteckt werden.
@@ -1999,7 +1852,6 @@ function filterRowProj(inp){
     return hay.includes(q);
   });
   let html='<option value="">-</option>'+list.map(p=>'<option value="'+p.id+'" '+(cur===p.id?'selected':'')+'>'+(p.nr||p.name.substring(0,14))+'</option>').join('');
-  // falls aktuelle Auswahl rausgefiltert wurde, trotzdem behalten, damit sie nicht verloren geht
   if(cur&&!list.some(p=>p.id===cur)){const cp=PROJEKTE.find(p=>p.id===cur);if(cp)html+='<option value="'+cp.id+'" selected>'+(cp.nr||cp.name.substring(0,14))+'</option>';}
   sel.innerHTML=html;
 }
@@ -2127,15 +1979,15 @@ function buildUI(){
       '<div class="panel" id="panel-details"><div id="detailContent"><div class="empty"><div class="ei">&#128203;</div><div class="et">Bericht waehlen</div></div></div></div>';
   }else{
     tabs.innerHTML=
-      '<div class="tab act" id="tab-zeit" ontouchstart="showTab(\'zeit\')" onclick="showTab(\'zeit\')">Zeiten</div>'+
-      '<div class="tab" id="tab-bericht" ontouchstart="showTab(\'bericht\')" onclick="showTab(\'bericht\')">Bericht</div>'+
+      '<div class="tab act" id="tab-bericht" ontouchstart="showTab(\'bericht\')" onclick="showTab(\'bericht\')">Bericht</div>'+
+      '<div class="tab" id="tab-zeit" ontouchstart="showTab(\'zeit\')" onclick="showTab(\'zeit\')">Zeiten</div>'+
       '<div class="tab" id="tab-material" ontouchstart="showTab(\'material\')" onclick="showTab(\'material\')">Material</div>'+
       '<div class="tab" id="tab-kalender" ontouchstart="showTab(\'kalender\')" onclick="showTab(\'kalender\')">Kalender</div>'+
       '<div class="tab" id="tab-details" ontouchstart="showTab(\'details\')" onclick="showTab(\'details\')">Details</div>'+
       '<div class="tab" id="tab-ue" ontouchstart="showTab(\'ue\')" onclick="showTab(\'ue\')">Uebersicht</div>';
     content.innerHTML=
-      '<div class="panel act" id="panel-zeit">'+buildVAZeit()+'</div>'+
-      '<div class="panel" id="panel-bericht">'+buildVABericht()+'</div>'+
+      '<div class="panel act" id="panel-bericht">'+buildVABericht()+'</div>'+
+      '<div class="panel" id="panel-zeit">'+buildVAZeit()+'</div>'+
       '<div class="panel" id="panel-material">'+buildVAMaterial()+'</div>'+
       '<div class="panel" id="panel-kalender"><div id="kalender-content"></div></div>'+
       '<div class="panel" id="panel-details"><div id="detailContent"><div class="empty"><div class="ei">&#128203;</div><div class="et">Bericht waehlen</div></div></div></div>'+
@@ -2151,7 +2003,8 @@ function buildWS(){
     '<div class="row"><div class="fg w50"><label>Datum</label><input type="date" id="ws-datum"></div>'+
     '<div class="fg w50"><label>Name</label><input type="text" id="ws-name" readonly style="color:var(--ws);background:var(--s3)"></div>'+
     '<div class="fg w50"><label>Bereich</label>'+katSelectHTML('ws-kat','onWSKatChange()','bau')+'</div>'+
-    '<div class="fg w50"><label>Projekt / Einsatzort</label><select id="ws-projekt">'+projektOptsByKat('bau','')+'</select></div></div></div>'+
+    '<div class="fg w50"><label>Projekt / Einsatzort</label><select id="ws-projekt">'+projektOptsByKat('bau','')+'</select></div>'+
+    '<div class="fg w50"><label>Wetter</label><select id="ws-wetter"><option>Sonnig</option><option>Bewoelkt</option><option>Regen</option><option>Frost</option></select></div></div></div>'+
     '<div class="qsec" style="border-color:rgba(139,92,246,.2)"><div class="qsec-t" style="color:var(--ws)">Taetigkeiten</div>'+
     '<div class="tags" id="ws-taetigkeiten-tags">'+taetigkeitenTags([],TAETIGKEITEN_WS)+'</div></div>'+
     '<div class="qsec" style="border-color:rgba(139,92,246,.2)"><div class="qsec-t" style="color:var(--ws)">Fahrzeug</div>'+
@@ -2548,112 +2401,11 @@ function newReport(){
   setTimeout(()=>{addStep();addZeitRow();addLief();addMenge();addLVRow();},50);
   curWeather='Sonnig';document.querySelectorAll('.wc').forEach((c,i)=>c.classList.toggle('s',i===0));
   document.querySelectorAll('#va-taetigkeiten-tags .tg').forEach(t=>t.classList.remove('a'));
-  showTab('zeit');toast('Neuer Bericht','ok');
+  showTab('bericht');toast('Neuer Bericht','ok');
 }
 
-// ===== DATAflor NK-Import (XML) – validiert gegen offizielles Schema DFNKImport.xsd =====
-// Quelle: github.com/dataflor-ag/NK-Import
-function _dfEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function _dfNum(v){return (parseFloat(String(v==null?'':v).replace(',','.'))||0);}
-function _dfCut(s,n){s=String(s==null?'':s);return s.length>n?s.substring(0,n):s;}
-// xs:time verlangt hh:mm:ss
-function _dfTime(t){if(!t)return '';const m=String(t).match(/^(\d{1,2}):(\d{2})/);if(!m)return '';return m[1].padStart(2,'0')+':'+m[2]+':00';}
-// Name -> Personalnummer aus MALISTE (Gross/Klein + Mehrfach-Leerzeichen normalisiert)
-function _dfNorm(s){return String(s==null?'':s).toLowerCase().replace(/\s+/g,' ').trim();}
-// Name -> Mitarbeiter aus MALISTE: erst exakter Treffer, sonst eindeutiger Nachname
-// (so finden auch alte Berichte mit Kurz-Namen wie "Tye" den Eintrag "Tye, Cedric").
-function _dfFindMA(name){
-  const key=_dfNorm(name);if(!key)return null;
-  let hit=MALISTE.find(m=>_dfNorm(m.name)===key);
-  if(hit)return hit;
-  const hits=MALISTE.filter(m=>_dfNorm(m.name).split(',')[0].trim()===key);
-  return hits.length===1?hits[0]:null;
-}
-function _dfPersNr(name){
-  const hit=_dfFindMA(name);
-  return hit?String(hit.mitarbeiter_nr||''):'';
-}
-// Baut die XML + sammelt nicht zuordenbare Zeilen (warn).
-function buildDFNKImportLohn(berichte, lohnart){
-  let body='', count=0; const warn=[];
-  berichte.forEach(b=>{
-    const datum=b.datum||'';
-    const zr=Array.isArray(b.zeit_rows)?b.zeit_rows:[];
-    const mkRec=(persNr,lvNr,stunden,von,bis,pauseStd,bem,erf)=>{
-      let r='  <Lohn>\n';
-      r+='    <Kennung>KLEI-Tagesberichte</Kennung>\n';
-      r+='    <Datum>'+_dfEsc(datum)+'</Datum>\n';
-      r+='    <LVNr>'+_dfEsc(_dfCut(lvNr,16))+'</LVNr>\n';
-      if(bem) r+='    <Bemerkung>'+_dfEsc(_dfCut(bem,60))+'</Bemerkung>\n';
-      if(erf) r+='    <ErfasstVon>'+_dfEsc(_dfCut(erf,60))+'</ErfasstVon>\n';
-      r+='    <PersonalNr>'+_dfEsc(persNr)+'</PersonalNr>\n';
-      r+='    <Lohnart>'+parseInt(lohnart)+'</Lohnart>\n';
-      if(von && bis){r+='    <von>'+von+'</von>\n    <bis>'+bis+'</bis>\n    <Pause>'+pauseStd+'</Pause>\n';}
-      r+='    <Stunden>'+stunden+'</Stunden>\n  </Lohn>\n';
-      return r;
-    };
-    if(zr.length){
-      zr.forEach(t=>{
-        if(!t||!t.name)return;
-        const persNr=_dfPersNr(t.name);
-        const lvNr=t.projektNr||b.projekt_nr||'';
-        const stunden=_dfNum(t.gesamt!==undefined&&t.gesamt!==''?t.gesamt:t.nettoArbeit);
-        if(!persNr){warn.push((datum||'?')+': "'+t.name+'" – keine Personalnummer gefunden');return;}
-        if(!lvNr){warn.push((datum||'?')+': "'+t.name+'" – kein Projekt/LV');return;}
-        if(!(stunden>0)){warn.push((datum||'?')+': "'+t.name+'" – 0 Stunden');return;}
-        body+=mkRec(persNr,lvNr,stunden,_dfTime(t.von),_dfTime(t.bis),_dfNum(t.pause)/60,t.tae,b.mitarbeiter_name);
-        count++;
-      });
-    } else {
-      const persNr=_dfPersNr(b.mitarbeiter_name)||String(b.mitarbeiter_nr||'');
-      const lvNr=b.projekt_nr||'';
-      const stunden=_dfNum(b.netto_gesamt_h||b.netto_arbeit_h);
-      if(!persNr){warn.push((datum||'?')+': "'+(b.mitarbeiter_name||'?')+'" – keine Personalnummer');}
-      else if(!lvNr){warn.push((datum||'?')+': kein Projekt/LV');}
-      else if(stunden>0){body+=mkRec(persNr,lvNr,stunden,_dfTime(b.von),_dfTime(b.bis),_dfNum(b.pause_min)/60,'',b.mitarbeiter_name);count++;}
-    }
-  });
-  const xml='<?xml version="1.0" encoding="UTF-8"?>\n<DFNKImport>\n'+body+'</DFNKImport>\n';
-  return {xml,count,warn};
-}
-function _dfGetLohnart(){
-  const v=document.getElementById('df-lohnart')?.value;
-  const n=parseInt(v);
-  if(!v||isNaN(n)||n<=0){toast('Bitte Lohnart-Nr. eintragen','err');return null;}
-  return n;
-}
-function _dfShowStatus(count,warn){
-  const el=document.getElementById('df-status');if(!el)return;
-  let h='<div style="color:var(--g)">'+count+' Datensatz/Datensaetze exportiert.</div>';
-  if(warn.length){
-    h+='<div style="color:var(--r);margin-top:6px;font-weight:600">'+warn.length+' Zeile(n) NICHT exportiert:</div>';
-    h+='<ul style="margin:4px 0 0 16px;padding:0;color:var(--r)">'+warn.slice(0,12).map(w=>'<li>'+_dfEsc(w)+'</li>').join('')+'</ul>';
-    if(warn.length>12)h+='<div style="color:var(--r)">… und '+(warn.length-12)+' weitere</div>';
-    h+='<div style="color:var(--m);margin-top:4px">Tipp: Namen in der Zeiterfassung muessen exakt den Mitarbeiter-Stammdaten entsprechen.</div>';
-  }
-  el.innerHTML=h;
-}
-function expDFNKCurrent(){
-  const lohnart=_dfGetLohnart();if(lohnart===null)return;
-  const r=reports.find(x=>x.id===currentId);
-  if(!r){toast('Kein Bericht offen','err');return;}
-  const {xml,count,warn}=buildDFNKImportLohn([r],lohnart);
-  if(count===0){_dfShowStatus(0,warn);toast('Nichts zu exportieren','err');return;}
-  dlFile('DFNKImport_'+(r.datum||'bericht')+'.xml',xml,'application/xml');
-  _dfShowStatus(count,warn);toast('XML exportiert','ok');
-}
-function expDFNKRange(){
-  const lohnart=_dfGetLohnart();if(lohnart===null)return;
-  const von=document.getElementById('df-von')?.value;
-  const bis=document.getElementById('df-bis')?.value;
-  if(!von||!bis){toast('Bitte Zeitraum waehlen','err');return;}
-  const sel=reports.filter(r=>r.datum&&r.datum>=von&&r.datum<=bis);
-  if(!sel.length){toast('Keine Berichte im Zeitraum','err');return;}
-  const {xml,count,warn}=buildDFNKImportLohn(sel,lohnart);
-  if(count===0){_dfShowStatus(0,warn);toast('Nichts zu exportieren','err');return;}
-  dlFile('DFNKImport_'+von+'_bis_'+bis+'.xml',xml,'application/xml');
-  _dfShowStatus(count,warn);toast(count+' Datensaetze exportiert','ok');
-}
+function expDFCSV(){const r=reports.find(x=>x.id===currentId);if(!r){toast('Kein Bericht','err');return;}const rows=r.zeit_rows||[];const hdr='Datum;Projekt;Name;Von;Bis;Arbeit_h;Fahrt;Fahrzeit_min;Gesamt_h';const lines=rows.filter(t=>t.name).map(t=>[r.datum,r.projekt_nr,t.name,t.von||'',t.bis||'',(t.nettoArbeit||'0').replace(',','.'),t.fahrt||'fahrer',t.fahrzeitMin||0,(t.gesamt||'0').replace(',','.')].join(';'));dlFile('Dataflor_'+r.datum+'.csv',[hdr,...lines].join('\n'),'text/csv');toast('CSV exportiert','ok');}
+function expDFXML(){const r=reports.find(x=>x.id===currentId);if(!r){toast('Kein Bericht','err');return;}const rows=r.zeit_rows||[];const x=(s)=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');const xml='<?xml version="1.0" encoding="UTF-8"?>\n<DataflorZeiterfassung>\n  <Datum>'+r.datum+'</Datum>\n  <Projekt>'+x(r.projekt_nr)+'</Projekt>\n  <Personal>\n'+rows.filter(t=>t.name).map(t=>'    <Eintrag><Name>'+x(t.name)+'</Name><Von>'+(t.von||'')+'</Von><Bis>'+(t.bis||'')+'</Bis><Arbeit>'+(t.nettoArbeit||'0').replace(',','.')+'</Arbeit><Gesamt>'+(t.gesamt||'0').replace(',','.')+'</Gesamt></Eintrag>').join('\n')+'\n  </Personal>\n</DataflorZeiterfassung>';dlFile('Dataflor_'+r.datum+'.xml',xml,'application/xml');toast('XML exportiert','ok');}
 
 function showTab(name){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));
