@@ -872,13 +872,12 @@ async function freigabeAnsehen(id){
   const{data}=await sb.from('berichte').select('*').eq('id',id).single();if(!data)return;
   toast('PDF wird erstellt...','info');
   try{
-    const{data:ma}=await sb.from('mitarbeiter').select('unterschrift_data').eq('id',data.mitarbeiter_id).single();
-    const sigBackup=unterschriftData;
-    if(ma?.unterschrift_data)unterschriftData=ma.unterschrift_data;
-    const reportForPDF={...data,role:data.rolle,name:data.mitarbeiter_name,projektNr:data.projekt_nr,zeitRows:data.zeit_rows,machRows:data.mach_rows,zusatzProjekte:data.zusatz_projekte};
+    let sigMA=null;
+    if(data.mitarbeiter_id){const{data:ma}=await sb.from('mitarbeiter').select('unterschrift_data').eq('id',data.mitarbeiter_id).single();sigMA=ma?.unterschrift_data||null;}
+    const reportForPDF={...data,role:data.rolle,name:data.mitarbeiter_name,projektNr:data.projekt_nr,zeitRows:data.zeit_rows,machRows:data.mach_rows,zusatzProjekte:data.zusatz_projekte,
+      sig_mitarbeiter:sigMA, sig_bauleiter:data.abgenommen_sig||null};
     const doc=await generatePDF(reportForPDF);
     doc.save(buildPDFName(data));
-    unterschriftData=sigBackup;
     toast('PDF erstellt','ok');
   }catch(e){toast('Fehler: '+e.message,'err');}
 }
@@ -889,13 +888,22 @@ async function freigabeErteilen(id){
   if(!confirm('Diesen Bericht final fuer die Buchhaltung freigeben?'))return;
   const{data}=await sb.from('berichte').select('*').eq('id',id).single();if(!data)return;
   const upd={bh_freigegeben:true,bh_freigegeben_von:currentUser.name,bh_freigegeben_am:new Date().toISOString()};
+  // Unterschrift fuers Bauleiter-Feld: hat schon jemand (Bauleiter) gezeichnet -> bleibt.
+  // Sonst setzt der Freigebende (Buchhaltung/Admin) seine Unterschrift dort ein.
+  if(!data.abgenommen_sig){
+    upd.abgenommen_sig=unterschriftData;
+    if(!data.abgenommen_von)upd.abgenommen_von=currentUser.name;
+  }
   const{error}=await sb.from('berichte').update(upd).eq('id',id);
   if(error){toast('Fehler: '+error.message,'err');return;}
   toast('Freigegeben ✓ — PDF wird erzeugt...','ok');
-  // Neues PDF mit zentraler Buchhaltungs-Unterschrift erzeugen und senden
   try{
+    // Mitarbeiter-Unterschrift (Ersteller) fuer die linke Seite laden
+    let sigMA=null;
+    if(data.mitarbeiter_id){const{data:ma}=await sb.from('mitarbeiter').select('unterschrift_data').eq('id',data.mitarbeiter_id).single();sigMA=ma?.unterschrift_data||null;}
     const merged={...data,...upd};
-    const reportForPDF={...merged,role:merged.rolle,name:merged.mitarbeiter_name,projektNr:merged.projekt_nr,zeitRows:merged.zeit_rows,machRows:merged.mach_rows,zusatzProjekte:merged.zusatz_projekte};
+    const reportForPDF={...merged,role:merged.rolle,name:merged.mitarbeiter_name,projektNr:merged.projekt_nr,zeitRows:merged.zeit_rows,machRows:merged.mach_rows,zusatzProjekte:merged.zusatz_projekte,
+      sig_mitarbeiter:sigMA, sig_bauleiter:merged.abgenommen_sig||null};
     const pdfUrl=await sendPDFMail(reportForPDF,null);
     if(pdfUrl)await sb.from('berichte').update({pdf_url:pdfUrl}).eq('id',id);
   }catch(e){toast('PDF/Mail-Fehler: '+e.message,'err');}
@@ -1362,8 +1370,11 @@ async function plToggleAbnahme(id,aktuell){
   if(error){toast('Fehler: '+error.message,'err');return;}
   toast('Abgenommen ✓ — PDF wird erzeugt...','ok');
   try{
+    let sigMA=null;
+    if(data.mitarbeiter_id){const{data:ma}=await sb.from('mitarbeiter').select('unterschrift_data').eq('id',data.mitarbeiter_id).single();sigMA=ma?.unterschrift_data||null;}
     const merged={...data,...upd};
-    const reportForPDF={...merged,role:merged.rolle,name:merged.mitarbeiter_name,projektNr:merged.projekt_nr,zeitRows:merged.zeit_rows,machRows:merged.mach_rows,zusatzProjekte:merged.zusatz_projekte};
+    const reportForPDF={...merged,role:merged.rolle,name:merged.mitarbeiter_name,projektNr:merged.projekt_nr,zeitRows:merged.zeit_rows,machRows:merged.mach_rows,zusatzProjekte:merged.zusatz_projekte,
+      sig_mitarbeiter:sigMA, sig_bauleiter:merged.abgenommen_sig||null};
     const pdfUrl=await sendPDFMail(reportForPDF,null);
     if(pdfUrl)await sb.from('berichte').update({pdf_url:pdfUrl}).eq('id',id);
   }catch(e){toast('PDF/Mail-Fehler: '+e.message,'err');}
@@ -1574,7 +1585,7 @@ async function saveAndSendVA(){
     if(error){toast('Fehler: '+error.message,'err');return;}
     savedId=data.id;currentId=savedId;
   }
-  const reportForPDF={...d,id:savedId,role:'va',projektNr:projekt?.nr||'',zeitRows,machRows:getMachRows(),steps:getSteps(),lieferungen:getLiefData(),maengel:getMangelData(),zusatzProjekte};
+  const reportForPDF={...d,id:savedId,role:'va',projektNr:projekt?.nr||'',zeitRows,machRows:getMachRows(),steps:getSteps(),lieferungen:getLiefData(),maengel:getMangelData(),zusatzProjekte,sig_mitarbeiter:unterschriftData,sig_bauleiter:null};
   const pdfUrl=await sendPDFMail(reportForPDF,'va-send-status');
   if(pdfUrl)await sb.from('berichte').update({gesendet:true,pdf_url:pdfUrl}).eq('id',savedId);
   else await sb.from('berichte').update({gesendet:true}).eq('id',savedId);
@@ -1625,7 +1636,7 @@ async function saveAndSendVASplit(base,zeitRows,hauptProjektId,projIds){
     savedId=ins.id;
     // Fotos nur fuers Hauptprojekt ins PDF; bei Nebenprojekten temporaer leeren
     if(!istHaupt)fotoDataUrls=[];else fotoDataUrls=fotosBackup.slice();
-    const reportForPDF={...d,id:savedId,role:'va',projektNr:proj?.nr||'',zeitRows:zr,machRows:mr,steps:stps,lieferungen:d.lieferungen,maengel:d.maengel,zusatzProjekte:d.zusatz_projekte};
+    const reportForPDF={...d,id:savedId,role:'va',projektNr:proj?.nr||'',zeitRows:zr,machRows:mr,steps:stps,lieferungen:d.lieferungen,maengel:d.maengel,zusatzProjekte:d.zusatz_projekte,sig_mitarbeiter:unterschriftData,sig_bauleiter:null};
     const pdfUrl=await sendPDFMail(reportForPDF,'va-send-status');
     if(pdfUrl)await sb.from('berichte').update({gesendet:true,pdf_url:pdfUrl}).eq('id',savedId);
     else await sb.from('berichte').update({gesendet:true}).eq('id',savedId);
@@ -1850,9 +1861,15 @@ async function generatePDF(report){
   LINE(M,sigY,M+65,sigY,C.rahmen);LINE(W-M-65,sigY,W-M,sigY,C.rahmen);
   doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...C.hellgrau);
   doc.text('Unterschrift Mitarbeiter',M,sigY+4);doc.text('Unterschrift Bauleiter',W-M-65,sigY+4);
-  const sigData=unterschriftData||currentUser?.unterschrift_data||null;
-  if(sigData&&sigData.length>100){
-    try{const sigImg=new Image();sigImg.src=sigData;await new Promise(r=>{sigImg.onload=r;setTimeout(r,500);});doc.addImage(sigData,'PNG',M,sigY-17,60,15);}catch(e){}
+  // Linke Seite: Unterschrift des Mitarbeiters (Berichts-Ersteller)
+  const sigMA=report.sig_mitarbeiter||report.unterschrift_mitarbeiter||unterschriftData||currentUser?.unterschrift_data||null;
+  if(sigMA&&sigMA.length>100){
+    try{const im=new Image();im.src=sigMA;await new Promise(r=>{im.onload=r;setTimeout(r,500);});doc.addImage(sigMA,'PNG',M,sigY-17,60,15);}catch(e){}
+  }
+  // Rechte Seite: Unterschrift Bauleiter/Freigabe — nur wenn vorhanden (abgenommen_sig).
+  const sigBL=report.sig_bauleiter||report.abgenommen_sig||null;
+  if(sigBL&&sigBL.length>100){
+    try{const im2=new Image();im2.src=sigBL;await new Promise(r=>{im2.onload=r;setTimeout(r,500);});doc.addImage(sigBL,'PNG',W-M-65,sigY-17,60,15);}catch(e){}
   }
   return doc;
 }
@@ -2468,13 +2485,14 @@ function getZusatzProjekte(){
 
 function buildVAZeit(){
   return'<div class="sec"><div class="sh">Personal-Zeiterfassung <span id="zeit-total" style="margin-left:auto;color:var(--gl);font-family:\'IBM Plex Mono\',monospace;font-size:10px">0,0h gesamt</span></div>'+
-    '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-bottom:8px">Fahrzeit wird aus Hauptprojekt automatisch übernommen</div>'+
+    '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-bottom:6px">Fahrzeit wird aus Hauptprojekt automatisch übernommen</div>'+
+    '<div style="background:rgba(74,124,58,.12);border:1px solid var(--gd);border-radius:var(--rad);padding:8px 10px;margin-bottom:8px;font-size:10px;color:var(--c);line-height:1.5"><b>Mehrere Baustellen?</b> Stelle die <b style="color:var(--gl)">Projekt</b>-Spalte je Zeile auf die passende Baustelle. Jede Baustelle wird automatisch als <b>eigener Bericht</b> gespeichert und versendet.</div>'+
     '<div class="tbl-wrap"><table class="tbl"><thead><tr>'+
-    '<th>Name</th><th>Qual.</th><th>Von</th><th>Bis</th><th>Pause</th><th>Arbeit</th><th>Fahrt</th><th>Fahrzeit</th><th>Anteil</th><th>GESAMT</th><th>Projekt</th><th>Taetigkeit</th><th></th>'+
+    '<th>Name</th><th>Qual.</th><th>Von</th><th>Bis</th><th>Pause</th><th>Arbeit</th><th>Fahrt</th><th>Fahrzeit</th><th>Anteil</th><th>GESAMT</th><th style="background:var(--gd);color:#fff;border-radius:3px 3px 0 0">★ Projekt</th><th>Taetigkeit</th><th></th>'+
     '</tr></thead><tbody id="zeit-body"></tbody></table></div>'+
     '<button class="btn" ontouchstart="addZeitRow()" onclick="addZeitRow()">+ Person</button></div>'+
     '<div class="sec"><div class="sh">Geraeteeinsatz (Dataflor)</div>'+
-    '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Geraet</th><th>Fahrzeugnr.</th><th>Stunden</th><th>Projekt</th><th></th></tr></thead><tbody id="mach-body"></tbody></table></div>'+
+    '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Geraet</th><th>Fahrzeugnr.</th><th>Stunden</th><th style="background:var(--gd);color:#fff;border-radius:3px 3px 0 0">★ Projekt</th><th></th></tr></thead><tbody id="mach-body"></tbody></table></div>'+
     '<button class="btn" ontouchstart="addMachRow()" onclick="addMachRow()">+ Geraet</button></div>'+
     '<div class="arow"><button class="btn btn-p" ontouchstart="saveAndSendVA()" onclick="saveAndSendVA()">Speichern und PDF senden</button></div>';
 }
@@ -2519,7 +2537,7 @@ function addZeitRow(data={}){
     '<td><input class="zeit-fahrzeit" type="number" value="'+fzVal+'" min="0" style="width:60px;background:var(--s2);border:1px solid var(--b);border-radius:3px;padding:3px 6px;color:var(--earth);font-family:\'IBM Plex Mono\',monospace" oninput="calcZR(this)"></td>'+
     '<td><input class="zeit-anteil" type="text" readonly value="'+(data.fahrtAnteil||'')+'" style="width:48px;color:var(--earth);font-family:\'IBM Plex Mono\',monospace;font-weight:600"></td>'+
     '<td><input class="zeit-gesamt" type="text" readonly value="'+(data.gesamt||'')+'" style="width:56px;color:var(--gl);font-family:\'IBM Plex Mono\',monospace;font-weight:700;font-size:12px"></td>'+
-    '<td><input class="projcell-filter" type="text" placeholder="suchen..." oninput="filterRowProj(this)"><select class="row-pr" data-kat="'+rowKat+'" style="font-size:9px;min-width:90px" onchange="onZeitProjektChange(this)">'+prOpts+'</select></td>'+
+    '<td><input class="projcell-filter" type="text" placeholder="suchen..." oninput="filterRowProj(this)"><select class="row-pr" data-kat="'+rowKat+'" style="font-size:9px;min-width:90px;border:2px solid var(--gd);background:rgba(74,124,58,.10);font-weight:600" onchange="onZeitProjektChange(this)">'+prOpts+'</select></td>'+
     '<td><select class="row-tae" style="font-size:9px;min-width:110px">'+taeOpts+'</select></td>'+
     '<td><button class="delbtn" ontouchstart="this.closest(\'tr\').remove();updZeitTotal();refreshStepMAs()" onclick="this.closest(\'tr\').remove();updZeitTotal();refreshStepMAs()">&#x2715;</button></td>';
   tbody.appendChild(tr);calcZR(tr.querySelector('.zeit-von'));setTimeout(refreshStepMAs,50);
