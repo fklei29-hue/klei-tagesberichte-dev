@@ -152,6 +152,16 @@ select option{background:var(--s2);}
 .zusatz-projekt-block{background:var(--s2);border:1px solid rgba(154,108,26,.3);border-radius:6px;padding:12px;margin-top:10px;}
 .projcell-filter{width:100%;box-sizing:border-box;font-size:9px;padding:2px 4px;margin-bottom:2px;border:1px solid var(--b);border-radius:3px;background:var(--s2);color:var(--t);}
 .projcell-filter::placeholder{color:var(--m);}
+.mabox{position:relative;min-width:120px;}
+.mabox-input{width:100%;box-sizing:border-box;font-size:11px;padding:4px 6px;border:1px solid var(--b);border-radius:3px;background:var(--s2);color:var(--t);}
+.mabox-input::placeholder{color:var(--m);}
+.mabox-list{position:absolute;left:0;right:0;top:100%;z-index:200;background:var(--s1);border:1px solid var(--gd);border-radius:4px;margin-top:2px;max-height:200px;overflow-y:auto;display:none;box-shadow:0 6px 18px rgba(0,0,0,.4);}
+.mabox-list.open{display:block;}
+.mabox-opt{padding:8px 10px;font-size:12px;color:var(--t);cursor:pointer;border-bottom:1px solid rgba(44,58,28,.4);white-space:nowrap;}
+.mabox-opt:last-child{border-bottom:none;}
+.mabox-opt:hover,.mabox-opt.hi{background:var(--gg);color:var(--gl);}
+.mabox-opt .nr{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--m);margin-left:4px;}
+.mabox-empty{padding:8px 10px;font-size:11px;color:var(--m);}
 .tbl{width:100%;border-collapse:collapse;font-size:11px;}
 .tbl th{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--m);padding:5px 6px;border-bottom:1px solid var(--b);text-align:left;}
 .tbl td{padding:4px 3px;border-bottom:1px solid rgba(44,58,28,.4);}
@@ -1933,21 +1943,50 @@ function maRowOpts(sel){
   if(sel&&!list.some(m=>m.name===sel))html+='<option value="'+_dfEsc(sel)+'" selected>'+_dfEsc(sel)+'</option>';
   return html;
 }
-// Live-Filter fuer die Mitarbeiter-Spalte (gleiche Bedienung wie Projektsuche):
-// tippt man Buchstaben oder die Personalnummer, bleiben nur passende Mitarbeiter.
-function filterRowMA(inp){
-  const cell=inp.closest('td');if(!cell)return;
-  const sel=cell.querySelector('select.zeit-name');if(!sel)return;
-  const q=inp.value.trim().toLowerCase();
-  const cur=sel.value;
-  const list=maAuswahlListe().filter(m=>{
-    if(!q)return true;
-    return ((m.name||'')+' '+(m.mitarbeiter_nr||'')).toLowerCase().includes(q);
-  });
-  let html='<option value="">- Name -</option>'+list.map(m=>'<option value="'+_dfEsc(m.name)+'" '+(cur===m.name?'selected':'')+'>'+_dfEsc(m.name)+(m.mitarbeiter_nr?' #'+m.mitarbeiter_nr:'')+'</option>').join('');
-  if(cur&&!list.some(m=>m.name===cur))html+='<option value="'+_dfEsc(cur)+'" selected>'+_dfEsc(cur)+'</option>';
-  sel.innerHTML=html;
+// ── Such-Dropdown fuer Mitarbeiter (iOS-tauglich): Tippen + antippbare Trefferliste ──
+// Das sichtbare Textfeld (.mabox-input) filtert MALISTE; ein Treffer setzt das
+// versteckte <select class="zeit-name">, damit getZeitRows/onZeitNameChange unveraendert weiterlaufen.
+function maBoxRender(inp,filterText){
+  const box=inp.closest('.mabox');if(!box)return;
+  const listEl=box.querySelector('.mabox-list');if(!listEl)return;
+  const q=_dfNorm(filterText||'');
+  const list=maAuswahlListe()
+    .filter(m=>{if(!q)return true;return _dfNorm((m.name||'')+' '+(m.mitarbeiter_nr||'')).includes(q);})
+    .sort((a,b)=>(a.name||'').localeCompare(b.name||'','de'));
+  if(!list.length){listEl.innerHTML='<div class="mabox-empty">Kein Treffer</div>';listEl.classList.add('open');return;}
+  listEl.innerHTML=list.slice(0,60).map(m=>'<div class="mabox-opt" data-name="'+_dfEsc(m.name)+'" onmousedown="maBoxPick(this)" ontouchstart="event.preventDefault();maBoxPick(this)">'+_dfEsc(m.name)+(m.mitarbeiter_nr?'<span class="nr">#'+m.mitarbeiter_nr+'</span>':'')+'</div>').join('');
+  listEl.classList.add('open');
 }
+function maBoxInput(inp){maBoxRender(inp,inp.value);}
+function maBoxPick(opt){
+  const name=opt.getAttribute('data-name')||'';
+  const box=opt.closest('.mabox');if(!box)return;
+  const inp=box.querySelector('.mabox-input');
+  const sel=box.querySelector('select.zeit-name');
+  const listEl=box.querySelector('.mabox-list');
+  if(inp)inp.value=name;
+  if(sel){sel.innerHTML=maRowOpts(name);sel.value=name;onZeitNameChange(sel);}
+  if(listEl)listEl.classList.remove('open');
+}
+function maBoxBlur(inp){
+  // kurze Verzoegerung, damit ein Tap auf einen Treffer noch durchkommt
+  setTimeout(()=>{
+    const box=inp.closest('.mabox');if(!box)return;
+    const listEl=box.querySelector('.mabox-list');
+    const sel=box.querySelector('select.zeit-name');
+    // Wenn der eingetippte Text exakt einem erlaubten Namen entspricht, uebernehmen;
+    // sonst Eingabe als Freitext-Namen in das versteckte select schreiben (bleibt erhalten).
+    const typed=inp.value.trim();
+    if(sel){
+      const match=maAuswahlListe().find(m=>_dfNorm(m.name)===_dfNorm(typed));
+      const val=match?match.name:typed;
+      sel.innerHTML=maRowOpts(val);sel.value=val;onZeitNameChange(sel);
+      if(match)inp.value=match.name;
+    }
+    if(listEl)listEl.classList.remove('open');
+  },180);
+}
+function filterRowMA(inp){/* ersetzt durch maBox-Such-Dropdown */}
 // Bei Auswahl eines Mitarbeiters: Qualifikation aus den Stammdaten vorbelegen
 // (nur wenn dort eine der bekannten Stufen hinterlegt ist) und Arbeitsschritte aktualisieren.
 function onZeitNameChange(sel){
@@ -2337,7 +2376,7 @@ function addZeitRow(data={}){
   const prOpts=rowProjektOpts(rowKat,autoProjId);
   const taeOpts='<option value="">-</option>'+TAETIGKEITEN.map(t=>'<option value="'+t+'" '+(data.tae===t?'selected':'')+'>'+t+'</option>').join('');
   tr.innerHTML=
-    '<td><input class="projcell-filter" type="text" placeholder="suchen..." oninput="filterRowMA(this)"><select class="zeit-name" style="font-size:10px;min-width:100px" onchange="onZeitNameChange(this)">'+maRowOpts(data.name||'')+'</select></td>'+
+    '<td><div class="mabox"><input class="mabox-input" type="text" placeholder="Name suchen..." value="'+_dfEsc(data.name||'')+'" oninput="maBoxInput(this)" onfocus="maBoxInput(this)" onblur="maBoxBlur(this)" autocomplete="off"><div class="mabox-list"></div><select class="zeit-name" style="display:none">'+maRowOpts(data.name||'')+'</select></div></td>'+
     '<td><select class="zeit-qual" style="font-size:10px">'+['VA','Facharbeiter','Helfer','Azubi','Sub'].map(q=>'<option'+(data.qual===q?' selected':'')+'>'+q+'</option>').join('')+'</select></td>'+
     '<td><input class="zeit-von" type="time" value="'+(data.von||'07:00')+'" style="width:76px" oninput="calcZR(this)"></td>'+
     '<td><input class="zeit-bis" type="time" value="'+(data.bis||'16:00')+'" style="width:76px" oninput="calcZR(this)"></td>'+
