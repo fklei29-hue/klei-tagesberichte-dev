@@ -534,7 +534,7 @@ function restoreVADraft(){
   };
   currentId=null; // Entwurf ist ein neuer, ungespeicherter Bericht
   document.getElementById('mo-draft').style.display='none';
-  showTab('bericht');
+  showTab('zeit');
   setTimeout(()=>{loadVAForm(r);toast('Entwurf wiederhergestellt','ok');},150);
 }
 
@@ -1387,6 +1387,15 @@ async function saveAndSendVA(){
     zusatz_projekte:zusatzProjekte,gesendet:false
   };
   if(!d.datum||!d.projekt_id){toast('Datum und Projekt erforderlich','err');return;}
+
+  // Welche verschiedenen Projekte kommen in den Zeit-Zeilen vor?
+  // (leere projektId -> Hauptprojekt zugeordnet). Aufteilung NUR bei neuem Bericht.
+  const projIds=[...new Set(zeitRows.map(z=>z.projektId||projektId).filter(Boolean))];
+  if(!currentId && projIds.length>1){
+    await saveAndSendVASplit(d,zeitRows,projektId,projIds);
+    return;
+  }
+
   const st=document.getElementById('va-send-status');
   if(st){st.className='send-status show sending';st.textContent='Speichern...';}
   let savedId=currentId;
@@ -1405,6 +1414,61 @@ async function saveAndSendVA(){
   clearVADraft();
   await loadReports();renderSB();currentId=null;newReport();
   }finally{isSending=false;}
+}
+
+// Mehrere Baustellen: pro Projekt ein eigener Datensatz + eigenes PDF + eigene Mail.
+// Zeiten/Schritte/Maschinen werden nach projektId gefiltert; Maengel/Material/Fotos
+// kommen NUR in den Bericht des Hauptprojekts.
+async function saveAndSendVASplit(base,zeitRows,hauptProjektId,projIds){
+  const st=document.getElementById('va-send-status');
+  // Hauptprojekt zuerst, dann die uebrigen
+  const sortedIds=[hauptProjektId,...projIds.filter(id=>id!==hauptProjektId)];
+  const allMach=getMachRows();
+  const allSteps=getSteps();
+  const fotosBackup=fotoDataUrls.slice();
+  let ok=0,fehler=0;
+  for(let idx=0;idx<sortedIds.length;idx++){
+    const pid=sortedIds[idx];
+    const proj=PROJEKTE.find(p=>p.id===pid);
+    const istHaupt=(pid===hauptProjektId);
+    // Zeilen dieses Projekts (leere projektId zaehlt zum Hauptprojekt)
+    const zr=zeitRows.filter(z=>(z.projektId||hauptProjektId)===pid);
+    const mr=allMach.filter(m=>(m.projektId||hauptProjektId)===pid);
+    const stps=allSteps.filter(s=>(s.projektId||hauptProjektId)===pid);
+    const totalH=zr.reduce((s,w)=>s+(parseFloat((w.gesamt||'0').replace(',','.'))||0),0);
+    if(st){st.className='send-status show sending';st.textContent='Speichern '+(idx+1)+'/'+sortedIds.length+' ('+(proj?.nr||'?')+')...';}
+    const d={
+      ...base,
+      projekt_id:pid,projekt_nr:proj?.nr||'',
+      netto_gesamt_h:totalH,netto_arbeit_h:totalH,
+      zeit_rows:zr,mach_rows:mr,steps:stps,
+      // Maengel/Material/Mengen/LV/Fotos nur ins Hauptprojekt
+      lieferungen:istHaupt?base.lieferungen:[],
+      mengen:istHaupt?base.mengen:[],
+      lv_rows:istHaupt?base.lv_rows:[],
+      maengel:istHaupt?base.maengel:[],
+      foto_count:istHaupt?base.foto_count:0,
+      // Zusatzprojekt-Liste nur im Hauptbericht als Info
+      zusatz_projekte:istHaupt?base.zusatz_projekte:[],
+      gesendet:false
+    };
+    let savedId=null;
+    const{data:ins,error}=await sb.from('berichte').insert(d).select().single();
+    if(error){fehler++;toast('Fehler bei '+(proj?.nr||'?')+': '+error.message,'err');continue;}
+    savedId=ins.id;
+    // Fotos nur fuers Hauptprojekt ins PDF; bei Nebenprojekten temporaer leeren
+    if(!istHaupt)fotoDataUrls=[];else fotoDataUrls=fotosBackup.slice();
+    const reportForPDF={...d,id:savedId,role:'va',projektNr:proj?.nr||'',zeitRows:zr,machRows:mr,steps:stps,lieferungen:d.lieferungen,maengel:d.maengel,zusatzProjekte:d.zusatz_projekte};
+    const pdfUrl=await sendPDFMail(reportForPDF,'va-send-status');
+    if(pdfUrl)await sb.from('berichte').update({gesendet:true,pdf_url:pdfUrl}).eq('id',savedId);
+    else await sb.from('berichte').update({gesendet:true}).eq('id',savedId);
+    ok++;
+  }
+  fotoDataUrls=fotosBackup; // wiederherstellen
+  if(st){st.className='send-status show '+(fehler?'err':'ok');st.textContent=ok+' Projekt-Bericht(e) gesendet'+(fehler?', '+fehler+' Fehler':'')+'.';}
+  toast(ok+' getrennte Berichte versendet'+(fehler?', '+fehler+' Fehler':''),fehler?'err':'ok');
+  clearVADraft();
+  await loadReports();renderSB();currentId=null;newReport();
 }
 
 // ══════ PDF ══════
@@ -1688,7 +1752,7 @@ function loadReport(id){
     document.querySelectorAll('.fahrt-btn').forEach(b=>b.classList.toggle('fahrt-active',b.dataset.val===curFahrtStatus));
     document.querySelectorAll('#ar-taetigkeiten-tags .tg').forEach(t=>t.classList.toggle('a',(r.taetigkeiten||[]).includes(t.textContent)));
     calcAR();renderARDetail(r);showTab('quick');
-  }else{renderVADetail(r);loadVAForm(r);showTab('bericht');}
+  }else{renderVADetail(r);loadVAForm(r);showTab('zeit');}
 }
 
 function loadVAForm(r){
@@ -2406,7 +2470,7 @@ function newReport(){
   setTimeout(()=>{addStep();addZeitRow();addLief();addMenge();addLVRow();},50);
   curWeather='Sonnig';document.querySelectorAll('.wc').forEach((c,i)=>c.classList.toggle('s',i===0));
   document.querySelectorAll('#va-taetigkeiten-tags .tg').forEach(t=>t.classList.remove('a'));
-  showTab('bericht');toast('Neuer Bericht','ok');
+  showTab('zeit');toast('Neuer Bericht','ok');
 }
 
 function expDFCSV(){const r=reports.find(x=>x.id===currentId);if(!r){toast('Kein Bericht','err');return;}const rows=r.zeit_rows||[];const hdr='Datum;Projekt;Name;Von;Bis;Arbeit_h;Fahrt;Fahrzeit_min;Gesamt_h';const lines=rows.filter(t=>t.name).map(t=>[r.datum,r.projekt_nr,t.name,t.von||'',t.bis||'',(t.nettoArbeit||'0').replace(',','.'),t.fahrt||'fahrer',t.fahrzeitMin||0,(t.gesamt||'0').replace(',','.')].join(';'));dlFile('Dataflor_'+r.datum+'.csv',[hdr,...lines].join('\n'),'text/csv');toast('CSV exportiert','ok');}
