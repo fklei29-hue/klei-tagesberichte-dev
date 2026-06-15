@@ -1984,15 +1984,15 @@ function buildUI(){
       '<div class="panel" id="panel-details"><div id="detailContent"><div class="empty"><div class="ei">&#128203;</div><div class="et">Bericht waehlen</div></div></div></div>';
   }else{
     tabs.innerHTML=
-      '<div class="tab act" id="tab-bericht" ontouchstart="showTab(\'bericht\')" onclick="showTab(\'bericht\')">Bericht</div>'+
-      '<div class="tab" id="tab-zeit" ontouchstart="showTab(\'zeit\')" onclick="showTab(\'zeit\')">Zeiten</div>'+
+      '<div class="tab act" id="tab-zeit" ontouchstart="showTab(\'zeit\')" onclick="showTab(\'zeit\')">Zeiten</div>'+
+      '<div class="tab" id="tab-bericht" ontouchstart="showTab(\'bericht\')" onclick="showTab(\'bericht\')">Bericht</div>'+
       '<div class="tab" id="tab-material" ontouchstart="showTab(\'material\')" onclick="showTab(\'material\')">Material</div>'+
       '<div class="tab" id="tab-kalender" ontouchstart="showTab(\'kalender\')" onclick="showTab(\'kalender\')">Kalender</div>'+
       '<div class="tab" id="tab-details" ontouchstart="showTab(\'details\')" onclick="showTab(\'details\')">Details</div>'+
       '<div class="tab" id="tab-ue" ontouchstart="showTab(\'ue\')" onclick="showTab(\'ue\')">Uebersicht</div>';
     content.innerHTML=
-      '<div class="panel act" id="panel-bericht">'+buildVABericht()+'</div>'+
-      '<div class="panel" id="panel-zeit">'+buildVAZeit()+'</div>'+
+      '<div class="panel act" id="panel-zeit">'+buildVAZeit()+'</div>'+
+      '<div class="panel" id="panel-bericht">'+buildVABericht()+'</div>'+
       '<div class="panel" id="panel-material">'+buildVAMaterial()+'</div>'+
       '<div class="panel" id="panel-kalender"><div id="kalender-content"></div></div>'+
       '<div class="panel" id="panel-details"><div id="detailContent"><div class="empty"><div class="ei">&#128203;</div><div class="et">Bericht waehlen</div></div></div></div>'+
