@@ -672,7 +672,7 @@ function doLogout(){
 
 async function loadProjekte(){const{data}=await sb.from('projekte').select('*').eq('aktiv',true).order('nr');if(data)PROJEKTE=data;}
 async function loadFahrzeuge(){const{data}=await sb.from('fahrzeuge').select('*').eq('aktiv',true).order('kennzeichen');if(data)FAHRZEUGE=data;}
-async function loadMitarbeiterListe(){const{data}=await sb.from('mitarbeiter').select('id,name,mitarbeiter_nr,qualifikation,aktiv');if(data)MALISTE=data;}
+async function loadMitarbeiterListe(){const{data}=await sb.from('mitarbeiter').select('id,name,mitarbeiter_nr,qualifikation,rolle,aktiv');if(data)MALISTE=data;}
 
 async function loadReports(){
   let q=sb.from('berichte').select('*').order('datum',{ascending:false}).order('erstellt_am',{ascending:false});
@@ -1858,8 +1858,13 @@ function filterRowProj(inp){
 // Mitarbeiter-Auswahl fuer die Zeiten-Zeile: Optionen aus den Stammdaten (MALISTE),
 // Anzeige mit Personalnummer. Ein bereits gesetzter Name (z.B. aus altem Bericht
 // oder von inaktivem Mitarbeiter) bleibt als Option erhalten.
+// Rollen, die NICHT in der VA-Namensauswahl erscheinen sollen (Buero/Leitung):
+const MA_AUSWAHL_AUSGESCHLOSSEN=['admin','verwaltung','projektleiter'];
+function maAuswahlListe(){
+  return MALISTE.filter(m=>m.aktiv!==false&&m.name&&!MA_AUSWAHL_AUSGESCHLOSSEN.includes(m.rolle));
+}
 function maRowOpts(sel){
-  const list=MALISTE.filter(m=>m.aktiv!==false&&m.name);
+  const list=maAuswahlListe();
   let html='<option value="">- Name -</option>'+list.map(m=>'<option value="'+_dfEsc(m.name)+'" '+(sel===m.name?'selected':'')+'>'+_dfEsc(m.name)+(m.mitarbeiter_nr?' #'+m.mitarbeiter_nr:'')+'</option>').join('');
   if(sel&&!list.some(m=>m.name===sel))html+='<option value="'+_dfEsc(sel)+'" selected>'+_dfEsc(sel)+'</option>';
   return html;
@@ -1871,7 +1876,7 @@ function filterRowMA(inp){
   const sel=cell.querySelector('select.zeit-name');if(!sel)return;
   const q=inp.value.trim().toLowerCase();
   const cur=sel.value;
-  const list=MALISTE.filter(m=>m.aktiv!==false&&m.name).filter(m=>{
+  const list=maAuswahlListe().filter(m=>{
     if(!q)return true;
     return ((m.name||'')+' '+(m.mitarbeiter_nr||'')).toLowerCase().includes(q);
   });
