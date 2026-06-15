@@ -872,10 +872,10 @@ async function freigabeAnsehen(id){
   const{data}=await sb.from('berichte').select('*').eq('id',id).single();if(!data)return;
   toast('PDF wird erstellt...','info');
   try{
-    let sigMA=null;
-    if(data.mitarbeiter_id){const{data:ma}=await sb.from('mitarbeiter').select('unterschrift_data').eq('id',data.mitarbeiter_id).single();sigMA=ma?.unterschrift_data||null;}
+    let sigMA=data.unterschrift_mitarbeiter||null;
+    if(!sigMA&&data.mitarbeiter_id){const{data:ma}=await sb.from('mitarbeiter').select('unterschrift_data').eq('id',data.mitarbeiter_id).single();sigMA=ma?.unterschrift_data||null;}
     const reportForPDF={...data,role:data.rolle,name:data.mitarbeiter_name,projektNr:data.projekt_nr,zeitRows:data.zeit_rows,machRows:data.mach_rows,zusatzProjekte:data.zusatz_projekte,
-      sig_mitarbeiter:sigMA, sig_bauleiter:data.abgenommen_sig||null};
+      sig_mitarbeiter:sigMA, sig_bauleiter:data.abgenommen_sig||null, sigStrict:true};
     const doc=await generatePDF(reportForPDF);
     doc.save(buildPDFName(data));
     toast('PDF erstellt','ok');
@@ -898,12 +898,12 @@ async function freigabeErteilen(id){
   if(error){toast('Fehler: '+error.message,'err');return;}
   toast('Freigegeben ✓ — PDF wird erzeugt...','ok');
   try{
-    // Mitarbeiter-Unterschrift (Ersteller) fuer die linke Seite laden
-    let sigMA=null;
-    if(data.mitarbeiter_id){const{data:ma}=await sb.from('mitarbeiter').select('unterschrift_data').eq('id',data.mitarbeiter_id).single();sigMA=ma?.unterschrift_data||null;}
+    // Mitarbeiter-Unterschrift: bevorzugt die am Bericht gespeicherte, sonst aus dem Profil (Altbestand)
+    let sigMA=data.unterschrift_mitarbeiter||null;
+    if(!sigMA&&data.mitarbeiter_id){const{data:ma}=await sb.from('mitarbeiter').select('unterschrift_data').eq('id',data.mitarbeiter_id).single();sigMA=ma?.unterschrift_data||null;}
     const merged={...data,...upd};
     const reportForPDF={...merged,role:merged.rolle,name:merged.mitarbeiter_name,projektNr:merged.projekt_nr,zeitRows:merged.zeit_rows,machRows:merged.mach_rows,zusatzProjekte:merged.zusatz_projekte,
-      sig_mitarbeiter:sigMA, sig_bauleiter:merged.abgenommen_sig||null};
+      sig_mitarbeiter:sigMA, sig_bauleiter:merged.abgenommen_sig||null, sigStrict:true};
     const pdfUrl=await sendPDFMail(reportForPDF,null);
     if(pdfUrl)await sb.from('berichte').update({pdf_url:pdfUrl}).eq('id',id);
   }catch(e){toast('PDF/Mail-Fehler: '+e.message,'err');}
@@ -1364,20 +1364,12 @@ async function plToggleAbnahme(id,aktuell){
   // Abnehmen: eigene Unterschrift noetig
   if(!unterschriftData){toast('Bitte zuerst Ihre Unterschrift im Profil zeichnen','err');openProfil();return;}
   if(!confirm('Diesen Bericht als Bauleiter abnehmen (mit Ihrer Unterschrift)?'))return;
-  const{data}=await sb.from('berichte').select('*').eq('id',id).single();if(!data)return;
   const upd={abgenommen:true,abgenommen_von:currentUser.name,abgenommen_am:new Date().toISOString(),abgenommen_sig:unterschriftData};
   const{error}=await sb.from('berichte').update(upd).eq('id',id);
   if(error){toast('Fehler: '+error.message,'err');return;}
-  toast('Abgenommen ✓ — PDF wird erzeugt...','ok');
-  try{
-    let sigMA=null;
-    if(data.mitarbeiter_id){const{data:ma}=await sb.from('mitarbeiter').select('unterschrift_data').eq('id',data.mitarbeiter_id).single();sigMA=ma?.unterschrift_data||null;}
-    const merged={...data,...upd};
-    const reportForPDF={...merged,role:merged.rolle,name:merged.mitarbeiter_name,projektNr:merged.projekt_nr,zeitRows:merged.zeit_rows,machRows:merged.mach_rows,zusatzProjekte:merged.zusatz_projekte,
-      sig_mitarbeiter:sigMA, sig_bauleiter:merged.abgenommen_sig||null};
-    const pdfUrl=await sendPDFMail(reportForPDF,null);
-    if(pdfUrl)await sb.from('berichte').update({pdf_url:pdfUrl}).eq('id',id);
-  }catch(e){toast('PDF/Mail-Fehler: '+e.message,'err');}
+  // KEINE E-Mail beim Bauleiter — Bericht wird nur fuer die Buchhaltung aktualisiert.
+  // Die Buchhaltung versendet beim finalen Freigeben das neue PDF.
+  toast('Abgenommen ✓ — geht weiter an die Buchhaltung','ok');
   filterPLBer();
 }
 
@@ -1562,6 +1554,7 @@ async function saveAndSendVA(){
     projektnr_intern:document.getElementById('v-projektnr').value,
     besucher:document.getElementById('v-besucher').value,
     foto_count:fotoDataUrls.filter(Boolean).length,
+    unterschrift_mitarbeiter:unterschriftData||null,
     zusatz_projekte:zusatzProjekte,gesendet:false
   };
   if(!d.datum||!d.projekt_id){toast('Datum und Projekt erforderlich','err');return;}
@@ -1861,12 +1854,14 @@ async function generatePDF(report){
   LINE(M,sigY,M+65,sigY,C.rahmen);LINE(W-M-65,sigY,W-M,sigY,C.rahmen);
   doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...C.hellgrau);
   doc.text('Unterschrift Mitarbeiter',M,sigY+4);doc.text('Unterschrift Bauleiter',W-M-65,sigY+4);
-  // Linke Seite: Unterschrift des Mitarbeiters (Berichts-Ersteller)
-  const sigMA=report.sig_mitarbeiter||report.unterschrift_mitarbeiter||unterschriftData||currentUser?.unterschrift_data||null;
+  // Linke Seite: Unterschrift des Mitarbeiters (Berichts-Ersteller).
+  // Im Freigabe-/Abnahme-Kontext (sigStrict) KEIN Fallback auf die eigene Unterschrift,
+  // damit nicht versehentlich die Bauleiter-/Buchhaltungs-Unterschrift links landet.
+  const sigMA=report.sigStrict?(report.sig_mitarbeiter||null):(report.sig_mitarbeiter||report.unterschrift_mitarbeiter||unterschriftData||currentUser?.unterschrift_data||null);
   if(sigMA&&sigMA.length>100){
     try{const im=new Image();im.src=sigMA;await new Promise(r=>{im.onload=r;setTimeout(r,500);});doc.addImage(sigMA,'PNG',M,sigY-17,60,15);}catch(e){}
   }
-  // Rechte Seite: Unterschrift Bauleiter/Freigabe — nur wenn vorhanden (abgenommen_sig).
+  // Rechte Seite: Unterschrift Bauleiter/Freigabe — nur wenn vorhanden.
   const sigBL=report.sig_bauleiter||report.abgenommen_sig||null;
   if(sigBL&&sigBL.length>100){
     try{const im2=new Image();im2.src=sigBL;await new Promise(r=>{im2.onload=r;setTimeout(r,500);});doc.addImage(sigBL,'PNG',W-M-65,sigY-17,60,15);}catch(e){}
@@ -2675,3 +2670,4 @@ function showTab(name){
 </script>
 </body>
 </html>
+
