@@ -11,6 +11,7 @@
 <title>KLEI Tagesberichte</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0e1209;--s1:#141a0d;--s2:#1a2210;--s3:#202a14;--b:#2c3a1c;--g:#72b832;--gd:#4d8520;--gg:rgba(114,184,50,.1);--gl:#9ed45a;--earth:#9a6c1a;--earthg:rgba(154,108,26,.12);--sky:#3d8fa8;--skyg:rgba(61,143,168,.1);--r:#c44828;--rg:rgba(196,72,40,.1);--o:#d4782a;--c:#dce8c4;--m:#6a8848;--t:#b8cc98;--rad:4px;--ws:#8b5cf6;--wsg:rgba(139,92,246,.1);}
@@ -272,6 +273,7 @@ select option{background:var(--s2);}
     <div class="admin-tab" id="atab-fz" ontouchstart="showAdminTab('fz')" onclick="showAdminTab('fz')">Fahrzeuge</div>
     <div class="admin-tab" id="atab-email" ontouchstart="showAdminTab('email')" onclick="showAdminTab('email')">E-Mail</div>
     <div class="admin-tab" id="atab-ber" ontouchstart="showAdminTab('ber')" onclick="showAdminTab('ber')">Berichte</div>
+    <div class="admin-tab" id="atab-ausw" ontouchstart="showAdminTab('ausw')" onclick="showAdminTab('ausw')">Auswertung</div>
     <div class="admin-tab" id="atab-exp" ontouchstart="showAdminTab('exp')" onclick="showAdminTab('exp')">Export</div>
   </div>
   <div class="admin-content">
@@ -281,6 +283,7 @@ select option{background:var(--s2);}
     <div class="admin-panel" id="apanel-fz"></div>
     <div class="admin-panel" id="apanel-email"></div>
     <div class="admin-panel" id="apanel-ber"></div>
+    <div class="admin-panel" id="apanel-ausw"></div>
     <div class="admin-panel" id="apanel-exp"></div>
   </div>
 </div>
@@ -775,7 +778,7 @@ function openAdmin(){
   const nurBuchhaltung=(currentUser.rolle==='verwaltung');
   const badge=document.querySelector('#admin-screen .admin-badge');
   if(badge)badge.textContent=nurBuchhaltung?'Buchhaltung':'Admin';
-  ['ma','proj','fz','email','ber','exp'].forEach(t=>{
+  ['ma','proj','fz','email','ber','ausw','exp'].forEach(t=>{
     const el=document.getElementById('atab-'+t);if(el)el.style.display=nurBuchhaltung?'none':'';
   });
   showAdminTab('frei');
@@ -787,6 +790,7 @@ function showAdminTab(name){
   if(name==='frei')renderAdminFreigabe();
   if(name==='ma')renderAdminMA();if(name==='proj')renderAdminProj();if(name==='fz')renderAdminFZ();
   if(name==='email')renderAdminEmail();if(name==='ber')renderAdminBer();if(name==='exp')renderAdminExp();
+  if(name==='ausw')renderAdminAusw();
 }
 
 // ══════ BUCHHALTUNGS-FREIGABE (finale Instanz) ══════
@@ -1324,6 +1328,278 @@ async function expDFCSVAdmin(){
   dlFile('KLEI_Dataflor_'+new Date().toISOString().split('T')[0]+'.csv',[hdr,...rows].join('\n'),'text/csv;charset=utf-8');
   toast(rows.length+' Zeilen exportiert'+(nurFrei!==false?' (nur freigegebene)':''),'ok');
 }
+
+// ══════ AUSWERTUNG (Admin) ══════
+let _auswData=null,auswView='projekte',_auswCharts=[],_projMapAusw=null;
+
+function _auswIso(d){const p=n=>(n<10?'0':'')+n;return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
+function _auswNum(v){if(v==null||v==='')return 0;const n=parseFloat(String(v).replace(',','.'));return isNaN(n)?0:n;}
+function _auswFmtH(h){return (Math.round(h*100)/100).toFixed(2).replace('.',',');}
+function _auswLbl(s){s=String(s||'');return s.length>26?s.slice(0,25)+'...':s;}
+function _auswCss(name,fb){try{const v=getComputedStyle(document.body).getPropertyValue(name).trim();return v||fb;}catch(e){return fb;}}
+
+const _AUSW_TH='style="text-align:left;padding:6px 8px;font-family:\'IBM Plex Mono\',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:var(--m);border-bottom:1px solid var(--b);white-space:nowrap"';
+const _AUSW_THR='style="text-align:right;padding:6px 8px;font-family:\'IBM Plex Mono\',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:var(--m);border-bottom:1px solid var(--b);white-space:nowrap"';
+const _AUSW_TD='style="padding:6px 8px;font-size:11px;border-bottom:1px solid var(--b);color:var(--t)"';
+const _AUSW_TDR='style="padding:6px 8px;font-size:11px;border-bottom:1px solid var(--b);color:var(--t);text-align:right;font-family:\'IBM Plex Mono\',monospace;white-space:nowrap"';
+
+function renderAdminAusw(){
+  const el=document.getElementById('apanel-ausw');if(!el)return;
+  const jetzt=new Date();
+  const vonDef=_auswData?_auswData.von:_auswIso(new Date(jetzt.getFullYear(),jetzt.getMonth(),1));
+  const bisDef=_auswData?_auswData.bis:_auswIso(jetzt);
+  el.innerHTML='<div class="a-sec"><div class="a-sec-title">Auswertung</div>'+
+    '<div style="font-size:11px;color:var(--m);line-height:1.5;margin-bottom:10px">Analysiert alle Berichte im Zeitraum nach Projekten, Mitarbeitern und Maschinen. Mitarbeiterstunden werden aus der Zeiterfassung der Vorarbeiter-Berichte gezogen &#8211; auch fuer Mitarbeiter, die keine eigenen Berichte schreiben.</div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px">'+
+      '<div class="fg" style="flex:0 0 135px"><label>Von</label><input type="date" id="ausw-von" value="'+vonDef+'"></div>'+
+      '<div class="fg" style="flex:0 0 135px"><label>Bis</label><input type="date" id="ausw-bis" value="'+bisDef+'"></div>'+
+      '<button class="btn btn-p" style="padding:10px 16px" ontouchstart="ladeAuswertung()" onclick="ladeAuswertung()">Auswertung laden</button>'+
+    '</div>'+
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">'+
+      '<button class="btn" style="font-size:10px;padding:5px 10px" ontouchstart="auswPreset(\'monat\')" onclick="auswPreset(\'monat\')">Dieser Monat</button>'+
+      '<button class="btn" style="font-size:10px;padding:5px 10px" ontouchstart="auswPreset(\'lmonat\')" onclick="auswPreset(\'lmonat\')">Letzter Monat</button>'+
+      '<button class="btn" style="font-size:10px;padding:5px 10px" ontouchstart="auswPreset(\'jahr\')" onclick="auswPreset(\'jahr\')">Dieses Jahr</button>'+
+      '<button class="btn" style="font-size:10px;padding:5px 10px" ontouchstart="auswPreset(\'alles\')" onclick="auswPreset(\'alles\')">Alles</button>'+
+    '</div>'+
+    '<div id="ausw-status" style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:var(--m);margin-bottom:10px"></div>'+
+    '<div id="ausw-result"></div></div>';
+  if(_auswData)renderAuswResult();
+}
+
+function auswPreset(art){
+  const j=new Date();let von='',bis=_auswIso(j);
+  if(art==='monat')von=_auswIso(new Date(j.getFullYear(),j.getMonth(),1));
+  else if(art==='lmonat'){von=_auswIso(new Date(j.getFullYear(),j.getMonth()-1,1));bis=_auswIso(new Date(j.getFullYear(),j.getMonth(),0));}
+  else if(art==='jahr')von=_auswIso(new Date(j.getFullYear(),0,1));
+  else if(art==='alles')von='';
+  const v=document.getElementById('ausw-von'),b=document.getElementById('ausw-bis');
+  if(v)v.value=von;if(b)b.value=bis;
+  ladeAuswertung();
+}
+
+async function ladeAuswertung(){
+  const von=document.getElementById('ausw-von')?.value||'';
+  const bis=document.getElementById('ausw-bis')?.value||'';
+  const st=document.getElementById('ausw-status'),res=document.getElementById('ausw-result');
+  if(von&&bis&&von>bis){toast('Zeitraum pruefen: Von liegt nach Bis');return;}
+  _auswDestroyCharts();if(res)res.innerHTML='';
+  if(st)st.textContent='Lade Berichte...';
+  try{
+    if(!_projMapAusw)await ladeProjMapAusw();
+    const rows=await auswFetchBerichte(von,bis);
+    if(st)st.textContent='';
+    if(!rows.length){_auswData=null;if(st)st.textContent='Keine Berichte im gewaehlten Zeitraum.';return;}
+    _auswData={von:von,bis:bis,agg:auswAggregieren(rows)};
+    renderAuswResult();
+  }catch(e){
+    if(st)st.textContent='';
+    toast('Fehler beim Laden: '+(e&&e.message?e.message:e));
+  }
+}
+
+async function ladeProjMapAusw(){
+  const m={};let start=0;
+  while(true){
+    const r=await sb.from('projekte').select('id,nr,name,kategorie').order('id',{ascending:true}).range(start,start+999);
+    if(r.error)throw r.error;
+    (r.data||[]).forEach(p=>{m[p.id]=p;});
+    if(!r.data||r.data.length<1000)break;
+    start+=1000;
+  }
+  _projMapAusw=m;
+}
+
+async function auswFetchBerichte(von,bis){
+  let alle=[],start=0;const BLOCK=1000;
+  while(true){
+    let q=sb.from('berichte').select('id,datum,rolle,mitarbeiter_name,projekt_id,netto_gesamt_h,netto_arbeit_h,zeit_rows,mach_rows').order('datum',{ascending:true}).order('id',{ascending:true});
+    if(von)q=q.gte('datum',von);
+    if(bis)q=q.lte('datum',bis);
+    const r=await q.range(start,start+BLOCK-1);
+    if(r.error)throw r.error;
+    const d=r.data||[];
+    alle=alle.concat(d);
+    const st=document.getElementById('ausw-status');
+    if(st)st.textContent='Lade Berichte... '+alle.length;
+    if(d.length<BLOCK)break;
+    start+=BLOCK;
+  }
+  return alle;
+}
+
+function auswAggregieren(rows){
+  const kpi={berichte:rows.length,persH:0,maschH:0};
+  const monat={},proj={},ma={},masch={};
+  function projEntry(pid){
+    const key=pid||'__ohne';
+    if(!proj[key]){
+      let label='Ohne Projekt',kat='';
+      if(pid){const p=_projMapAusw?_projMapAusw[pid]:null;label=p?((p.nr?p.nr+' - ':'')+(p.name||'')):'Unbekanntes Projekt';kat=p?(p.kategorie||''):'';}
+      proj[key]={label:label,kat:kat,persH:0,maschH:0,berichte:0,maSet:{}};
+    }
+    return proj[key];
+  }
+  function maEntry(name){
+    const key=(typeof _dfNorm==='function'?_dfNorm(name):String(name||'').toLowerCase().trim())||String(name||'');
+    if(!ma[key]){
+      let nr='';
+      const hit=(typeof _dfFindMA==='function')?_dfFindMA(name):null;
+      if(hit&&hit.mitarbeiter_nr!=null)nr=String(hit.mitarbeiter_nr);
+      ma[key]={name:name,nr:nr,vaH:0,eigenH:0,tage:{}};
+    }
+    return ma[key];
+  }
+  rows.forEach(b=>{
+    const mk=(b.datum||'').slice(0,7);
+    const zr=Array.isArray(b.zeit_rows)?b.zeit_rows.filter(t=>t&&t.name):[];
+    if(b.rolle==='va'&&zr.length){
+      zr.forEach(t=>{
+        const h=_auswNum((t.gesamt!=null&&t.gesamt!=='')?t.gesamt:t.nettoArbeit);
+        const e=maEntry(t.name);
+        e.vaH+=h;if(b.datum)e.tage[b.datum]=1;
+        const pe=projEntry(t.projektId||b.projekt_id||'');
+        pe.persH+=h;pe.maSet[e.name]=1;
+        kpi.persH+=h;if(mk)monat[mk]=(monat[mk]||0)+h;
+      });
+    }else{
+      const h=_auswNum((b.netto_gesamt_h!=null&&b.netto_gesamt_h!=='')?b.netto_gesamt_h:b.netto_arbeit_h);
+      const nm=b.mitarbeiter_name||'Unbekannt';
+      const e=maEntry(nm);
+      e.eigenH+=h;if(b.datum)e.tage[b.datum]=1;
+      const pe=projEntry(b.projekt_id||'');
+      pe.persH+=h;pe.maSet[nm]=1;
+      kpi.persH+=h;if(mk)monat[mk]=(monat[mk]||0)+h;
+    }
+    projEntry(b.projekt_id||'').berichte++;
+    const mr=Array.isArray(b.mach_rows)?b.mach_rows:[];
+    mr.forEach(m=>{
+      if(!m||(!m.geraetNr&&!m.geraetBez))return;
+      const mh=_auswNum(m.netto);
+      const key=(m.geraetNr||'')+'|'+(m.geraetBez||'');
+      if(!masch[key])masch[key]={nr:m.geraetNr||'',label:(m.geraetNr?m.geraetNr+' ':'')+(m.geraetBez||''),h:0,einsaetze:0};
+      masch[key].h+=mh;masch[key].einsaetze++;
+      const pe=projEntry(m.projektId||b.projekt_id||'');
+      pe.maschH+=mh;
+      kpi.maschH+=mh;
+    });
+  });
+  kpi.maCount=Object.keys(ma).length;
+  kpi.projCount=Object.keys(proj).length;
+  kpi.geraeteCount=Object.keys(masch).length;
+  return {kpi:kpi,monat:monat,proj:proj,ma:ma,masch:masch};
+}
+
+function renderAuswResult(){
+  const res=document.getElementById('ausw-result');if(!res||!_auswData)return;
+  _auswDestroyCharts();
+  const a=_auswData.agg,k=a.kpi;
+  const kpiCard=(wert,lbl)=>'<div style="background:var(--s2);border:1px solid var(--b);border-radius:var(--rad);padding:10px;text-align:center"><div style="font-family:\'IBM Plex Mono\',monospace;font-size:17px;font-weight:600;color:var(--t)">'+wert+'</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:var(--m);margin-top:3px">'+lbl+'</div></div>';
+  let h='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">'+
+    kpiCard(k.berichte,'Berichte')+
+    kpiCard(_auswFmtH(k.persH),'Personal-Std.')+
+    kpiCard(k.maCount,'Mitarbeiter')+
+    kpiCard(k.projCount,'Projekte')+
+    kpiCard(_auswFmtH(k.maschH),'Maschinen-Std.')+
+    kpiCard(k.geraeteCount,'Geraete')+
+  '</div>';
+  const monKeys=Object.keys(a.monat).sort();
+  if(monKeys.length>1){
+    h+='<div style="background:var(--s2);border:1px solid var(--b);border-radius:var(--rad);padding:10px;margin-bottom:14px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--m);margin-bottom:6px">Personalstunden je Monat</div><div style="height:170px;position:relative"><canvas id="ausw-ch-monat"></canvas></div></div>';
+  }
+  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">'+
+    _auswViewBtn('projekte','Projekte')+
+    _auswViewBtn('ma','Mitarbeiter')+
+    _auswViewBtn('masch','Maschinen')+
+  '</div><div id="ausw-view"></div>';
+  res.innerHTML=h;
+  if(monKeys.length>1){
+    _mkAuswChart('ausw-ch-monat',{type:'bar',data:{labels:monKeys.map(m=>m.slice(5)+'/'+m.slice(0,4)),datasets:[{label:'Stunden',data:monKeys.map(m=>Math.round(a.monat[m]*100)/100),backgroundColor:_auswCss('--gd','#2f6f4f'),borderRadius:3}]},options:_auswBarOpts({})});
+  }
+  renderAuswView();
+}
+
+function _auswViewBtn(v,lbl){
+  const act=(auswView===v);
+  return '<button class="btn'+(act?' btn-p':'')+'" style="font-size:11px;padding:7px 14px" ontouchstart="setAuswView(\''+v+'\')" onclick="setAuswView(\''+v+'\')">'+lbl+'</button>';
+}
+function setAuswView(v){auswView=v;renderAuswResult();}
+
+function renderAuswView(){
+  const el=document.getElementById('ausw-view');if(!el||!_auswData)return;
+  if(auswView==='ma')renderAuswMA(el);
+  else if(auswView==='masch')renderAuswMasch(el);
+  else renderAuswProjekte(el);
+}
+
+function _auswChartBox(id,titel,hoehe){
+  return '<div style="background:var(--s2);border:1px solid var(--b);border-radius:var(--rad);padding:10px;margin-bottom:12px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--m);margin-bottom:6px">'+titel+'</div><div style="height:'+hoehe+'px;position:relative"><canvas id="'+id+'"></canvas></div></div>';
+}
+
+function renderAuswProjekte(el){
+  const a=_auswData.agg;
+  const list=Object.keys(a.proj).map(k=>a.proj[k]).sort((x,y)=>y.persH-x.persH);
+  const top=list.slice(0,20);
+  const hoehe=Math.max(140,top.length*26+50);
+  let h=_auswChartBox('ausw-ch-proj','Personalstunden je Projekt'+(list.length>20?' (Top 20)':''),hoehe);
+  h+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">'+
+    '<tr><th '+_AUSW_TH+'>Projekt</th><th '+_AUSW_THR+'>Berichte</th><th '+_AUSW_THR+'>Personen</th><th '+_AUSW_THR+'>Personal h</th><th '+_AUSW_THR+'>Maschinen h</th></tr>'+
+    list.map(p=>'<tr><td '+_AUSW_TD+'>'+p.label+(p.kat?' <span style="font-size:9px;color:var(--m)">('+p.kat+')</span>':'')+'</td><td '+_AUSW_TDR+'>'+p.berichte+'</td><td '+_AUSW_TDR+'>'+Object.keys(p.maSet).length+'</td><td '+_AUSW_TDR+'>'+_auswFmtH(p.persH)+'</td><td '+_AUSW_TDR+'>'+_auswFmtH(p.maschH)+'</td></tr>').join('')+
+  '</table></div>';
+  el.innerHTML=h;
+  _mkAuswChart('ausw-ch-proj',{type:'bar',data:{labels:top.map(p=>_auswLbl(p.label)),datasets:[{label:'Personal h',data:top.map(p=>Math.round(p.persH*100)/100),backgroundColor:_auswCss('--gd','#2f6f4f'),borderRadius:3}]},options:_auswBarOpts({horizontal:true})});
+}
+
+function renderAuswMA(el){
+  const a=_auswData.agg;
+  const list=Object.keys(a.ma).map(k=>a.ma[k]).sort((x,y)=>(y.vaH+y.eigenH)-(x.vaH+x.eigenH));
+  const top=list.slice(0,20);
+  const hoehe=Math.max(150,top.length*26+70);
+  let h=_auswChartBox('ausw-ch-ma','Stunden je Mitarbeiter'+(list.length>20?' (Top 20)':''),hoehe);
+  h+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">'+
+    '<tr><th '+_AUSW_TH+'>Mitarbeiter</th><th '+_AUSW_THR+'>Tage</th><th '+_AUSW_THR+'>aus VA-Ber.</th><th '+_AUSW_THR+'>Eigene Ber.</th><th '+_AUSW_THR+'>Gesamt</th></tr>'+
+    list.map(m=>'<tr><td '+_AUSW_TD+'>'+m.name+(m.nr?' <span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m)">#'+m.nr+'</span>':'')+'</td><td '+_AUSW_TDR+'>'+Object.keys(m.tage).length+'</td><td '+_AUSW_TDR+' ><span style="color:var(--earth)">'+_auswFmtH(m.vaH)+'</span></td><td '+_AUSW_TDR+'><span style="color:var(--sky)">'+_auswFmtH(m.eigenH)+'</span></td><td '+_AUSW_TDR+'><b>'+_auswFmtH(m.vaH+m.eigenH)+'</b></td></tr>').join('')+
+  '</table></div>';
+  h+='<div style="font-size:10px;color:var(--m);line-height:1.5;margin-top:8px">Hinweis: "aus VA-Ber." = Stunden aus der Zeiterfassung in Vorarbeiter-Berichten. "Eigene Ber." = Stunden aus selbst geschriebenen Berichten (Arbeiter/Werkstatt bzw. VA ohne Zeiterfassung). Schreibt jemand einen eigenen Bericht UND steht am selben Tag in einer VA-Zeiterfassung, erscheinen die Stunden in beiden Spalten &#8211; die Spalte Gesamt kann dann doppelt zaehlen.</div>';
+  el.innerHTML=h;
+  _mkAuswChart('ausw-ch-ma',{type:'bar',data:{labels:top.map(m=>_auswLbl(m.name)),datasets:[
+    {label:'aus VA-Berichten',data:top.map(m=>Math.round(m.vaH*100)/100),backgroundColor:_auswCss('--earth','#8a6d4a'),borderRadius:3},
+    {label:'Eigene Berichte',data:top.map(m=>Math.round(m.eigenH*100)/100),backgroundColor:_auswCss('--sky','#4a7fa8'),borderRadius:3}
+  ]},options:_auswBarOpts({horizontal:true,stacked:true,legend:true})});
+}
+
+function renderAuswMasch(el){
+  const a=_auswData.agg;
+  const list=Object.keys(a.masch).map(k=>a.masch[k]).sort((x,y)=>y.h-x.h);
+  const top=list.slice(0,20);
+  const hoehe=Math.max(140,top.length*26+50);
+  let h=_auswChartBox('ausw-ch-masch','Einsatzstunden je Geraet'+(list.length>20?' (Top 20)':''),hoehe);
+  h+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">'+
+    '<tr><th '+_AUSW_TH+'>Geraet</th><th '+_AUSW_THR+'>Einsaetze</th><th '+_AUSW_THR+'>Stunden</th></tr>'+
+    list.map(m=>'<tr><td '+_AUSW_TD+'>'+m.label+'</td><td '+_AUSW_TDR+'>'+m.einsaetze+'</td><td '+_AUSW_TDR+'>'+_auswFmtH(m.h)+'</td></tr>').join('')+
+  '</table></div>';
+  if(!list.length)h='<div style="font-size:11px;color:var(--m);padding:10px 0">Keine Maschinen-Eintraege im Zeitraum.</div>';
+  el.innerHTML=h;
+  if(list.length)_mkAuswChart('ausw-ch-masch',{type:'bar',data:{labels:top.map(m=>_auswLbl(m.label)),datasets:[{label:'Stunden',data:top.map(m=>Math.round(m.h*100)/100),backgroundColor:_auswCss('--o','#c07f3f'),borderRadius:3}]},options:_auswBarOpts({horizontal:true})});
+}
+
+function _auswBarOpts(o){
+  o=o||{};
+  const tick=_auswCss('--m','#777777'),grid=_auswCss('--b','#dddddd');
+  const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:!!o.legend,labels:{color:tick,font:{size:10},boxWidth:12}}},scales:{x:{stacked:!!o.stacked,ticks:{color:tick,font:{size:9}},grid:{color:grid}},y:{stacked:!!o.stacked,ticks:{color:tick,font:{size:9}},grid:{color:grid}}}};
+  if(o.horizontal)opts.indexAxis='y';
+  return opts;
+}
+
+function _mkAuswChart(id,cfg){
+  const cv=document.getElementById(id);if(!cv)return;
+  if(typeof Chart==='undefined'){
+    const box=cv.parentElement;
+    if(box)box.innerHTML='<div style="font-size:10px;color:var(--m);padding:16px 4px">Diagramm nicht verfuegbar (Chart.js konnte nicht geladen werden). Die Tabelle darunter ist vollstaendig.</div>';
+    return;
+  }
+  try{_auswCharts.push(new Chart(cv.getContext('2d'),cfg));}catch(e){}
+}
+function _auswDestroyCharts(){_auswCharts.forEach(c=>{try{c.destroy();}catch(e){}});_auswCharts=[];}
 
 // ══════ PROJEKTLEITER ══════
 function openPL(){document.getElementById('pl-screen').style.display='flex';document.getElementById('pl-user-name').textContent=currentUser.name;showPLTab('ber');}
