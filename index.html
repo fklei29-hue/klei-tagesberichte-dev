@@ -237,6 +237,39 @@ select option{background:var(--s2);}
 .kal-day.fehlt{background:rgba(196,72,40,.2);border:1px solid rgba(196,72,40,.4);color:var(--r);}
 .kal-day.heute{outline:2px solid var(--sky);outline-offset:1px;}
 .kal-day.zukunft{background:var(--s3);color:var(--m);opacity:.5;}
+/* ---- Controlling: Pflege-Vertrag + Baustellen-Cockpit ---- */
+.ct-card{background:var(--s2);border:1px solid var(--b);border-radius:8px;margin-bottom:12px;overflow:hidden;}
+.ct-chead{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--b);flex-wrap:wrap;}
+.ct-cnr{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--sky);min-width:52px;}
+.ct-cname{font-weight:600;font-size:13px;color:var(--c);flex:1;min-width:120px;}
+.ct-csum{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--m);}
+.ct-lrow{display:flex;align-items:center;gap:9px;padding:8px 14px;border-bottom:1px solid var(--b);flex-wrap:wrap;}
+.ct-lrow:last-child{border-bottom:none;}
+.ct-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.ct-lname{flex:1;min-width:110px;font-size:12px;color:var(--t);}
+.ct-bar{width:110px;height:8px;background:var(--s3);border:1px solid var(--b);border-radius:5px;overflow:hidden;flex-shrink:0;}
+.ct-fill{height:100%;border-radius:4px;}
+.ct-cnt{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;min-width:56px;text-align:right;color:var(--t);}
+.ct-pill{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:2px 7px;border-radius:9px;white-space:nowrap;}
+.ct-pill-r{background:var(--rg);color:var(--r);}
+.ct-pill-g{background:var(--gg);color:var(--g);}
+.ct-pill-m{background:var(--s3);color:var(--m);}
+.ct-tblwrap{overflow-x:auto;border:1px solid var(--b);border-radius:8px;background:var(--s2);}
+.ct-tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:680px;}
+.ct-tbl thead th{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.8px;text-transform:uppercase;color:var(--m);text-align:right;padding:9px 10px;border-bottom:1px solid var(--b);background:var(--s3);white-space:nowrap;}
+.ct-tbl thead th.ct-l{text-align:left;}
+.ct-tbl tbody td{padding:8px 10px;border-bottom:1px solid var(--b);text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--t);}
+.ct-tbl tbody td.ct-l{text-align:left;font-family:'IBM Plex Sans',sans-serif;}
+.ct-tbl tbody tr.ct-main{cursor:pointer;}
+.ct-pnr{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sky);margin-right:6px;}
+.ct-pname{font-weight:600;color:var(--c);font-size:12px;}
+.ct-badge{font-family:'IBM Plex Mono',monospace;font-size:8px;padding:2px 6px;border-radius:8px;}
+.ct-badge-p{background:var(--gg);color:var(--gl);}
+.ct-badge-b{background:var(--earthg);color:var(--earth);}
+.ct-plan{width:70px;text-align:right;padding:4px 6px;font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--s2);border:1px solid var(--b);border-radius:3px;color:var(--t);}
+.ct-det td{background:var(--s3);}
+.ct-dtbl{width:100%;border-collapse:collapse;font-size:11px;}
+.ct-dtbl td{border:none;padding:3px 8px;background:transparent;}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:var(--bg);}
 ::-webkit-scrollbar-thumb{background:var(--b);border-radius:2px;}
@@ -274,6 +307,8 @@ select option{background:var(--s2);}
     <div class="admin-tab" id="atab-email" ontouchstart="showAdminTab('email')" onclick="showAdminTab('email')">E-Mail</div>
     <div class="admin-tab" id="atab-ber" ontouchstart="showAdminTab('ber')" onclick="showAdminTab('ber')">Berichte</div>
     <div class="admin-tab" id="atab-ausw" ontouchstart="showAdminTab('ausw')" onclick="showAdminTab('ausw')">Auswertung</div>
+    <div class="admin-tab" id="atab-pfl" ontouchstart="showAdminTab('pfl')" onclick="showAdminTab('pfl')">Pflege</div>
+    <div class="admin-tab" id="atab-cock" ontouchstart="showAdminTab('cock')" onclick="showAdminTab('cock')">Cockpit</div>
     <div class="admin-tab" id="atab-exp" ontouchstart="showAdminTab('exp')" onclick="showAdminTab('exp')">Export</div>
   </div>
   <div class="admin-content">
@@ -284,6 +319,8 @@ select option{background:var(--s2);}
     <div class="admin-panel" id="apanel-email"></div>
     <div class="admin-panel" id="apanel-ber"></div>
     <div class="admin-panel" id="apanel-ausw"></div>
+    <div class="admin-panel" id="apanel-pfl"></div>
+    <div class="admin-panel" id="apanel-cock"></div>
     <div class="admin-panel" id="apanel-exp"></div>
   </div>
 </div>
@@ -778,7 +815,7 @@ function openAdmin(){
   const nurBuchhaltung=(currentUser.rolle==='verwaltung');
   const badge=document.querySelector('#admin-screen .admin-badge');
   if(badge)badge.textContent=nurBuchhaltung?'Buchhaltung':'Admin';
-  ['ma','proj','fz','email','ber','ausw','exp'].forEach(t=>{
+  ['ma','proj','fz','email','ber','ausw','pfl','cock','exp'].forEach(t=>{
     const el=document.getElementById('atab-'+t);if(el)el.style.display=nurBuchhaltung?'none':'';
   });
   showAdminTab('frei');
@@ -791,6 +828,7 @@ function showAdminTab(name){
   if(name==='ma')renderAdminMA();if(name==='proj')renderAdminProj();if(name==='fz')renderAdminFZ();
   if(name==='email')renderAdminEmail();if(name==='ber')renderAdminBer();if(name==='exp')renderAdminExp();
   if(name==='ausw')renderAdminAusw();
+  if(name==='pfl')renderAdminPflege();if(name==='cock')renderAdminCockpit();
 }
 
 // ══════ BUCHHALTUNGS-FREIGABE (finale Instanz) ══════
@@ -1600,6 +1638,432 @@ function _mkAuswChart(id,cfg){
   try{_auswCharts.push(new Chart(cv.getContext('2d'),cfg));}catch(e){}
 }
 function _auswDestroyCharts(){_auswCharts.forEach(c=>{try{c.destroy();}catch(e){}});_auswCharts=[];}
+
+// ══════ CONTROLLING (Pflege-Vertrag + Baustellen-Cockpit) ══════
+let _ctrlBerichte=null,_ctrlProjekte=null,_ctrlLoading=false,_cpAggCache={};
+
+function _ctrlYearOf(d){return d?String(d).substring(0,4):'';}
+function _ctrlStripCount(s){
+  const m=String(s||'').match(/\((\s*\d+\s*)x\s*\)/i);
+  const name=String(s||'').replace(/\((\s*\d+\s*)x\s*\)/i,'').replace(/\s+/g,' ').trim();
+  return{name:name,soll:m?parseInt(m[1],10):null};
+}
+function _ctrlNormKey(s){return String(s||'').replace(/\((\s*\d+\s*)x\s*\)/i,'').replace(/\s+/g,' ').trim().toLowerCase();}
+function _ctrlFmtN(n){const r=Math.round(n*100)/100;return (r%1===0?String(r):String(r).replace('.',','));}
+function _ctrlCsv(v){let s=String(v==null?'':v);if(s.indexOf(';')>=0||s.indexOf('"')>=0||s.indexOf('\n')>=0){s='"'+s.replace(/"/g,'""')+'"';}return s;}
+function _ctrlFindProj(id){if(!_ctrlProjekte)return null;for(let i=0;i<_ctrlProjekte.length;i++){if(_ctrlProjekte[i].id===id)return _ctrlProjekte[i];}return null;}
+function _ctrlFmtDate(d){const p=String(d||'').split('-');return p.length===3?(p[2]+'.'+p[1]+'.'+p[0]):String(d||'');}
+
+function renderAdminPflege(){
+  const el=document.getElementById('apanel-pfl');if(!el)return;
+  if(!document.getElementById('pfl-body')){
+    el.innerHTML='<div class="a-sec"><div class="a-sec-title">Pflege-Vertragserfuellung</div>'+
+      '<div style="font-size:11px;color:var(--m);line-height:1.5;margin-bottom:10px">Soll = geplante Durchgaenge pro Saison (Zahl in Klammern bei der Leistung). Ist = Anzahl Berichte, in denen diese Leistung im Arbeitsschritt gewaehlt wurde.</div>'+
+      '<div class="row">'+
+      '<div class="fg" style="flex:0 0 130px"><label>Saison</label><select id="pfl-jahr" onchange="renderPflegeListe()"></select></div>'+
+      '<div class="fg"><label>Suche Baustelle</label><input id="pfl-suche" placeholder="Name oder Nr." oninput="renderPflegeListe()"></div>'+
+      '</div>'+
+      '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
+      '<button class="btn btn-e" style="font-size:11px" ontouchstart="exportPflegeCSV()" onclick="exportPflegeCSV()">CSV exportieren</button>'+
+      '<button class="btn" style="font-size:11px" ontouchstart="ctrlLadeDaten(true)" onclick="ctrlLadeDaten(true)">Aktualisieren</button>'+
+      '</div>'+
+      '<div id="pfl-stand" style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-top:8px"></div>'+
+      '</div>'+
+      '<div id="pfl-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:12px"></div>'+
+      '<div id="pfl-body"><div style="color:var(--m);font-size:11px;padding:10px">Lade...</div></div>';
+  }
+  ctrlLadeDaten(false);
+}
+
+function renderAdminCockpit(){
+  const el=document.getElementById('apanel-cock');if(!el)return;
+  if(!document.getElementById('cock-body')){
+    el.innerHTML='<div class="a-sec"><div class="a-sec-title">Baustellen-Cockpit</div>'+
+      '<div style="font-size:11px;color:var(--m);line-height:1.5;margin-bottom:10px">Stunden aus der Personal-Zeiterfassung der VA-Berichte, je Projekt zugeordnet. Plan-Stunden werden nur lokal auf diesem Geraet gespeichert. Zeile antippen: Leistungsstand / Aufmass.</div>'+
+      '<div class="row">'+
+      '<div class="fg" style="flex:0 0 110px"><label>Jahr</label><select id="cock-jahr" onchange="onCockpitJahr()"></select></div>'+
+      '<div class="fg" style="flex:0 0 135px"><label>Von (optional)</label><input type="date" id="cock-von" onchange="renderCockpitListe()"></div>'+
+      '<div class="fg" style="flex:0 0 135px"><label>Bis (optional)</label><input type="date" id="cock-bis" onchange="renderCockpitListe()"></div>'+
+      '<div class="fg" style="flex:0 0 110px"><label>Kategorie</label><select id="cock-kat" onchange="renderCockpitListe()"><option value="">Alle</option><option value="bau">Bau</option><option value="pflege">Pflege</option></select></div>'+
+      '<div class="fg"><label>Suche Baustelle</label><input id="cock-suche" placeholder="Name oder Nr." oninput="renderCockpitListe()"></div>'+
+      '</div>'+
+      '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
+      '<button class="btn btn-e" style="font-size:11px" ontouchstart="exportCockpitCSV()" onclick="exportCockpitCSV()">CSV exportieren</button>'+
+      '<button class="btn" style="font-size:11px" ontouchstart="ctrlLadeDaten(true)" onclick="ctrlLadeDaten(true)">Aktualisieren</button>'+
+      '</div>'+
+      '<div id="cock-stand" style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-top:8px"></div>'+
+      '</div>'+
+      '<div id="cock-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:12px"></div>'+
+      '<div id="cock-body"><div style="color:var(--m);font-size:11px;padding:10px">Lade...</div></div>';
+  }
+  ctrlLadeDaten(false);
+}
+
+async function ctrlLadeDaten(force){
+  if(_ctrlLoading)return;
+  if(_ctrlBerichte&&_ctrlProjekte&&!force){renderPflegeListe();renderCockpitListe();return;}
+  _ctrlLoading=true;
+  const pb=document.getElementById('pfl-body'),cb=document.getElementById('cock-body');
+  const info=t=>{const h='<div style="color:var(--m);font-size:11px;padding:10px">'+t+'</div>';if(pb)pb.innerHTML=h;if(cb)cb.innerHTML=h;};
+  info('Lade Daten...');
+  try{
+    const pl=[];let ps=0;
+    while(true){
+      const r=await sb.from('projekte').select('id,nr,name,kategorie,leistungen,aktiv').order('id',{ascending:true}).range(ps,ps+999);
+      if(r.error)throw r.error;
+      const d=r.data||[];
+      for(let i=0;i<d.length;i++)pl.push(d[i]);
+      if(d.length<1000)break;
+      ps+=1000;
+    }
+    _ctrlProjekte=pl;
+    const bl=[];let bs=0;
+    while(true){
+      const r=await sb.from('berichte').select('id,datum,projekt_id,projekt_nr,zeit_rows,mach_rows,steps').order('datum',{ascending:true}).order('id',{ascending:true}).range(bs,bs+999);
+      if(r.error)throw r.error;
+      const d=r.data||[];
+      for(let i=0;i<d.length;i++)bl.push(d[i]);
+      info('Lade Berichte... '+bl.length);
+      if(d.length<1000)break;
+      bs+=1000;
+    }
+    _ctrlBerichte=bl;
+    _ctrlFillYears();
+    const stand='Stand '+new Date().toLocaleString('de-DE')+' \u00b7 '+bl.length+' Berichte, '+pl.length+' Projekte';
+    const s1=document.getElementById('pfl-stand');if(s1)s1.textContent=stand;
+    const s2=document.getElementById('cock-stand');if(s2)s2.textContent=stand;
+    renderPflegeListe();renderCockpitListe();
+  }catch(e){
+    const msg='Daten konnten nicht geladen werden: '+_dfEsc(e&&e.message?e.message:String(e));
+    if(pb)pb.innerHTML='<div style="color:var(--r);font-size:11px;padding:10px">'+msg+'</div>';
+    if(cb)cb.innerHTML='<div style="color:var(--r);font-size:11px;padding:10px">'+msg+'</div>';
+    toast('Ladefehler','err');
+  }finally{_ctrlLoading=false;}
+}
+
+function _ctrlFillYears(){
+  if(!_ctrlBerichte)return;
+  const set={};
+  for(let i=0;i<_ctrlBerichte.length;i++){const y=_ctrlYearOf(_ctrlBerichte[i].datum);if(y)set[y]=true;}
+  const years=Object.keys(set).sort().reverse();
+  const cur=String(new Date().getFullYear());
+  const def=(years.indexOf(cur)>=0)?cur:(years[0]||'');
+  let opts='<option value="">Alle Jahre</option>';
+  for(let i=0;i<years.length;i++)opts+='<option value="'+years[i]+'">'+years[i]+'</option>';
+  ['pfl-jahr','cock-jahr'].forEach(id=>{
+    const s=document.getElementById(id);if(!s)return;
+    const hatte=s.options.length>0;const prev=s.value;
+    s.innerHTML=opts;
+    if(hatte&&(prev===''||years.indexOf(prev)>=0))s.value=prev;else s.value=def;
+  });
+}
+function onCockpitJahr(){
+  const v=document.getElementById('cock-von'),b=document.getElementById('cock-bis');
+  if(v)v.value='';if(b)b.value='';
+  renderCockpitListe();
+}
+
+// ---------- Pflege-Vertragserfuellung ----------
+function _pflegeIstIndex(jahr){
+  // key = projektId + '||' + normKey(leistung) -> Set von Bericht-IDs (distinct Berichte = Durchgaenge)
+  const map={};
+  const B=_ctrlBerichte||[];
+  for(let i=0;i<B.length;i++){
+    const b=B[i];
+    if(jahr&&_ctrlYearOf(b.datum)!==jahr)continue;
+    const steps=b.steps||[];
+    for(let j=0;j<steps.length;j++){
+      const s=steps[j];
+      if(!s||!s.leistung)continue;
+      const pid=s.projektId||b.projekt_id;
+      if(!pid)continue;
+      const k=pid+'||'+_ctrlNormKey(s.leistung);
+      if(!map[k])map[k]={};
+      map[k][b.id]=true;
+    }
+  }
+  return map;
+}
+
+function renderPflegeListe(){
+  const body=document.getElementById('pfl-body');if(!body)return;
+  if(!_ctrlBerichte||!_ctrlProjekte)return;
+  const jahr=document.getElementById('pfl-jahr')?.value||'';
+  const q=(document.getElementById('pfl-suche')?.value||'').toLowerCase();
+  const idx=_pflegeIstIndex(jahr);
+  let projs=_ctrlProjekte.filter(p=>(p.kategorie==='pflege')&&Array.isArray(p.leistungen)&&p.leistungen.length);
+  projs=projs.filter(p=>{
+    if(!q)return true;
+    return (p.name||'').toLowerCase().indexOf(q)>=0||String(p.nr||'').toLowerCase().indexOf(q)>=0;
+  });
+  projs.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+  const kEl=document.getElementById('pfl-kpis');
+  if(!projs.length){
+    body.innerHTML='<div style="color:var(--m);font-size:12px;padding:16px;text-align:center">Keine Pflege-Baustellen fuer diese Auswahl.</div>';
+    if(kEl)kEl.innerHTML='';
+    return;
+  }
+  let totalSoll=0,totalIst=0,overCount=0,doneCount=0;
+  let html='';
+  for(let i=0;i<projs.length;i++){
+    const p=projs[i];
+    let rows='';let pSoll=0,pIst=0;
+    for(let j=0;j<p.leistungen.length;j++){
+      const raw=p.leistungen[j];
+      const parsed=_ctrlStripCount(raw);
+      const soll=parsed.soll;
+      const k=p.id+'||'+_ctrlNormKey(raw);
+      const ist=idx[k]?Object.keys(idx[k]).length:0;
+      if(soll!==null){pSoll+=soll;totalSoll+=soll;}
+      pIst+=ist;totalIst+=ist;
+      let dotColor,fillPct,fillColor,pill;
+      const cnt='<span style="color:var(--c)">'+ist+'</span>'+(soll!==null?'<span style="color:var(--m)"> / '+soll+'</span>':'');
+      if(soll===null){
+        dotColor='var(--m)';fillPct=0;fillColor='var(--m)';
+        pill='<span class="ct-pill ct-pill-m">kein Soll</span>';
+      }else if(ist>soll){
+        dotColor='var(--r)';fillPct=100;fillColor='var(--r)';
+        pill='<span class="ct-pill ct-pill-r">+'+(ist-soll)+' ueber Plan</span>';
+        overCount++;
+      }else if(ist===soll&&soll>0){
+        dotColor='var(--g)';fillPct=100;fillColor='var(--g)';
+        pill='<span class="ct-pill ct-pill-g">erfuellt</span>';
+        doneCount++;
+      }else{
+        dotColor='var(--earth)';fillPct=soll>0?Math.round(ist/soll*100):0;fillColor='var(--earth)';
+        pill='<span class="ct-pill ct-pill-m">'+(soll-ist)+' offen</span>';
+      }
+      rows+='<div class="ct-lrow">'+
+        '<span class="ct-dot" style="background:'+dotColor+'"></span>'+
+        '<span class="ct-lname">'+_dfEsc(parsed.name)+'</span>'+
+        '<span class="ct-bar"><span class="ct-fill" style="width:'+fillPct+'%;background:'+fillColor+'"></span></span>'+
+        '<span class="ct-cnt">'+cnt+'</span>'+
+        pill+
+        '</div>';
+    }
+    const pPct=pSoll>0?Math.round(pIst/pSoll*100):0;
+    html+='<div class="ct-card">'+
+      '<div class="ct-chead">'+
+      '<span class="ct-cnr">'+_dfEsc(p.nr||'--')+'</span>'+
+      '<span class="ct-cname">'+_dfEsc(p.name)+'</span>'+
+      '<span class="ct-badge ct-badge-p">PFLEGE</span>'+
+      '<span class="ct-csum">'+pIst+' / '+pSoll+' Durchgaenge'+(pSoll>0?' ('+pPct+'%)':'')+'</span>'+
+      '</div>'+rows+'</div>';
+  }
+  body.innerHTML=html;
+  const pctAll=totalSoll>0?Math.round(totalIst/totalSoll*100):0;
+  if(kEl)kEl.innerHTML=
+    '<div class="sc"><div class="sv">'+projs.length+'</div><div class="sl">Pflege-Baustellen</div></div>'+
+    '<div class="sc"><div class="sv">'+totalIst+' / '+totalSoll+'</div><div class="sl">Ist / Soll</div></div>'+
+    '<div class="sc"><div class="sv" style="color:'+(pctAll>=100?'var(--g)':'var(--c)')+'">'+pctAll+'%</div><div class="sl">Erfuellung</div></div>'+
+    '<div class="sc"><div class="sv" style="color:'+(overCount>0?'var(--o)':'var(--c)')+'">'+overCount+'</div><div class="sl">Ueber Plan</div></div>';
+}
+
+function exportPflegeCSV(){
+  if(!_ctrlBerichte||!_ctrlProjekte){toast('Noch keine Daten','err');return;}
+  const jahr=document.getElementById('pfl-jahr')?.value||'';
+  const idx=_pflegeIstIndex(jahr);
+  const projs=_ctrlProjekte.filter(p=>(p.kategorie==='pflege')&&Array.isArray(p.leistungen)&&p.leistungen.length)
+    .sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+  const lines=['Baustelle-Nr;Baustelle;Leistung;Soll;Ist;Differenz;Status'];
+  for(let i=0;i<projs.length;i++){
+    const p=projs[i];
+    for(let j=0;j<p.leistungen.length;j++){
+      const parsed=_ctrlStripCount(p.leistungen[j]);
+      const soll=parsed.soll;
+      const k=p.id+'||'+_ctrlNormKey(p.leistungen[j]);
+      const ist=idx[k]?Object.keys(idx[k]).length:0;
+      const diff=(soll!==null)?(ist-soll):'';
+      const status=(soll===null)?'kein Soll':(ist>soll?'ueber Plan':(ist===soll?'erfuellt':'offen'));
+      lines.push([_ctrlCsv(p.nr||''),_ctrlCsv(p.name),_ctrlCsv(parsed.name),(soll===null?'':soll),ist,diff,status].join(';'));
+    }
+  }
+  dlFile('KLEI_Pflege_'+(jahr||'alle')+'.csv','\ufeff'+lines.join('\n'),'text/csv;charset=utf-8');
+}
+
+// ---------- Baustellen-Cockpit ----------
+function _cpFilter(){
+  return{
+    jahr:document.getElementById('cock-jahr')?.value||'',
+    von:document.getElementById('cock-von')?.value||'',
+    bis:document.getElementById('cock-bis')?.value||'',
+    kat:document.getElementById('cock-kat')?.value||'',
+    q:(document.getElementById('cock-suche')?.value||'').toLowerCase()
+  };
+}
+function _cpDateOk(d,f){
+  if(!d)return false;
+  if(f.von||f.bis){
+    if(f.von&&d<f.von)return false;
+    if(f.bis&&d>f.bis)return false;
+    return true;
+  }
+  if(f.jahr&&_ctrlYearOf(d)!==f.jahr)return false;
+  return true;
+}
+function _cockpitAgg(f){
+  const agg={};
+  const get=pid=>{if(!agg[pid])agg[pid]={personal:0,maschine:0,berichte:{},first:null,last:null,aufmass:{}};return agg[pid];};
+  const track=(a,d)=>{if(!d)return;if(!a.first||d<a.first)a.first=d;if(!a.last||d>a.last)a.last=d;};
+  const B=_ctrlBerichte||[];
+  for(let i=0;i<B.length;i++){
+    const b=B[i];
+    if(!_cpDateOk(b.datum,f))continue;
+    const bpid=b.projekt_id;
+    if(bpid){const ab=get(bpid);ab.berichte[b.id]=true;track(ab,b.datum);}
+    const z=b.zeit_rows||[];
+    for(let j=0;j<z.length;j++){
+      const r=z[j];if(!r)continue;
+      const pid=r.projektId||bpid;if(!pid)continue;
+      const a=get(pid);
+      a.personal+=_auswNum((r.gesamt!=null&&r.gesamt!=='')?r.gesamt:r.nettoArbeit);
+      a.berichte[b.id]=true;track(a,b.datum);
+    }
+    const m=b.mach_rows||[];
+    for(let k=0;k<m.length;k++){
+      const mr=m[k];if(!mr)continue;
+      const mpid=mr.projektId||bpid;if(!mpid)continue;
+      const am=get(mpid);
+      am.maschine+=_auswNum(mr.netto);
+      am.berichte[b.id]=true;
+    }
+    const st=b.steps||[];
+    for(let s2=0;s2<st.length;s2++){
+      const sp=st[s2];if(!sp)continue;
+      const spid=sp.projektId||bpid;if(!spid)continue;
+      const as=get(spid);
+      as.berichte[b.id]=true;
+      if(sp.menge!==undefined&&sp.menge!==null&&String(sp.menge).trim()!==''){
+        let lbl=(sp.pos?('Pos. '+sp.pos+' '):'')+String(sp.leistung||sp.txt||'').substring(0,50);
+        if(!lbl.trim())lbl='(ohne Bezeichnung)';
+        const ak=lbl+'|'+String(sp.eh||'');
+        as.aufmass[ak]=(as.aufmass[ak]||0)+_auswNum(sp.menge);
+      }
+    }
+  }
+  return agg;
+}
+function _ctrlPlanKey(id){return 'klei_plan_h_'+id;}
+function getPlanH(id){let v=0;try{v=_auswNum(localStorage.getItem(_ctrlPlanKey(id)));}catch(e){}return v;}
+function setPlanH(id,val){
+  const n=_auswNum(val);
+  try{
+    if(n>0)localStorage.setItem(_ctrlPlanKey(id),String(n));
+    else localStorage.removeItem(_ctrlPlanKey(id));
+  }catch(e){}
+  renderCockpitListe();
+}
+
+function renderCockpitListe(){
+  const body=document.getElementById('cock-body');if(!body)return;
+  if(!_ctrlBerichte||!_ctrlProjekte)return;
+  const f=_cpFilter();
+  const agg=_cockpitAgg(f);
+  _cpAggCache=agg;
+  const list=[];let sumP=0,sumM=0;
+  for(const pid in agg){
+    if(!Object.prototype.hasOwnProperty.call(agg,pid))continue;
+    const a=agg[pid];
+    const p=_ctrlFindProj(pid);
+    const name=p?(p.name||''):'(unbekannt)';
+    const nr=p?(p.nr||''):(pid?String(pid).substring(0,8):'');
+    const pkat=p?(p.kategorie||'bau'):'bau';
+    if(f.kat&&pkat!==f.kat)continue;
+    if(f.q&&name.toLowerCase().indexOf(f.q)<0&&String(nr).toLowerCase().indexOf(f.q)<0)continue;
+    const gesamt=a.personal+a.maschine;
+    sumP+=a.personal;sumM+=a.maschine;
+    list.push({pid:pid,nr:nr,name:name,kat:pkat,personal:a.personal,maschine:a.maschine,gesamt:gesamt,berichte:Object.keys(a.berichte).length});
+  }
+  list.sort((x,y)=>y.gesamt-x.gesamt);
+  const kEl=document.getElementById('cock-kpis');
+  if(!list.length){
+    body.innerHTML='<div style="color:var(--m);font-size:12px;padding:16px;text-align:center">Keine Stunden fuer diese Auswahl.</div>';
+    if(kEl)kEl.innerHTML='';
+    return;
+  }
+  let h='<div class="ct-tblwrap"><table class="ct-tbl"><thead><tr>'+
+    '<th class="ct-l">Baustelle</th><th>Berichte</th><th>Personal-h</th><th>Maschinen-h</th><th>Gesamt-h</th><th>Plan-h</th><th>Rest</th><th>%</th>'+
+    '</tr></thead><tbody>';
+  for(let r=0;r<list.length;r++){
+    const it=list[r];
+    const plan=getPlanH(it.pid);
+    let restTxt='<span style="color:var(--m)">--</span>';
+    let pctTxt='<span style="color:var(--m)">--</span>';
+    if(plan>0){
+      const rest=plan-it.gesamt;
+      const pct=Math.round(it.gesamt/plan*100);
+      const col=pct>100?'var(--r)':(pct>90?'var(--o)':'var(--g)');
+      restTxt='<span style="color:'+(rest<0?'var(--r)':'var(--t)')+'">'+_auswFmtH(rest)+'</span>';
+      pctTxt='<span style="color:'+col+';font-weight:600">'+pct+'%</span>';
+    }
+    const badge='<span class="ct-badge '+(it.kat==='pflege'?'ct-badge-p':'ct-badge-b')+'">'+(it.kat==='pflege'?'PFLEGE':'BAU')+'</span>';
+    h+='<tr class="ct-main" ontouchstart="toggleCpDet(\''+it.pid+'\')" onclick="toggleCpDet(\''+it.pid+'\')">'+
+      '<td class="ct-l"><span class="ct-pnr">'+_dfEsc(it.nr||'--')+'</span><span class="ct-pname">'+_dfEsc(it.name)+'</span> '+badge+'</td>'+
+      '<td>'+it.berichte+'</td>'+
+      '<td>'+_auswFmtH(it.personal)+'</td>'+
+      '<td>'+_auswFmtH(it.maschine)+'</td>'+
+      '<td style="color:var(--c);font-weight:700">'+_auswFmtH(it.gesamt)+'</td>'+
+      '<td><input class="ct-plan" type="number" min="0" step="1" value="'+(plan>0?plan:'')+'" placeholder="--" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()" onchange="setPlanH(\''+it.pid+'\',this.value)"></td>'+
+      '<td>'+restTxt+'</td>'+
+      '<td>'+pctTxt+'</td>'+
+      '</tr>';
+    h+='<tr class="ct-det" id="ct-det-'+it.pid+'" style="display:none"><td colspan="8">'+_cpDetailHtml(it.pid)+'</td></tr>';
+  }
+  h+='</tbody></table></div>';
+  body.innerHTML=h;
+  if(kEl)kEl.innerHTML=
+    '<div class="sc"><div class="sv">'+list.length+'</div><div class="sl">Baustellen</div></div>'+
+    '<div class="sc"><div class="sv">'+_auswFmtH(sumP)+'</div><div class="sl">Personal-Std.</div></div>'+
+    '<div class="sc"><div class="sv">'+_auswFmtH(sumM)+'</div><div class="sl">Maschinen-Std.</div></div>'+
+    '<div class="sc"><div class="sv" style="color:var(--g)">'+_auswFmtH(sumP+sumM)+'</div><div class="sl">Gesamt-Std.</div></div>';
+}
+
+function _cpDetailHtml(pid){
+  const a=_cpAggCache[pid];
+  if(!a)return '<div style="color:var(--m);font-size:11px;padding:6px 4px">Keine Details.</div>';
+  let span='';
+  if(a.first||a.last){
+    span='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);letter-spacing:.5px;margin-bottom:8px;text-transform:uppercase">Zeitraum: '+(a.first?_ctrlFmtDate(a.first):'--')+' bis '+(a.last?_ctrlFmtDate(a.last):'--')+'</div>';
+  }
+  const keys=Object.keys(a.aufmass);
+  if(!keys.length)return span+'<div style="color:var(--m);font-size:11px;padding:4px">Kein Aufmass / keine Mengen erfasst.</div>';
+  keys.sort();
+  let rows='';
+  for(let i=0;i<keys.length;i++){
+    const parts=keys[i].split('|');
+    const lbl=parts[0];
+    const eh=parts[1]||'';
+    rows+='<tr><td style="text-align:left;color:var(--t)">'+_dfEsc(lbl)+'</td><td style="text-align:right;font-weight:600;color:var(--c);font-family:\'IBM Plex Mono\',monospace">'+_ctrlFmtN(a.aufmass[keys[i]])+'</td><td style="text-align:left;color:var(--m);width:60px">'+_dfEsc(eh)+'</td></tr>';
+  }
+  return span+'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--sky);letter-spacing:1px;margin-bottom:6px;text-transform:uppercase">Leistungsstand / Aufmass</div>'+
+    '<table class="ct-dtbl"><tbody>'+rows+'</tbody></table>';
+}
+function toggleCpDet(pid){
+  const el=document.getElementById('ct-det-'+pid);
+  if(el)el.style.display=(el.style.display==='none'?'':'none');
+}
+
+function exportCockpitCSV(){
+  if(!_ctrlBerichte||!_ctrlProjekte){toast('Noch keine Daten','err');return;}
+  const agg=_cockpitAgg(_cpFilter());
+  const lines=['Baustelle-Nr;Baustelle;Kategorie;Berichte;Personal-h;Maschinen-h;Gesamt-h;Plan-h;Rest-h;Auslastung-%'];
+  const rows=[];
+  for(const pid in agg){
+    if(!Object.prototype.hasOwnProperty.call(agg,pid))continue;
+    const a=agg[pid];const p=_ctrlFindProj(pid);
+    const gesamt=a.personal+a.maschine;
+    const plan=getPlanH(pid);
+    const rest=plan>0?(plan-gesamt):'';
+    const pct=plan>0?Math.round(gesamt/plan*100):'';
+    rows.push({nr:p?(p.nr||''):'',name:p?(p.name||''):'(unbekannt)',kat:p?(p.kategorie||'bau'):'bau',ber:Object.keys(a.berichte).length,per:a.personal,mas:a.maschine,ges:gesamt,plan:plan,rest:rest,pct:pct});
+  }
+  rows.sort((x,y)=>y.ges-x.ges);
+  for(let i=0;i<rows.length;i++){
+    const it=rows[i];
+    lines.push([_ctrlCsv(it.nr),_ctrlCsv(it.name),it.kat,it.ber,_auswFmtH(it.per).replace(',','.'),_auswFmtH(it.mas).replace(',','.'),_auswFmtH(it.ges).replace(',','.'),(it.plan>0?it.plan:''),(it.rest===''?'':_auswFmtH(it.rest).replace(',','.')),it.pct].join(';'));
+  }
+  dlFile('KLEI_Baustellen_Cockpit.csv','\ufeff'+lines.join('\n'),'text/csv;charset=utf-8');
+}
 
 // ══════ PROJEKTLEITER ══════
 function openPL(){document.getElementById('pl-screen').style.display='flex';document.getElementById('pl-user-name').textContent=currentUser.name;showPLTab('ber');}
@@ -3092,5 +3556,3 @@ function showTab(name){
 </script>
 </body>
 </html>
-
- 
