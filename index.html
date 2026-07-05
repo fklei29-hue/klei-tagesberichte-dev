@@ -284,7 +284,7 @@ select option{background:var(--s2);}
 .zc-name-sel{font-size:14px !important;font-weight:600;width:100%;padding:6px 8px !important;}
 .zc-meta{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.5px;color:var(--m);text-transform:uppercase;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .zc-gesamt{width:66px !important;flex-shrink:0;border:none !important;background:transparent !important;text-align:right;font-family:'IBM Plex Mono',monospace !important;font-weight:700 !important;font-size:19px !important;color:var(--gl) !important;padding:0 !important;}
-.zc-chevron{width:30px;height:30px;flex-shrink:0;border:1px solid var(--b);border-radius:8px;background:var(--s2);color:var(--m);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s;}
+.zc-chevron{width:30px;height:30px;flex-shrink:0;border:1px solid var(--b);border-radius:8px;background:var(--s2);color:var(--m);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
 .zeit-card.collapsed .zc-chevron{transform:rotate(-90deg);}
 .zc-body{padding:12px;display:flex;flex-direction:column;gap:10px;}
 .zeit-card.collapsed .zc-body{display:none;}
@@ -299,7 +299,7 @@ select option{background:var(--s2);}
 .zc-calc{display:flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:.5px;padding-top:2px;}
 .zc-mini{width:60px !important;border:none !important;background:transparent !important;padding:0 !important;font-family:'IBM Plex Mono',monospace !important;font-weight:700 !important;font-size:13px !important;color:var(--gl) !important;}
 .zc-mini-e{color:var(--earth) !important;}
-.zc-del{background:none;border:1px solid var(--b);border-radius:8px;padding:9px;color:var(--m);font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;margin-top:2px;}
+.zc-del{background:none;border:1px solid var(--b);border-radius:8px;padding:9px;color:var(--m);font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;margin-top:2px;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
 </style>
 </head>
 <body class="theme-light">
@@ -3073,6 +3073,7 @@ function onZeitNameChange(sel){
 }
 // ==== Zeiten-Karten Helfer ====
 function toggleZeitCard(btn){const c=btn.closest('.zeit-card');if(c)c.classList.toggle('collapsed');}
+function delZeitCard(btn){const c=btn.closest('.zeit-card');if(!c)return;c.remove();updZeitTotal();refreshStepMAs();}
 function zeitInitials(n){if(!n)return '\u2013';const p=n.replace(/#.*/,'').trim().split(/\s+/);const s=((p[0]&&p[0][0]||'')+(p[1]&&p[1][0]||'')).toUpperCase();return s||'\u2013';}
 function updZeitCardHead(card){if(!card)return;const name=card.querySelector('.zeit-name')?.value||'';const qual=card.querySelector('.zeit-qual')?.value||'';const von=card.querySelector('.zeit-von')?.value||'';const bis=card.querySelector('.zeit-bis')?.value||'';const av=card.querySelector('.zc-avatar');if(av)av.textContent=zeitInitials(name);const meta=card.querySelector('.zc-meta');if(meta)meta.textContent=[qual,(von&&bis?von+'\u2013'+bis:'')].filter(Boolean).join(' \u00b7 ');}
 // Aktuell im VA-Hauptprojekt gewaehlte Kategorie
@@ -3464,12 +3465,12 @@ function addZeitRow(data={}){
     '<div class="zc-head">'+
       '<div class="zc-avatar">\u2013</div>'+
       '<div class="zc-head-main">'+
-        '<div class="zc-cell"><input class="projcell-filter" type="text" placeholder="Name suchen..." oninput="filterRowMA(this)">'+
+        '<div class="zc-cell">'+
         '<select class="zeit-name zc-name-sel" onchange="onZeitNameChange(this)">'+maRowOpts(data.name||'')+'</select></div>'+
         '<div class="zc-meta"></div>'+
       '</div>'+
       '<input class="zeit-gesamt zc-gesamt" type="text" readonly value="'+(data.gesamt||'')+'">'+
-      '<button type="button" class="zc-chevron" ontouchstart="toggleZeitCard(this)" onclick="toggleZeitCard(this)">&#9662;</button>'+
+      '<button type="button" class="zc-chevron" ontouchstart="event.preventDefault();toggleZeitCard(this)" onclick="toggleZeitCard(this)">&#9662;</button>'+
     '</div>'+
     '<div class="zc-body">'+
       '<div class="zc-grid2">'+
@@ -3493,7 +3494,7 @@ function addZeitRow(data={}){
         '<select class="row-pr zc-proj" data-kat="'+rowKat+'" onchange="onZeitProjektChange(this)">'+prOpts+'</select></div>'+
       '<div class="zc-field"><label>T\u00e4tigkeit</label><select class="row-tae">'+taeOpts+'</select></div>'+
       '<div class="zc-calc"><span>Arbeit</span><input class="zeit-netto zc-mini" type="text" readonly value="'+(data.nettoArbeit||'')+'"><span style="margin-left:auto">Fahrtanteil</span><input class="zeit-anteil zc-mini zc-mini-e" type="text" readonly value="'+(data.fahrtAnteil||'')+'"></div>'+
-      '<button type="button" class="zc-del" ontouchstart="this.closest(\'.zeit-card\').remove();updZeitTotal();refreshStepMAs()" onclick="this.closest(\'.zeit-card\').remove();updZeitTotal();refreshStepMAs()">Person entfernen</button>'+
+      '<button type="button" class="zc-del" ontouchstart="event.preventDefault();delZeitCard(this)" onclick="delZeitCard(this)">Person entfernen</button>'+
     '</div>';
   cont.appendChild(card);calcZR(card.querySelector('.zeit-von'));updZeitCardHead(card);setTimeout(refreshStepMAs,50);
 }
@@ -3663,4 +3664,3 @@ function showTab(name){
 </script>
 </body>
 </html>
-
