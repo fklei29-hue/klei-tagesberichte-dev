@@ -274,6 +274,32 @@ select option{background:var(--s2);}
 ::-webkit-scrollbar-track{background:var(--bg);}
 ::-webkit-scrollbar-thumb{background:var(--b);border-radius:2px;}
 @media(max-width:680px){.app{grid-template-columns:1fr;}aside{display:none;}.fg.w25,.fg.w33{flex:0 0 calc(50% - 4px);}}
+/* ===== Zeiten-Karten (Redesign) ===== */
+.zeit-cards{display:flex;flex-direction:column;gap:10px;margin-bottom:10px;}
+.zeit-card{background:var(--s2);border:1px solid var(--b);border-radius:10px;overflow:hidden;}
+.zc-head{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--s3);border-bottom:1px solid var(--b);}
+.zeit-card.collapsed .zc-head{border-bottom:none;}
+.zc-avatar{width:36px;height:36px;border-radius:9px;background:var(--gg);color:var(--gl);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;font-family:'IBM Plex Sans',sans-serif;}
+.zc-head-main{flex:1;min-width:0;}
+.zc-name-sel{font-size:14px !important;font-weight:600;width:100%;padding:6px 8px !important;}
+.zc-meta{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.5px;color:var(--m);text-transform:uppercase;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.zc-gesamt{width:66px !important;flex-shrink:0;border:none !important;background:transparent !important;text-align:right;font-family:'IBM Plex Mono',monospace !important;font-weight:700 !important;font-size:19px !important;color:var(--gl) !important;padding:0 !important;}
+.zc-chevron{width:30px;height:30px;flex-shrink:0;border:1px solid var(--b);border-radius:8px;background:var(--s2);color:var(--m);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s;}
+.zeit-card.collapsed .zc-chevron{transform:rotate(-90deg);}
+.zc-body{padding:12px;display:flex;flex-direction:column;gap:10px;}
+.zeit-card.collapsed .zc-body{display:none;}
+.zc-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.zc-field{display:flex;flex-direction:column;gap:4px;min-width:0;}
+.zc-field>label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--m);text-transform:uppercase;}
+.zc-cell{position:relative;}
+.zc-cell .projcell-filter{margin-bottom:3px;}
+.zc-time{font-family:'IBM Plex Mono',monospace !important;font-size:17px !important;font-weight:600;text-align:center;padding:11px 8px !important;}
+.zc-earth{color:var(--earth) !important;font-family:'IBM Plex Mono',monospace !important;font-weight:600;}
+.zc-proj{border:2px solid var(--gd) !important;}
+.zc-calc{display:flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:.5px;padding-top:2px;}
+.zc-mini{width:60px !important;border:none !important;background:transparent !important;padding:0 !important;font-family:'IBM Plex Mono',monospace !important;font-weight:700 !important;font-size:13px !important;color:var(--gl) !important;}
+.zc-mini-e{color:var(--earth) !important;}
+.zc-del{background:none;border:1px solid var(--b);border-radius:8px;padding:9px;color:var(--m);font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;margin-top:2px;}
 </style>
 </head>
 <body class="theme-light">
@@ -1903,7 +1929,7 @@ function _cpDateOk(d,f){
 }
 function _cockpitAgg(f){
   const agg={};
-  const get=pid=>{if(!agg[pid])agg[pid]={personal:0,maschine:0,berichte:{},first:null,last:null,aufmass:{}};return agg[pid];};
+  const get=pid=>{if(!agg[pid])agg[pid]={personal:0,maschine:0,berichte:{},first:null,last:null,aufmass:{},arbeiten:[]};return agg[pid];};
   const track=(a,d)=>{if(!d)return;if(!a.first||d<a.first)a.first=d;if(!a.last||d>a.last)a.last=d;};
   const B=_ctrlBerichte||[];
   for(let i=0;i<B.length;i++){
@@ -1938,6 +1964,26 @@ function _cockpitAgg(f){
         if(!lbl.trim())lbl='(ohne Bezeichnung)';
         const ak=lbl+'|'+String(sp.eh||'');
         as.aufmass[ak]=(as.aufmass[ak]||0)+_auswNum(sp.menge);
+      }
+      // Einzelne Arbeit mit Stunden (aus der MA-Zuweisung im Arbeitsschritt)
+      if(sp.txt||sp.leistung){
+        let stdSum=0,persAnz=0;
+        const mas=Array.isArray(sp.mitarbeiter)?sp.mitarbeiter:[];
+        for(let m2=0;m2<mas.length;m2++){
+          if(!mas[m2])continue;
+          persAnz++;
+          stdSum+=_auswNum(mas[m2].stunden);
+        }
+        as.arbeiten.push({
+          datum:b.datum||'',
+          leistung:String(sp.leistung||''),
+          txt:String(sp.txt||''),
+          pos:String(sp.pos||''),
+          menge:String(sp.menge==null?'':sp.menge),
+          eh:String(sp.eh||''),
+          std:stdSum,
+          pers:persAnz
+        });
       }
     }
   }
@@ -2021,22 +2067,64 @@ function renderCockpitListe(){
 function _cpDetailHtml(pid){
   const a=_cpAggCache[pid];
   if(!a)return '<div style="color:var(--m);font-size:11px;padding:6px 4px">Keine Details.</div>';
-  let span='';
+  let out='';
   if(a.first||a.last){
-    span='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);letter-spacing:.5px;margin-bottom:8px;text-transform:uppercase">Zeitraum: '+(a.first?_ctrlFmtDate(a.first):'--')+' bis '+(a.last?_ctrlFmtDate(a.last):'--')+'</div>';
+    out+='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);letter-spacing:.5px;margin-bottom:8px;text-transform:uppercase">Zeitraum: '+(a.first?_ctrlFmtDate(a.first):'--')+' bis '+(a.last?_ctrlFmtDate(a.last):'--')+'</div>';
   }
+  // --- Ausgefuehrte Arbeiten mit Stunden (aus der MA-Zuweisung je Arbeitsschritt) ---
+  const arb=(a.arbeiten||[]).slice().sort((x,y)=>(x.datum<y.datum?-1:(x.datum>y.datum?1:0)));
+  if(arb.length){
+    let stdGesamt=0,ohneStd=0;
+    let rows='';
+    for(let i=0;i<arb.length;i++){
+      const w=arb[i];
+      stdGesamt+=w.std;
+      if(w.std<=0)ohneStd++;
+      let bez='';
+      if(w.leistung)bez='<span style="color:var(--gl);font-weight:600">'+_dfEsc(w.leistung)+'</span>';
+      if(w.txt){
+        const t=w.txt.length>80?w.txt.substring(0,79)+'...':w.txt;
+        bez+=(bez?'<br>':'')+'<span style="color:var(--t)">'+_dfEsc(t)+'</span>';
+      }
+      if(!bez)bez='<span style="color:var(--m)">(ohne Bezeichnung)</span>';
+      if(w.pos)bez+=' <span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--sky)">Pos. '+_dfEsc(w.pos)+'</span>';
+      const mengeTxt=w.menge?(_dfEsc(w.menge)+' '+_dfEsc(w.eh)):'<span style="color:var(--m)">--</span>';
+      const stdTxt=w.std>0?('<b style="color:var(--gl)">'+_auswFmtH(w.std)+'</b>'):'<span style="color:var(--m)">--</span>';
+      const persTxt=w.pers>0?String(w.pers):'<span style="color:var(--m)">--</span>';
+      rows+='<tr>'+
+        '<td style="text-align:left;font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:var(--g);white-space:nowrap;vertical-align:top">'+_ctrlFmtDate(w.datum)+'</td>'+
+        '<td style="text-align:left;font-size:11px;line-height:1.45;vertical-align:top">'+bez+'</td>'+
+        '<td style="text-align:right;font-family:\'IBM Plex Mono\',monospace;white-space:nowrap;vertical-align:top">'+mengeTxt+'</td>'+
+        '<td style="text-align:right;font-family:\'IBM Plex Mono\',monospace;white-space:nowrap;vertical-align:top">'+stdTxt+'</td>'+
+        '<td style="text-align:right;font-family:\'IBM Plex Mono\',monospace;vertical-align:top">'+persTxt+'</td>'+
+        '</tr>';
+    }
+    out+='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--sky);letter-spacing:1px;margin-bottom:6px;text-transform:uppercase">Ausgefuehrte Arbeiten ('+arb.length+')'+(stdGesamt>0?' \u00b7 '+_auswFmtH(stdGesamt)+' h zugeordnet':'')+'</div>'+
+      '<table class="ct-dtbl"><tbody>'+
+      '<tr>'+
+      '<td style="text-align:left;font-family:\'IBM Plex Mono\',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:var(--m)">Datum</td>'+
+      '<td style="text-align:left;font-family:\'IBM Plex Mono\',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:var(--m)">Arbeit / Leistung</td>'+
+      '<td style="text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:var(--m)">Menge</td>'+
+      '<td style="text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:var(--m)">Std.</td>'+
+      '<td style="text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:var(--m)">Pers.</td>'+
+      '</tr>'+rows+'</tbody></table>';
+    if(ohneStd>0)out+='<div style="font-size:10px;color:var(--m);margin-top:6px;line-height:1.5">Hinweis: Bei '+ohneStd+' Arbeit(en) wurden im Arbeitsschritt keine Mitarbeiter-Stunden zugewiesen (--). Stunden erscheinen nur, wenn der Vorarbeiter im Bericht-Tab beim Arbeitsschritt Mitarbeiter mit Stunden anhakt.</div>';
+  }else{
+    out+='<div style="color:var(--m);font-size:11px;padding:4px 0 8px">Keine Arbeitsschritte erfasst.</div>';
+  }
+  // --- Aufmass-Summen (gleiche Positionen zusammengefasst) ---
   const keys=Object.keys(a.aufmass);
-  if(!keys.length)return span+'<div style="color:var(--m);font-size:11px;padding:4px">Kein Aufmass / keine Mengen erfasst.</div>';
-  keys.sort();
-  let rows='';
-  for(let i=0;i<keys.length;i++){
-    const parts=keys[i].split('|');
-    const lbl=parts[0];
-    const eh=parts[1]||'';
-    rows+='<tr><td style="text-align:left;color:var(--t)">'+_dfEsc(lbl)+'</td><td style="text-align:right;font-weight:600;color:var(--c);font-family:\'IBM Plex Mono\',monospace">'+_ctrlFmtN(a.aufmass[keys[i]])+'</td><td style="text-align:left;color:var(--m);width:60px">'+_dfEsc(eh)+'</td></tr>';
+  if(keys.length){
+    keys.sort();
+    let rows2='';
+    for(let i=0;i<keys.length;i++){
+      const parts=keys[i].split('|');
+      rows2+='<tr><td style="text-align:left;color:var(--t)">'+_dfEsc(parts[0])+'</td><td style="text-align:right;font-weight:600;color:var(--c);font-family:\'IBM Plex Mono\',monospace">'+_ctrlFmtN(a.aufmass[keys[i]])+'</td><td style="text-align:left;color:var(--m);width:60px">'+_dfEsc(parts[1]||'')+'</td></tr>';
+    }
+    out+='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--sky);letter-spacing:1px;margin:12px 0 6px;text-transform:uppercase">Aufmass gesamt (summiert)</div>'+
+      '<table class="ct-dtbl"><tbody>'+rows2+'</tbody></table>';
   }
-  return span+'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--sky);letter-spacing:1px;margin-bottom:6px;text-transform:uppercase">Leistungsstand / Aufmass</div>'+
-    '<table class="ct-dtbl"><tbody>'+rows+'</tbody></table>';
+  return out;
 }
 function toggleCpDet(pid){
   const el=document.getElementById('ct-det-'+pid);
@@ -2927,7 +3015,7 @@ function _dfFindMA(name){
 // des zugehoerigen <select> neu aufgebaut (nur passende). Robust auf iPad/Safari,
 // weil Optionen neu gesetzt statt nur versteckt werden.
 function filterRowProj(inp){
-  const cell=inp.closest('td');if(!cell)return;
+  const cell=inp.closest('.zc-cell')||inp.closest('td');if(!cell)return;
   const sel=cell.querySelector('select.row-pr');if(!sel)return;
   const kat=sel.getAttribute('data-kat')||'bau';
   const q=inp.value.trim().toLowerCase();
@@ -2959,7 +3047,7 @@ function maRowOpts(sel){
 // des nativen <select class="zeit-name"> neu aufgebaut (nur passende, alphabetisch).
 // Das Dropdown selbst bleibt nativ -> sauberes Scrollen/Tippen auf iOS.
 function filterRowMA(inp){
-  const cell=inp.closest('td');if(!cell)return;
+  const cell=inp.closest('.zc-cell')||inp.closest('td');if(!cell)return;
   const sel=cell.querySelector('select.zeit-name');if(!sel)return;
   const q=_dfNorm(inp.value);
   const cur=sel.value;
@@ -2974,13 +3062,19 @@ function filterRowMA(inp){
 // Bei Auswahl eines Mitarbeiters: Qualifikation aus den Stammdaten vorbelegen
 // (nur wenn dort eine der bekannten Stufen hinterlegt ist) und Arbeitsschritte aktualisieren.
 function onZeitNameChange(sel){
+  const card=sel.closest('.zeit-card');
   const ma=MALISTE.find(m=>m.name===sel.value);
   if(ma&&ma.qualifikation&&['VA','Facharbeiter','Helfer','Azubi','Sub'].includes(ma.qualifikation)){
-    const tr=sel.closest('tr');const q=tr?tr.querySelector('.zeit-qual'):null;
+    const q=card?card.querySelector('.zeit-qual'):null;
     if(q)q.value=ma.qualifikation;
   }
+  updZeitCardHead(card);
   refreshStepMAs();
 }
+// ==== Zeiten-Karten Helfer ====
+function toggleZeitCard(btn){const c=btn.closest('.zeit-card');if(c)c.classList.toggle('collapsed');}
+function zeitInitials(n){if(!n)return '\u2013';const p=n.replace(/#.*/,'').trim().split(/\s+/);const s=((p[0]&&p[0][0]||'')+(p[1]&&p[1][0]||'')).toUpperCase();return s||'\u2013';}
+function updZeitCardHead(card){if(!card)return;const name=card.querySelector('.zeit-name')?.value||'';const qual=card.querySelector('.zeit-qual')?.value||'';const von=card.querySelector('.zeit-von')?.value||'';const bis=card.querySelector('.zeit-bis')?.value||'';const av=card.querySelector('.zc-avatar');if(av)av.textContent=zeitInitials(name);const meta=card.querySelector('.zc-meta');if(meta)meta.textContent=[qual,(von&&bis?von+'\u2013'+bis:'')].filter(Boolean).join(' \u00b7 ');}
 // Aktuell im VA-Hauptprojekt gewaehlte Kategorie
 function currentVAKat(){return document.getElementById('v-kat')?.value||'bau';}
 function taetigkeitenTags(sel,liste){const list=liste||TAETIGKEITEN;return list.map(t=>'<div class="tg'+((sel||[]).includes(t)?' a':'')+'" ontouchstart="event.preventDefault();togTg(this)" onclick="togTg(this)">'+t+'</div>').join('');}
@@ -3277,7 +3371,7 @@ function onVAProjektChange(){
   const sel=document.getElementById('v-projekt');if(!sel||!sel.value)return;
   const fz=getProjektFahrzeit(sel.value);
   // Alle Zeitzeilen aktualisieren
-  document.querySelectorAll('#zeit-body tr').forEach(tr=>{
+  document.querySelectorAll('#zeit-body .zeit-card').forEach(tr=>{
     const prSel=tr.querySelector('.row-pr');if(prSel&&!prSel.value)prSel.value=sel.value;
     const fzEl=tr.querySelector('.zeit-fahrzeit');if(fzEl&&fz>0&&fzEl.value==='0')fzEl.value=fz;
     calcZR(tr.querySelector('.zeit-von')||tr.querySelector('input'));
@@ -3333,9 +3427,7 @@ function buildVAZeit(){
     '<div style="font-size:11px;color:var(--t);line-height:1.5">Projekt-Spalte (&#9733;) je Zeile setzen: leer = Hauptprojekt. Beim Senden entsteht automatisch <b>ein eigener Bericht pro Baustelle</b> mit nur den jeweiligen Zeiten.</div>'+
     '</div>'+
     '<div id="split-info" style="display:none"></div>'+
-    '<div class="tbl-wrap"><table class="tbl"><thead><tr>'+
-    '<th>Name</th><th>Qual.</th><th>Von</th><th>Bis</th><th>Pause</th><th>Arbeit</th><th>Fahrt</th><th>Fahrzeit</th><th>Anteil</th><th>GESAMT</th><th style="color:var(--earth)">&#9733; Projekt</th><th>Taetigkeit</th><th></th>'+
-    '</tr></thead><tbody id="zeit-body"></tbody></table></div>'+
+    '<div class="zeit-cards" id="zeit-body"></div>'+
     '<button class="btn" ontouchstart="addZeitRow()" onclick="addZeitRow()">+ Person</button></div>'+
     '<div class="sec"><div class="sh">Geraeteeinsatz (Dataflor)</div>'+
     '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Geraet</th><th>Fahrzeugnr.</th><th>Stunden</th><th>Projekt</th><th></th></tr></thead><tbody id="mach-body"></tbody></table></div>'+
@@ -3355,11 +3447,11 @@ function buildVAMaterial(){
 function buildKI(){return'';}
 
 // ══════ ZEITERFASSUNG ══════
-function getZeitRowsSimple(){return[...document.querySelectorAll('#zeit-body tr')].map(tr=>({name:tr.querySelector('.zeit-name')?.value||'',qual:tr.querySelector('.zeit-qual')?.value||''})).filter(r=>r.name);}
+function getZeitRowsSimple(){return[...document.querySelectorAll('#zeit-body .zeit-card')].map(tr=>({name:tr.querySelector('.zeit-name')?.value||'',qual:tr.querySelector('.zeit-qual')?.value||''})).filter(r=>r.name);}
 
 function addZeitRow(data={}){
-  const tbody=document.getElementById('zeit-body');if(!tbody)return;
-  const tr=document.createElement('tr');
+  const cont=document.getElementById('zeit-body');if(!cont)return;
+  const card=document.createElement('div');card.className='zeit-card';
   // Fahrzeit aus Hauptprojekt automatisch übernehmen
   const hauptProjektId=document.getElementById('v-projekt')?.value||'';
   const autoFz=getProjektFahrzeit(hauptProjektId);
@@ -3368,33 +3460,48 @@ function addZeitRow(data={}){
   const rowKat=data.projektId?getProjektKat(data.projektId):currentVAKat();
   const prOpts=rowProjektOpts(rowKat,autoProjId);
   const taeOpts='<option value="">-</option>'+TAETIGKEITEN.map(t=>'<option value="'+t+'" '+(data.tae===t?'selected':'')+'>'+t+'</option>').join('');
-  tr.innerHTML=
-    '<td><input class="projcell-filter" type="text" placeholder="Suchen..." style="display:block;width:110px;font-size:9px;padding:3px 5px;margin-bottom:2px" oninput="filterRowMA(this)">'+
-    '<select class="zeit-name" style="font-size:10px;min-width:120px" onchange="onZeitNameChange(this)">'+maRowOpts(data.name||'')+'</select></td>'+
-    '<td><select class="zeit-qual" style="font-size:10px">'+['VA','Facharbeiter','Helfer','Azubi','Sub'].map(q=>'<option'+(data.qual===q?' selected':'')+'>'+q+'</option>').join('')+'</select></td>'+
-    '<td><input class="zeit-von" type="time" value="'+(data.von||'07:00')+'" style="width:76px" oninput="calcZR(this)"></td>'+
-    '<td><input class="zeit-bis" type="time" value="'+(data.bis||'16:00')+'" style="width:76px" oninput="calcZR(this)"></td>'+
-    '<td>'+pausenSelect(data.pause||30,'zeit-pause')+'</td>'+
-    '<td><input class="zeit-netto" type="text" readonly value="'+(data.nettoArbeit||'')+'" style="width:52px;color:var(--gl);font-family:\'IBM Plex Mono\',monospace;font-weight:600"></td>'+
-    '<td><select class="fahrt-sel" style="font-size:10px" onchange="calcZR(this)">'+
-    '<option value="fahrer" '+(data.fahrt==='fahrer'||!data.fahrt?'selected':'')+'>Fahrer</option>'+
-    '<option value="beifahrer" '+(data.fahrt==='beifahrer'?'selected':'')+'>Beifahrer</option>'+
-    '<option value="privat" '+(data.fahrt==='privat'?'selected':'')+'>Privat</option>'+
-    '</select></td>'+
-    '<td><input class="zeit-fahrzeit" type="number" value="'+fzVal+'" min="0" style="width:60px;background:var(--s2);border:1px solid var(--b);border-radius:3px;padding:3px 6px;color:var(--earth);font-family:\'IBM Plex Mono\',monospace" oninput="calcZR(this)"></td>'+
-    '<td><input class="zeit-anteil" type="text" readonly value="'+(data.fahrtAnteil||'')+'" style="width:48px;color:var(--earth);font-family:\'IBM Plex Mono\',monospace;font-weight:600"></td>'+
-    '<td><input class="zeit-gesamt" type="text" readonly value="'+(data.gesamt||'')+'" style="width:56px;color:var(--gl);font-family:\'IBM Plex Mono\',monospace;font-weight:700;font-size:12px"></td>'+
-    '<td><input class="projcell-filter" type="text" placeholder="Suchen..." style="display:block;width:90px;font-size:9px;padding:3px 5px;margin-bottom:2px" oninput="filterRowProj(this)">'+
-    '<select class="row-pr" data-kat="'+rowKat+'" style="font-size:9px;min-width:90px;border:2px solid var(--gd)" onchange="onZeitProjektChange(this)">'+prOpts+'</select></td>'+
-    '<td><select class="row-tae" style="font-size:9px;min-width:110px">'+taeOpts+'</select></td>'+
-    '<td><button class="delbtn" ontouchstart="this.closest(\'tr\').remove();updZeitTotal();refreshStepMAs()" onclick="this.closest(\'tr\').remove();updZeitTotal();refreshStepMAs()">&#x2715;</button></td>';
-  tbody.appendChild(tr);calcZR(tr.querySelector('.zeit-von'));setTimeout(refreshStepMAs,50);
+  card.innerHTML=
+    '<div class="zc-head">'+
+      '<div class="zc-avatar">\u2013</div>'+
+      '<div class="zc-head-main">'+
+        '<div class="zc-cell"><input class="projcell-filter" type="text" placeholder="Name suchen..." oninput="filterRowMA(this)">'+
+        '<select class="zeit-name zc-name-sel" onchange="onZeitNameChange(this)">'+maRowOpts(data.name||'')+'</select></div>'+
+        '<div class="zc-meta"></div>'+
+      '</div>'+
+      '<input class="zeit-gesamt zc-gesamt" type="text" readonly value="'+(data.gesamt||'')+'">'+
+      '<button type="button" class="zc-chevron" ontouchstart="toggleZeitCard(this)" onclick="toggleZeitCard(this)">&#9662;</button>'+
+    '</div>'+
+    '<div class="zc-body">'+
+      '<div class="zc-grid2">'+
+        '<div class="zc-field"><label>Von</label><input class="zeit-von zc-time" type="time" value="'+(data.von||'07:00')+'" oninput="calcZR(this)"></div>'+
+        '<div class="zc-field"><label>Bis</label><input class="zeit-bis zc-time" type="time" value="'+(data.bis||'16:00')+'" oninput="calcZR(this)"></div>'+
+      '</div>'+
+      '<div class="zc-grid2">'+
+        '<div class="zc-field"><label>Pause</label>'+pausenSelect(data.pause||30,'zeit-pause')+'</div>'+
+        '<div class="zc-field"><label>Qualifikation</label><select class="zeit-qual">'+['VA','Facharbeiter','Helfer','Azubi','Sub'].map(q=>'<option'+(data.qual===q?' selected':'')+'>'+q+'</option>').join('')+'</select></div>'+
+      '</div>'+
+      '<div class="zc-grid2">'+
+        '<div class="zc-field"><label>Fahrt-Status</label><select class="fahrt-sel" onchange="calcZR(this)">'+
+          '<option value="fahrer" '+(data.fahrt==='fahrer'||!data.fahrt?'selected':'')+'>Fahrer \u00b7 100%</option>'+
+          '<option value="beifahrer" '+(data.fahrt==='beifahrer'?'selected':'')+'>Beifahrer \u00b7 50%</option>'+
+          '<option value="privat" '+(data.fahrt==='privat'?'selected':'')+'>Privat \u00b7 0%</option>'+
+        '</select></div>'+
+        '<div class="zc-field"><label>Fahrzeit (Min)</label><input class="zeit-fahrzeit zc-earth" type="number" value="'+fzVal+'" min="0" oninput="calcZR(this)"></div>'+
+      '</div>'+
+      '<div class="zc-field zc-cell"><label>&#9733; Projekt (leer = Hauptprojekt)</label>'+
+        '<input class="projcell-filter" type="text" placeholder="Projekt suchen..." oninput="filterRowProj(this)">'+
+        '<select class="row-pr zc-proj" data-kat="'+rowKat+'" onchange="onZeitProjektChange(this)">'+prOpts+'</select></div>'+
+      '<div class="zc-field"><label>T\u00e4tigkeit</label><select class="row-tae">'+taeOpts+'</select></div>'+
+      '<div class="zc-calc"><span>Arbeit</span><input class="zeit-netto zc-mini" type="text" readonly value="'+(data.nettoArbeit||'')+'"><span style="margin-left:auto">Fahrtanteil</span><input class="zeit-anteil zc-mini zc-mini-e" type="text" readonly value="'+(data.fahrtAnteil||'')+'"></div>'+
+      '<button type="button" class="zc-del" ontouchstart="this.closest(\'.zeit-card\').remove();updZeitTotal();refreshStepMAs()" onclick="this.closest(\'.zeit-card\').remove();updZeitTotal();refreshStepMAs()">Person entfernen</button>'+
+    '</div>';
+  cont.appendChild(card);calcZR(card.querySelector('.zeit-von'));updZeitCardHead(card);setTimeout(refreshStepMAs,50);
 }
 
-function onZeitProjektChange(sel){const tr=sel.closest('tr');if(!tr)return;const fz=getProjektFahrzeit(sel.value);const fzEl=tr.querySelector('.zeit-fahrzeit');if(fzEl&&fz>0)fzEl.value=fz;calcZR(tr.querySelector('.zeit-von'));}
+function onZeitProjektChange(sel){const tr=sel.closest('.zeit-card');if(!tr)return;const fz=getProjektFahrzeit(sel.value);const fzEl=tr.querySelector('.zeit-fahrzeit');if(fzEl&&fz>0)fzEl.value=fz;calcZR(tr.querySelector('.zeit-von'));}
 
 function calcZR(inp){
-  if(!inp)return;const tr=inp.closest('tr');if(!tr)return;
+  if(!inp)return;const tr=inp.closest('.zeit-card');if(!tr)return;
   const von=tr.querySelector('.zeit-von')?.value||'',bis=tr.querySelector('.zeit-bis')?.value||'';
   const pause=parseFloat(tr.querySelector('.zeit-pause')?.value)||0;
   const fahrzeitMin=parseFloat(tr.querySelector('.zeit-fahrzeit')?.value)||0;
@@ -3407,10 +3514,10 @@ function calcZR(inp){
     const anteilEl=tr.querySelector('.zeit-anteil');if(anteilEl)anteilEl.value=fahrtH.toFixed(2).replace('.',',');
     const gesamtEl=tr.querySelector('.zeit-gesamt');if(gesamtEl)gesamtEl.value=(arbH+fahrtH).toFixed(2).replace('.',',');
   }
-  updZeitTotal();
+  updZeitCardHead(tr);updZeitTotal();
 }
 function updZeitTotal(){let t=0;document.querySelectorAll('.zeit-gesamt').forEach(e=>t+=parseFloat(e.value.replace(',','.'))||0);const el=document.getElementById('zeit-total');if(el)el.textContent=t.toFixed(2).replace('.',',')+'h gesamt';updateSplitInfo();updateMAOffen();}
-function getZeitRows(){return[...document.querySelectorAll('#zeit-body tr')].map(tr=>({name:tr.querySelector('.zeit-name')?.value||'',qual:tr.querySelector('.zeit-qual')?.value||'',von:tr.querySelector('.zeit-von')?.value||'',bis:tr.querySelector('.zeit-bis')?.value||'',pause:tr.querySelector('.zeit-pause')?.value||'30',nettoArbeit:tr.querySelector('.zeit-netto')?.value||'',fahrt:tr.querySelector('.fahrt-sel')?.value||'fahrer',fahrzeitMin:tr.querySelector('.zeit-fahrzeit')?.value||'0',fahrtAnteil:tr.querySelector('.zeit-anteil')?.value||'',gesamt:tr.querySelector('.zeit-gesamt')?.value||'',projektNr:PROJEKTE.find(p=>p.id===tr.querySelector('.row-pr')?.value)?.nr||'',projektId:tr.querySelector('.row-pr')?.value||'',tae:tr.querySelector('.row-tae')?.value||''})).filter(r=>r.name);}
+function getZeitRows(){return[...document.querySelectorAll('#zeit-body .zeit-card')].map(tr=>({name:tr.querySelector('.zeit-name')?.value||'',qual:tr.querySelector('.zeit-qual')?.value||'',von:tr.querySelector('.zeit-von')?.value||'',bis:tr.querySelector('.zeit-bis')?.value||'',pause:tr.querySelector('.zeit-pause')?.value||'30',nettoArbeit:tr.querySelector('.zeit-netto')?.value||'',fahrt:tr.querySelector('.fahrt-sel')?.value||'fahrer',fahrzeitMin:tr.querySelector('.zeit-fahrzeit')?.value||'0',fahrtAnteil:tr.querySelector('.zeit-anteil')?.value||'',gesamt:tr.querySelector('.zeit-gesamt')?.value||'',projektNr:PROJEKTE.find(p=>p.id===tr.querySelector('.row-pr')?.value)?.nr||'',projektId:tr.querySelector('.row-pr')?.value||'',tae:tr.querySelector('.row-tae')?.value||''})).filter(r=>r.name);}
 function addMachRow(data={}){const tbody=document.getElementById('mach-body');if(!tbody)return;const tr=document.createElement('tr');const rowKat=data.projektId?getProjektKat(data.projektId):currentVAKat();const prOpts=rowProjektOpts(rowKat,data.projektId||'');tr.innerHTML='<td><select class="geraet-sel" style="font-size:10px;min-width:200px"><option value="">- Geraet -</option>'+GERAETE.map(g=>'<option value="'+g.nr+'" '+(data.geraetNr===g.nr?'selected':'')+'>'+g.nr+' - '+g.bez+'</option>').join('')+'</select></td><td><input type="text" class="mach-fzn" value="'+(data.fahrzeugnr||'')+'" placeholder="Kfz/Nr." style="width:80px"></td><td><input type="number" class="mach-std" value="'+(data.netto||'')+'" placeholder="Std." min="0" step="0.5" style="width:70px;color:var(--gl);font-family:\'IBM Plex Mono\',monospace;font-weight:700"></td><td><select class="row-pr" data-kat="'+rowKat+'" style="font-size:9px;min-width:90px">'+prOpts+'</select></td><td><button class="delbtn" ontouchstart="this.closest(\'tr\').remove()" onclick="this.closest(\'tr\').remove()">&#x2715;</button></td>';tbody.appendChild(tr);}
 function getMachRows(){return[...document.querySelectorAll('#mach-body tr')].map(tr=>{const geraetNr=tr.querySelector('.geraet-sel')?.value||'';const geraet=GERAETE.find(g=>g.nr===geraetNr);return{geraetNr,geraetBez:geraet?.bez||'',fahrzeugnr:tr.querySelector('.mach-fzn')?.value||'',netto:tr.querySelector('.mach-std')?.value||'',projektId:tr.querySelector('.row-pr')?.value||''};}).filter(r=>r.geraetNr);}
 function addStep(data={}){stepIdx++;const i=stepIdx;const maRows=getZeitRowsSimple();let maHtml=maRows.length>0?'<div class="ma-zuweisung"><div class="ma-zuw-title">Mitarbeiter zuweisen</div>'+maRows.map(ma=>{const checked=(data.mitarbeiter||[]).some(m=>m.name===ma.name);const std=(data.mitarbeiter||[]).find(m=>m.name===ma.name)?.stunden||'';return'<div class="ma-check-row"><input type="checkbox" class="ma-cb" data-name="'+ma.name+'" '+(checked?'checked':'')+' onchange="updateStepMA('+i+')"><span class="ma-name-lbl">'+ma.name+'</span><span class="ma-budget" data-name="'+ma.name+'"></span><input type="number" class="ma-h" data-name="'+ma.name+'" value="'+std+'" placeholder="Std." min="0" step="0.5" style="opacity:'+(checked?'1':'0.4')+'" oninput="updateStepMA('+i+')">';}).join('')+'</div>':'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-top:6px" data-no-ma="1">Erst Mitarbeiter im Tab Zeiten eintragen</div>';
@@ -3447,7 +3554,7 @@ function updateMAOffen(){
   const badges=document.querySelectorAll('.ma-budget');if(!badges.length)return;
   // Gesamt je Name aus den Zeiten-Zeilen (mehrere Zeilen pro Person werden summiert)
   const total={};
-  document.querySelectorAll('#zeit-body tr').forEach(tr=>{
+  document.querySelectorAll('#zeit-body .zeit-card').forEach(tr=>{
     const n=tr.querySelector('.zeit-name')?.value||'';if(!n)return;
     const g=parseFloat((tr.querySelector('.zeit-gesamt')?.value||'0').replace(',','.'))||0;
     total[n]=(total[n]||0)+g;
