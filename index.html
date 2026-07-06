@@ -2291,6 +2291,7 @@ async function getActiveEmpfaenger(){
 
 async function saveAndSendWS(){
   if(isSending){toast('Bitte warten — wird noch verarbeitet','info');return;}
+  if(!confirm('Bericht jetzt speichern und als PDF senden?'))return;
   isSending=true;
   try{
   const projektSel=document.getElementById('ws-projekt');
@@ -2328,12 +2329,13 @@ async function saveAndSendWS(){
   const pdfUrl=await sendPDFMail(reportForPDF,'ws-send-status');
   if(pdfUrl)await sb.from('berichte').update({gesendet:true,pdf_url:pdfUrl}).eq('id',savedId);
   else await sb.from('berichte').update({gesendet:true}).eq('id',savedId);
-  await loadReports();renderSB();currentId=null;clearWSForm();
+  await loadReports();renderSB();currentId=null;clearWSForm(true);
   }finally{isSending=false;}
 }
 
 async function saveAndSendAR(){
   if(isSending){toast('Bitte warten — wird noch verarbeitet','info');return;}
+  if(!confirm('Bericht jetzt speichern und als PDF senden?'))return;
   isSending=true;
   try{
   const projektSel=document.getElementById('a-projekt');
@@ -2369,7 +2371,7 @@ async function saveAndSendAR(){
   const pdfUrl=await sendPDFMail(reportForPDF,'ar-send-status');
   if(pdfUrl)await sb.from('berichte').update({gesendet:true,pdf_url:pdfUrl}).eq('id',savedId);
   else await sb.from('berichte').update({gesendet:true}).eq('id',savedId);
-  await loadReports();renderSB();currentId=null;clearARForm();
+  await loadReports();renderSB();currentId=null;clearARForm(true);
   }finally{isSending=false;}
 }
 
@@ -2424,6 +2426,10 @@ async function saveAndSendVA(){
     }
   }
 
+  // Bestaetigung vor dem Senden. Bei Mehr-Baustellen-Split kam die Abfrage
+  // bereits ueber den Split-Dialog (siehe oben) — hier nur der normale Fall.
+  if(!confirm('Bericht jetzt speichern und als PDF senden?'))return;
+
   const st=document.getElementById('va-send-status');
   if(st){st.className='send-status show sending';st.textContent='Speichern...';}
   let savedId=currentId;
@@ -2440,7 +2446,7 @@ async function saveAndSendVA(){
   if(pdfUrl)await sb.from('berichte').update({gesendet:true,pdf_url:pdfUrl}).eq('id',savedId);
   else await sb.from('berichte').update({gesendet:true}).eq('id',savedId);
   clearVADraft();
-  await loadReports();renderSB();currentId=null;newReport();
+  await loadReports();renderSB();currentId=null;newReport(true);
   }finally{isSending=false;}
 }
 
@@ -2570,7 +2576,7 @@ async function saveAndSendVASplit(base,zeitRows,hauptProjektId,projIds){
   if(st){st.className='send-status show '+(fehler?'err':'ok');st.textContent=ok+' Projekt-Bericht(e) gesendet'+(fehler?', '+fehler+' Fehler':'')+'.';}
   toast(ok+' getrennte Berichte versendet'+(fehler?', '+fehler+' Fehler':''),fehler?'err':'ok');
   clearVADraft();
-  await loadReports();renderSB();currentId=null;newReport();
+  await loadReports();renderSB();currentId=null;newReport(true);
 }
 
 // ══════ PDF ══════
@@ -2995,10 +3001,16 @@ function katSelectHTML(id,onchange,selKat){
     '<option value="pflege" '+(selKat==='pflege'?'selected':'')+'>Pflege</option>'+
     '</select>';
 }
-// Verkuerzte Optionen fuer Tabellenzellen (Zeiten/Maschinen/LV), gefiltert nach Kategorie
+// Label fuer Projekt-Dropdowns in Tabellenzellen: Nummer + Projektname (gekuerzt)
+function rowProjLabel(p){
+  let n=p.name||'';
+  if(n.length>28)n=n.substring(0,27)+'\u2026';
+  return(p.nr?p.nr+' - ':'')+n;
+}
+// Optionen fuer Tabellenzellen (Zeiten/Maschinen/LV), gefiltert nach Kategorie
 function rowProjektOpts(kat,sel){
   const list=PROJEKTE.filter(p=>(p.kategorie||'bau')===kat);
-  return'<option value="">-</option>'+list.map(p=>'<option value="'+p.id+'" '+(sel===p.id?'selected':'')+'>'+(p.nr||p.name.substring(0,14))+'</option>').join('');
+  return'<option value="">-</option>'+list.map(p=>'<option value="'+p.id+'" '+(sel===p.id?'selected':'')+'>'+rowProjLabel(p)+'</option>').join('');
 }
 // Hilfsfunktionen fuer Namens-/Projektsuche (Escaping + Normalisierung)
 function _dfEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -3025,8 +3037,8 @@ function filterRowProj(inp){
     const hay=((p.nr||'')+' '+(p.name||'')).toLowerCase();
     return hay.includes(q);
   });
-  let html='<option value="">-</option>'+list.map(p=>'<option value="'+p.id+'" '+(cur===p.id?'selected':'')+'>'+(p.nr||p.name.substring(0,14))+'</option>').join('');
-  if(cur&&!list.some(p=>p.id===cur)){const cp=PROJEKTE.find(p=>p.id===cur);if(cp)html+='<option value="'+cp.id+'" selected>'+(cp.nr||cp.name.substring(0,14))+'</option>';}
+  let html='<option value="">-</option>'+list.map(p=>'<option value="'+p.id+'" '+(cur===p.id?'selected':'')+'>'+rowProjLabel(p)+'</option>').join('');
+  if(cur&&!list.some(p=>p.id===cur)){const cp=PROJEKTE.find(p=>p.id===cur);if(cp)html+='<option value="'+cp.id+'" selected>'+rowProjLabel(cp)+'</option>';}
   sel.innerHTML=html;
 }
 // Mitarbeiter-Auswahl fuer die Zeiten-Zeile: Optionen aus den Stammdaten (MALISTE),
@@ -3213,7 +3225,7 @@ function buildWS(){
 function initWSForm(){const nEl=document.getElementById('ws-name');if(nEl)nEl.value=currentUser.name;const dEl=document.getElementById('ws-datum');if(dEl)dEl.value=todayStr();calcWS();}
 function onWSKatChange(){const kat=document.getElementById('ws-kat')?.value||'bau';const sel=document.getElementById('ws-projekt');if(sel)sel.innerHTML=projektOptsByKat(kat,'');}
 function calcWS(){const v=document.getElementById('ws-von')?.value,b=document.getElementById('ws-bis')?.value,p=parseFloat(document.getElementById('ws-pause')?.value)||0;if(v&&b){const[vh,vm]=v.split(':').map(Number),[bh,bm]=b.split(':').map(Number);let wm=(bh*60+bm)-(vh*60+vm)-p;if(wm<0)wm+=1440;const el=document.getElementById('ws-netto');if(el)el.value=(wm/60).toFixed(2).replace('.',',');}}
-function clearWSForm(){currentId=null;stopVoice();const dEl=document.getElementById('ws-datum');if(dEl)dEl.value=todayStr();['ws-taetigkeit','ws-maengel'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const netto=document.getElementById('ws-netto');if(netto)netto.value='';const fzSel=document.getElementById('ws-fahrzeug');if(fzSel)fzSel.value='';const st=document.getElementById('ws-send-status');if(st){st.className='send-status';st.textContent='';}document.querySelectorAll('#ws-taetigkeiten-tags .tg').forEach(t=>t.classList.remove('a'));document.getElementById('ws-von').value='07:00';document.getElementById('ws-bis').value='16:00';document.getElementById('ws-pause').value='30';calcWS();toast('Neuer Werkstatt-Bericht','ok');}
+function clearWSForm(skipConfirm){if(!skipConfirm&&!confirm('Neuen Bericht beginnen? Nicht gespeicherte Eingaben gehen verloren.'))return;currentId=null;stopVoice();const dEl=document.getElementById('ws-datum');if(dEl)dEl.value=todayStr();['ws-taetigkeit','ws-maengel'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const netto=document.getElementById('ws-netto');if(netto)netto.value='';const fzSel=document.getElementById('ws-fahrzeug');if(fzSel)fzSel.value='';const st=document.getElementById('ws-send-status');if(st){st.className='send-status';st.textContent='';}document.querySelectorAll('#ws-taetigkeiten-tags .tg').forEach(t=>t.classList.remove('a'));document.getElementById('ws-von').value='07:00';document.getElementById('ws-bis').value='16:00';document.getElementById('ws-pause').value='30';calcWS();toast('Neuer Werkstatt-Bericht','ok');}
 
 function buildFZListe(){
   const el=document.getElementById('fzliste-content');if(!el)return;
@@ -3303,7 +3315,7 @@ function calcAR(){
     const mEl=document.getElementById('a-h-monat');if(mEl)mEl.textContent=hM.toFixed(1)+'h';
   }
 }
-function clearARForm(){currentId=null;stopVoice();document.getElementById('a-datum').value=todayStr();document.getElementById('a-projekt').value='';document.getElementById('a-von').value='07:00';document.getElementById('a-bis').value='16:00';document.getElementById('a-pause').value='30';['a-netto-work','a-netto','a-taetigkeit','a-besonder'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const fa=document.getElementById('a-fahrzeit-anzeige');if(fa)fa.value='0 min';const fi=document.getElementById('fahrzeit-info');if(fi)fi.textContent='';const st=document.getElementById('ar-send-status');if(st){st.className='send-status';st.textContent='';}curFahrtStatus='fahrer';document.querySelectorAll('.fahrt-btn').forEach(b=>{b.classList.remove('fahrt-active');if(b.dataset.val==='fahrer')b.classList.add('fahrt-active');});document.querySelectorAll('#ar-taetigkeiten-tags .tg').forEach(t=>t.classList.remove('a'));toast('Neuer Bericht','ok');}
+function clearARForm(skipConfirm){if(!skipConfirm&&!confirm('Neuen Bericht beginnen? Nicht gespeicherte Eingaben gehen verloren.'))return;currentId=null;stopVoice();document.getElementById('a-datum').value=todayStr();document.getElementById('a-projekt').value='';document.getElementById('a-von').value='07:00';document.getElementById('a-bis').value='16:00';document.getElementById('a-pause').value='30';['a-netto-work','a-netto','a-taetigkeit','a-besonder'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const fa=document.getElementById('a-fahrzeit-anzeige');if(fa)fa.value='0 min';const fi=document.getElementById('fahrzeit-info');if(fi)fi.textContent='';const st=document.getElementById('ar-send-status');if(st){st.className='send-status';st.textContent='';}curFahrtStatus='fahrer';document.querySelectorAll('.fahrt-btn').forEach(b=>{b.classList.remove('fahrt-active');if(b.dataset.val==='fahrer')b.classList.add('fahrt-active');});document.querySelectorAll('#ar-taetigkeiten-tags .tg').forEach(t=>t.classList.remove('a'));toast('Neuer Bericht','ok');}
 
 // ══════ VA FORMS ══════
 function buildVABericht(){
@@ -3626,10 +3638,13 @@ function buildKalender(){
 function kalPrev(){kalMonat--;if(kalMonat<0){kalMonat=11;kalJahr--;}buildKalender();}
 function kalNext(){kalMonat++;if(kalMonat>11){kalMonat=0;kalJahr++;}buildKalender();}
 
-function newReport(){
+function newReport(skipConfirm){
+  // Sicherheitsabfrage nur bei manueller Ausloesung (Button) — nach erfolgreichem
+  // Senden wird newReport(true) aufgerufen und leert ohne Nachfrage.
+  if(!skipConfirm&&!confirm('Neuen Bericht beginnen? Nicht gespeicherte Eingaben gehen verloren.'))return;
   currentId=null;stopVoice();
-  if(currentRole==='arbeiter'){clearARForm();return;}
-  if(currentRole==='werkstatt'){clearWSForm();return;}
+  if(currentRole==='arbeiter'){clearARForm(true);return;}
+  if(currentRole==='werkstatt'){clearWSForm(true);return;}
   stepIdx=0;liefIdx=0;mangelIdx=0;zusatzProjektIdx=0;
   ['v-datum','v-baustelle','v-bauherr','v-projektnr','v-bauleiter','v-temp','v-nied','v-besucher','v-naechstes','v-bemerkungen'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=id==='v-datum'?todayStr():'';});
   ['steps-con','mangel-con','lief-con','mengen-con'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
