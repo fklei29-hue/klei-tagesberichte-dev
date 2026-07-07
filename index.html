@@ -1666,7 +1666,7 @@ function _mkAuswChart(id,cfg){
 function _auswDestroyCharts(){_auswCharts.forEach(c=>{try{c.destroy();}catch(e){}});_auswCharts=[];}
 
 // ══════ CONTROLLING (Pflege-Vertrag + Baustellen-Cockpit) ══════
-let _ctrlBerichte=null,_ctrlProjekte=null,_ctrlLoading=false,_cpAggCache={};
+let _ctrlBerichte=null,_ctrlProjekte=null,_ctrlLoading=false,_cpAggCache={},_ctrlLV={};
 
 function _ctrlYearOf(d){return d?String(d).substring(0,4):'';}
 function _ctrlStripCount(s){
@@ -1743,6 +1743,20 @@ async function ctrlLadeDaten(force){
       ps+=1000;
     }
     _ctrlProjekte=pl;
+    // LV-Positionen je Projekt laden (Tabelle kann fehlen -> Feature blendet sich aus)
+    const lvm={};
+    try{
+      let ls=0;
+      while(true){
+        const r=await sb.from('lv_positionen').select('id,projekt_id,pos_nr,bezeichnung,einheit,menge_soll').eq('aktiv',true).order('projekt_id',{ascending:true}).order('sort',{ascending:true}).range(ls,ls+999);
+        if(r.error)throw r.error;
+        const d=r.data||[];
+        for(let k2=0;k2<d.length;k2++){const q=d[k2];if(!lvm[q.projekt_id])lvm[q.projekt_id]=[];lvm[q.projekt_id].push(q);}
+        if(d.length<1000)break;
+        ls+=1000;
+      }
+    }catch(e){}
+    _ctrlLV=lvm;
     const bl=[];let bs=0;
     while(true){
       const r=await sb.from('berichte').select('id,datum,projekt_id,projekt_nr,zeit_rows,mach_rows,steps').order('datum',{ascending:true}).order('id',{ascending:true}).range(bs,bs+999);
@@ -1929,7 +1943,7 @@ function _cpDateOk(d,f){
 }
 function _cockpitAgg(f){
   const agg={};
-  const get=pid=>{if(!agg[pid])agg[pid]={personal:0,maschine:0,berichte:{},first:null,last:null,aufmass:{},arbeiten:[]};return agg[pid];};
+  const get=pid=>{if(!agg[pid])agg[pid]={personal:0,maschine:0,berichte:{},first:null,last:null,aufmass:{},arbeiten:[],lv:{},regieN:0,regieStd:0};return agg[pid];};
   const track=(a,d)=>{if(!d)return;if(!a.first||d<a.first)a.first=d;if(!a.last||d>a.last)a.last=d;};
   const B=_ctrlBerichte||[];
   for(let i=0;i<B.length;i++){
@@ -1966,14 +1980,14 @@ function _cockpitAgg(f){
         as.aufmass[ak]=(as.aufmass[ak]||0)+_auswNum(sp.menge);
       }
       // Einzelne Arbeit mit Stunden (aus der MA-Zuweisung im Arbeitsschritt)
-      if(sp.txt||sp.leistung){
-        let stdSum=0,persAnz=0;
-        const mas=Array.isArray(sp.mitarbeiter)?sp.mitarbeiter:[];
-        for(let m2=0;m2<mas.length;m2++){
-          if(!mas[m2])continue;
-          persAnz++;
-          stdSum+=_auswNum(mas[m2].stunden);
-        }
+      let stdSum=0,persAnz=0;
+      const mas=Array.isArray(sp.mitarbeiter)?sp.mitarbeiter:[];
+      for(let m2=0;m2<mas.length;m2++){
+        if(!mas[m2])continue;
+        persAnz++;
+        stdSum+=_auswNum(mas[m2].stunden);
+      }
+      if(sp.txt||sp.leistung||sp.lvId){
         as.arbeiten.push({
           datum:b.datum||'',
           leistung:String(sp.leistung||''),
@@ -1984,6 +1998,23 @@ function _cockpitAgg(f){
           std:stdSum,
           pers:persAnz
         });
+      }
+      // LV-Zuordnung: ueber gespeicherte lvId, sonst ueber Pos-Nr (auch alte Berichte)
+      const lvList=_ctrlLV[spid]||[];
+      if(lvList.length){
+        let lvHit=null;
+        if(sp.lvId){for(let l3=0;l3<lvList.length;l3++){if(lvList[l3].id===sp.lvId){lvHit=lvList[l3];break;}}}
+        if(!lvHit&&sp.pos){const pn=String(sp.pos).trim();if(pn){for(let l4=0;l4<lvList.length;l4++){if(String(lvList[l4].pos_nr)===pn){lvHit=lvList[l4];break;}}}}
+        const mg2=_auswNum(sp.menge);
+        if(lvHit){
+          if(!as.lv[lvHit.id])as.lv[lvHit.id]={ist:0,std:0,n:0};
+          as.lv[lvHit.id].ist+=mg2;
+          as.lv[lvHit.id].std+=stdSum;
+          as.lv[lvHit.id].n++;
+        }else if(mg2>0){
+          as.regieN++;
+          as.regieStd+=stdSum;
+        }
       }
     }
   }
@@ -2111,6 +2142,48 @@ function _cpDetailHtml(pid){
     if(ohneStd>0)out+='<div style="font-size:10px;color:var(--m);margin-top:6px;line-height:1.5">Hinweis: Bei '+ohneStd+' Arbeit(en) wurden im Arbeitsschritt keine Mitarbeiter-Stunden zugewiesen (--). Stunden erscheinen nur, wenn der Vorarbeiter im Bericht-Tab beim Arbeitsschritt Mitarbeiter mit Stunden anhakt.</div>';
   }else{
     out+='<div style="color:var(--m);font-size:11px;padding:4px 0 8px">Keine Arbeitsschritte erfasst.</div>';
+  }
+  // --- LV-Fortschritt (Soll aus Auftrags-LV, Ist aus den Arbeitsschritten) ---
+  const lvKat=(_ctrlLV&&_ctrlLV[pid])?_ctrlLV[pid]:[];
+  if(lvKat.length){
+    let lvRows='';let begonnen=0;
+    for(let li=0;li<lvKat.length;li++){
+      const P=lvKat[li];
+      const S=(a.lv&&a.lv[P.id])?a.lv[P.id]:null;
+      if(!S||(S.ist<=0&&S.std<=0))continue;
+      begonnen++;
+      const soll=P.menge_soll!=null?Number(P.menge_soll):0;
+      const pct=soll>0?Math.round(S.ist/soll*100):null;
+      let pctTxt='<span style="color:var(--m)">--</span>';
+      if(pct!==null){
+        const col=pct>105?'var(--r)':(pct>=95?'var(--g)':'var(--earth)');
+        pctTxt='<span style="color:'+col+';font-weight:700">'+pct+'%</span>';
+      }
+      const aufw=(S.ist>0&&S.std>0)?(Math.round(S.std/S.ist*100)/100):null;
+      lvRows+='<tr>'+
+        '<td style="text-align:left;white-space:nowrap;vertical-align:top"><span class="ct-pnr">'+_dfEsc(P.pos_nr||'')+'</span></td>'+
+        '<td style="text-align:left;font-size:11px;line-height:1.4;vertical-align:top">'+_dfEsc(String(P.bezeichnung||'').substring(0,60))+'</td>'+
+        '<td style="text-align:right;white-space:nowrap;vertical-align:top">'+_ctrlFmtN(S.ist)+' / '+_ctrlFmtN(soll)+' '+_dfEsc(P.einheit||'')+'</td>'+
+        '<td style="text-align:right;vertical-align:top">'+pctTxt+'</td>'+
+        '<td style="text-align:right;white-space:nowrap;vertical-align:top">'+(S.std>0?_auswFmtH(S.std):'<span style="color:var(--m)">--</span>')+'</td>'+
+        '<td style="text-align:right;white-space:nowrap;vertical-align:top">'+(aufw!==null?('<b style="color:var(--gl)">'+String(aufw).replace('.',',')+'</b>'):'<span style="color:var(--m)">--</span>')+'</td>'+
+        '</tr>';
+    }
+    if(begonnen>0){
+      out+='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--sky);letter-spacing:1px;margin:12px 0 6px;text-transform:uppercase">LV-Fortschritt ('+begonnen+' von '+lvKat.length+' Positionen begonnen'+(a.regieN>0?' &middot; <span style="color:var(--o)">'+a.regieN+' Arbeiten ausserhalb LV'+(a.regieStd>0?' / '+_auswFmtH(a.regieStd)+' h':'')+'</span>':'')+')</div>'+
+        '<table class="ct-dtbl"><tbody>'+
+        '<tr>'+
+        '<td style="text-align:left;font-family:\'IBM Plex Mono\',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:var(--m)">Pos</td>'+
+        '<td style="text-align:left;font-family:\'IBM Plex Mono\',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:var(--m)">LV-Position</td>'+
+        '<td style="text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:var(--m)">Ist / Soll</td>'+
+        '<td style="text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:var(--m)">%</td>'+
+        '<td style="text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:var(--m)">Std.</td>'+
+        '<td style="text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:var(--m)">h/Einh.</td>'+
+        '</tr>'+lvRows+'</tbody></table>'+
+        '<div style="font-size:10px;color:var(--m);margin-top:6px;line-height:1.5">h/Einh. = tatsaechlicher Aufwand (zugewiesene Stunden geteilt durch verbaute Menge) &ndash; Basis fuer die Kalkulation. Arbeiten ausserhalb LV = moegliche Nachtraege/Regie.</div>';
+    }else if(a.regieN>0){
+      out+='<div style="font-size:10px;color:var(--o);margin:10px 0;line-height:1.5">'+a.regieN+' Arbeiten mit Menge ausserhalb des Auftrags-LV erfasst (moegliche Nachtraege/Regie)'+(a.regieStd>0?' &middot; '+_auswFmtH(a.regieStd)+' h':'')+'.</div>';
+    }
   }
   // --- Aufmass-Summen (gleiche Positionen zusammengefasst) ---
   const keys=Object.keys(a.aufmass);
@@ -3541,10 +3614,10 @@ function addStep(data={}){stepIdx++;const i=stepIdx;const maRows=getZeitRowsSimp
     '<select style="flex:1;min-width:140px;font-size:10px;background:var(--s3);border:1px solid var(--b);border-radius:3px;padding:3px 6px;color:var(--t)" id="st-pr-'+i+'" onchange="onStepProjektChange('+i+')">'+projektOptsByKat(stepKat,data.projektId||'')+'</select>'+
     '<input type="text" id="st-pos-'+i+'" placeholder="LV-Pos." style="flex:0 0 70px;font-size:10px" value="'+(data.pos||'')+'">'+
     '<button class="delbtn" ontouchstart="document.getElementById(\'step-'+i+'\').remove()" onclick="document.getElementById(\'step-'+i+'\').remove()">&#x2715;</button></div>'+
-    '<div id="st-leist-wrap-'+i+'"></div><textarea id="st-txt-'+i+'" style="min-height:60px;margin-bottom:4px" placeholder="Taetigkeit beschreiben...">'+(data.txt||'')+'</textarea>'+mkMic('st-txt-'+i,'Schritt '+i)+'<div style="display:flex;gap:6px;margin-top:8px"><div class="fg"><label>Menge</label><input type="text" id="st-mg-'+i+'" value="'+(data.menge||'')+'" placeholder="200 m2"></div><div class="fg"><label>Einheit</label><input type="text" id="st-eh-'+i+'" value="'+(data.eh||'')+'" placeholder="m2, lfm"></div></div>'+maHtml;
-  document.getElementById('steps-con')?.appendChild(div);if(data.projektId)renderStepLeistung(i,data.leistung||'');updateMAOffen();}
+    '<div id="st-lv-wrap-'+i+'"></div><div id="st-leist-wrap-'+i+'"></div><textarea id="st-txt-'+i+'" style="min-height:60px;margin-bottom:4px" placeholder="Taetigkeit beschreiben...">'+(data.txt||'')+'</textarea>'+mkMic('st-txt-'+i,'Schritt '+i)+'<div style="display:flex;gap:6px;margin-top:8px"><div class="fg"><label>Menge</label><input type="text" id="st-mg-'+i+'" value="'+(data.menge||'')+'" placeholder="200 m2"></div><div class="fg"><label>Einheit</label><input type="text" id="st-eh-'+i+'" value="'+(data.eh||'')+'" placeholder="m2, lfm"></div></div>'+maHtml;
+  document.getElementById('steps-con')?.appendChild(div);if(data.projektId)renderStepLeistung(i,data.leistung||'');renderStepLV(i,data.lvId||'',data.pos||'');updateMAOffen();}
 
-function onStepKatChange(i){const kat=document.getElementById('st-kat-'+i)?.value||'bau';const sel=document.getElementById('st-pr-'+i);if(sel)sel.innerHTML=projektOptsByKat(kat,'');const w=document.getElementById('st-leist-wrap-'+i);if(w)w.innerHTML='';}
+function onStepKatChange(i){const kat=document.getElementById('st-kat-'+i)?.value||'bau';const sel=document.getElementById('st-pr-'+i);if(sel)sel.innerHTML=projektOptsByKat(kat,'');const w=document.getElementById('st-leist-wrap-'+i);if(w)w.innerHTML='';const w3=document.getElementById('st-lv-wrap-'+i);if(w3)w3.innerHTML='';}
 
 function renderStepLeistung(i,selected){
   const wrap=document.getElementById('st-leist-wrap-'+i);if(!wrap)return;
@@ -3557,7 +3630,66 @@ function renderStepLeistung(i,selected){
     leist.map(l=>'<option value="'+l.replace(/"/g,'&quot;')+'" '+(selected===l?'selected':'')+'>'+l+'</option>').join('')+
     '</select></div>';
 }
-function onStepProjektChange(i){renderStepLeistung(i,'');}
+// ---- LV-Positionen im Arbeitsschritt (aus Tabelle lv_positionen) ----
+let LVPOS={};
+async function ladeLVPositionen(pid){
+  if(!pid)return[];
+  if(LVPOS[pid])return LVPOS[pid];
+  let alle=[],start=0;
+  try{
+    while(true){
+      const r=await sb.from('lv_positionen').select('id,pos_nr,gewerk,bezeichnung,einheit,menge_soll').eq('projekt_id',pid).eq('aktiv',true).order('sort',{ascending:true}).range(start,start+999);
+      if(r.error)throw r.error;
+      const d=r.data||[];
+      for(let k=0;k<d.length;k++)alle.push(d[k]);
+      if(d.length<1000)break;
+      start+=1000;
+    }
+  }catch(e){alle=[];}
+  LVPOS[pid]=alle;
+  return alle;
+}
+function renderStepLV(i,selectedId,selectedPos){
+  const wrap=document.getElementById('st-lv-wrap-'+i);if(!wrap)return;
+  const pid=document.getElementById('st-pr-'+i)?.value||'';
+  if(!pid){wrap.innerHTML='';return;}
+  ladeLVPositionen(pid).then(function(list){
+    const w2=document.getElementById('st-lv-wrap-'+i);if(!w2)return;
+    const pidNow=document.getElementById('st-pr-'+i)?.value||'';
+    if(pidNow!==pid)return;
+    if(!list.length){w2.innerHTML='';return;}
+    let sel=selectedId||'';
+    if(!sel&&selectedPos){
+      const pn=String(selectedPos).trim();
+      for(let k=0;k<list.length;k++){if(String(list[k].pos_nr)===pn){sel=list[k].id;break;}}
+    }
+    let opts='<option value="">- keine LV-Position (Regie / Zeitposition) -</option>';
+    for(let k=0;k<list.length;k++){
+      const p=list[k];
+      const bez=String(p.bezeichnung||'').replace(/</g,'&lt;').substring(0,58);
+      opts+='<option value="'+p.id+'" '+(sel===p.id?'selected':'')+'>'+p.pos_nr+' | '+bez+' ('+(p.menge_soll!=null?p.menge_soll:'')+' '+(p.einheit||'')+')</option>';
+    }
+    w2.innerHTML='<div style="margin-bottom:6px"><label style="display:block;margin-bottom:3px">LV-Position ('+list.length+' im Auftrag)</label>'+
+      '<select id="st-lvsel-'+i+'" onchange="onStepLVChange('+i+')" style="width:100%;font-size:11px;background:var(--skyg);border:1px solid rgba(61,143,168,.4);border-radius:4px;padding:6px;color:var(--sky)">'+opts+'</select>'+
+      '<input type="hidden" id="st-lvid-'+i+'" value="'+(sel||'')+'"></div>';
+  });
+}
+function onStepLVChange(i){
+  const selEl=document.getElementById('st-lvsel-'+i);if(!selEl)return;
+  const id=selEl.value;
+  const hid=document.getElementById('st-lvid-'+i);if(hid)hid.value=id;
+  if(!id)return;
+  const pid=document.getElementById('st-pr-'+i)?.value||'';
+  const list=LVPOS[pid]||[];
+  let p=null;
+  for(let k=0;k<list.length;k++){if(list[k].id===id){p=list[k];break;}}
+  if(!p)return;
+  const posEl=document.getElementById('st-pos-'+i);if(posEl)posEl.value=p.pos_nr||'';
+  const ehEl=document.getElementById('st-eh-'+i);if(ehEl)ehEl.value=p.einheit||'';
+  const txtEl=document.getElementById('st-txt-'+i);
+  if(txtEl&&!txtEl.value.trim())txtEl.value=p.bezeichnung||'';
+}
+function onStepProjektChange(i){renderStepLeistung(i,'');renderStepLV(i,'','');}
 function updateStepMA(idx){const block=document.getElementById('step-'+idx);if(!block)return;block.querySelectorAll('.ma-cb').forEach(cb=>{const h=block.querySelector('.ma-h[data-name="'+cb.dataset.name+'"]');if(h)h.style.opacity=cb.checked?'1':'0.4';});updateMAOffen();}
 // Live-Stundenbudget je Mitarbeiter in den Arbeitsschritten:
 // "Zeiten X,XXh" = Summe der Gesamtstunden dieser Person aus dem Zeiten-Tab.
@@ -3593,7 +3725,7 @@ function updateMAOffen(){
 }
 function refreshStepMAs(){const blocks=document.querySelectorAll('[id^="step-"]');if(!blocks.length)return;const maRows=getZeitRowsSimple();blocks.forEach(block=>{const idx=block.id.replace('step-','');let zone=block.querySelector('.ma-zuweisung');const noMA=block.querySelector('[data-no-ma]');const checked={};block.querySelectorAll('.ma-cb').forEach(cb=>{checked[cb.dataset.name]=cb.checked;});const stunden={};block.querySelectorAll('.ma-h').forEach(h=>{stunden[h.dataset.name]=h.value;});if(maRows.length===0){if(zone)zone.remove();if(!noMA){const msg=document.createElement('div');msg.setAttribute('data-no-ma','1');msg.style.cssText='font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-top:6px';msg.textContent='Erst Mitarbeiter im Tab Zeiten eintragen';block.appendChild(msg);}return;}if(noMA)noMA.remove();if(!zone){zone=document.createElement('div');zone.className='ma-zuweisung';block.appendChild(zone);}zone.innerHTML='<div class="ma-zuw-title">Mitarbeiter zuweisen</div>'+maRows.map(ma=>{const ic=checked[ma.name]||false;const h=stunden[ma.name]||'';return'<div class="ma-check-row"><input type="checkbox" class="ma-cb" data-name="'+ma.name+'" '+(ic?'checked':'')+' onchange="updateStepMA('+idx+')"><span class="ma-name-lbl">'+ma.name+'</span><span class="ma-budget" data-name="'+ma.name+'"></span><input type="number" class="ma-h" data-name="'+ma.name+'" value="'+h+'" placeholder="Std." min="0" step="0.5" style="opacity:'+(ic?'1':'0.4')+'" oninput="updateStepMA('+idx+')">';}).join('');});updateMAOffen();}
 function getStepMAs(idx){const block=document.getElementById('step-'+idx);if(!block)return[];const result=[];block.querySelectorAll('.ma-cb:checked').forEach(cb=>{const h=block.querySelector('.ma-h[data-name="'+cb.dataset.name+'"]');result.push({name:cb.dataset.name,stunden:h?.value||''});});return result;}
-function getSteps(){return[...document.querySelectorAll('[id^="step-"]')].filter(b=>b.id.match(/^step-\d+$/)).map(b=>{const i=b.id.replace('step-','');const pid=b.querySelector('#st-pr-'+i)?.value||'';return{txt:b.querySelector('#st-txt-'+i)?.value||'',projektId:pid,projektNr:PROJEKTE.find(p=>p.id===pid)?.nr||'',pos:b.querySelector('#st-pos-'+i)?.value||'',leistung:b.querySelector('#st-leist-'+i)?.value||'',menge:b.querySelector('#st-mg-'+i)?.value||'',eh:b.querySelector('#st-eh-'+i)?.value||'',mitarbeiter:getStepMAs(i)};}).filter(s=>s.txt);}
+function getSteps(){return[...document.querySelectorAll('[id^="step-"]')].filter(b=>b.id.match(/^step-\d+$/)).map(b=>{const i=b.id.replace('step-','');const pid=b.querySelector('#st-pr-'+i)?.value||'';return{txt:b.querySelector('#st-txt-'+i)?.value||'',projektId:pid,projektNr:PROJEKTE.find(p=>p.id===pid)?.nr||'',pos:b.querySelector('#st-pos-'+i)?.value||'',leistung:b.querySelector('#st-leist-'+i)?.value||'',menge:b.querySelector('#st-mg-'+i)?.value||'',eh:b.querySelector('#st-eh-'+i)?.value||'',lvId:b.querySelector('#st-lvid-'+i)?.value||'',mitarbeiter:getStepMAs(i)};}).filter(s=>s.txt||s.lvId);}
 function addLief(data={}){liefIdx++;const i=liefIdx;const div=document.createElement('div');div.className='lief-block';div.innerHTML='<div class="lief-head"><div class="lief-num" style="background:var(--earthg);border-color:var(--earth);color:var(--earth)">'+i+'</div><button class="delbtn" style="margin-left:auto" ontouchstart="this.closest(\'.lief-block\').remove()" onclick="this.closest(\'.lief-block\').remove()">&#x2715;</button></div><div class="row"><div class="fg w50"><label>Lieferant</label><input type="text" id="lf-firma-'+i+'" value="'+(data.firma||'')+'" placeholder="Muster GmbH..."></div><div class="fg w50"><label>Lieferschein-Nr.</label><input type="text" id="lf-ls-'+i+'" value="'+(data.ls||'')+'" placeholder="LS-001"></div><div class="fg w50"><label>Material</label><input type="text" id="lf-mat-'+i+'" placeholder="Rollrasen...">'+mkMic('lf-mat-'+i,'Material')+'</div><div class="fg w25"><label>Menge</label><input type="number" id="lf-mg-'+i+'" value="'+(data.menge||'')+'"></div><div class="fg w25"><label>Einheit</label><select id="lf-eh-'+i+'"><option>m2</option><option>m3</option><option>t</option><option>lfm</option><option>Stk</option><option>kg</option><option>l</option></select></div><div class="fg w50"><label>Status</label><select id="lf-ok-'+i+'"><option>OK</option><option>Teillieferung</option><option>Falsche Ware</option><option>Maengel</option><option>Verzug</option></select></div><div class="fg w50"><label>Bemerkung</label><input type="text" id="lf-bem-'+i+'" value="'+(data.bem||'')+'"></div></div>';document.getElementById('lief-con')?.appendChild(div);}
 function getLiefData(){return[...document.querySelectorAll('#lief-con .lief-block')].map((b,i)=>{const n=i+1;return{firma:b.querySelector('#lf-firma-'+n)?.value,ls:b.querySelector('#lf-ls-'+n)?.value,mat:b.querySelector('#lf-mat-'+n)?.value,menge:b.querySelector('#lf-mg-'+n)?.value,eh:b.querySelector('#lf-eh-'+n)?.value,ok:b.querySelector('#lf-ok-'+n)?.value,bem:b.querySelector('#lf-bem-'+n)?.value};}).filter(l=>l.firma||l.mat);}
 function addMenge(data={}){const div=document.createElement('div');div.className='lief-block';div.style.padding='8px';div.innerHTML='<div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap"><input type="text" placeholder="Bezeichnung" value="'+(data.bez||'')+'" style="flex:2;min-width:100px"><input type="number" placeholder="Menge" value="'+(data.menge||'')+'" style="flex:0 0 75px"><select style="flex:0 0 65px;font-size:10px"><option>m2</option><option>m3</option><option>t</option><option>lfm</option><option>Stk</option><option>kg</option></select><input type="text" placeholder="LV-Pos." value="'+(data.pos||'')+'" style="flex:0 0 80px;font-family:\'IBM Plex Mono\',monospace;font-size:10px"><button class="delbtn" ontouchstart="this.closest(\'.lief-block\').remove()" onclick="this.closest(\'.lief-block\').remove()">&#x2715;</button></div>';document.getElementById('mengen-con')?.appendChild(div);}
