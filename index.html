@@ -20,6 +20,7 @@ body.theme-light{--b:#c2ccb0;}
 body.theme-light input,body.theme-light textarea,body.theme-light select{background:#ffffff;color:#1f2a0d;}
 body.theme-light .toast{box-shadow:0 6px 20px rgba(0,0,0,.15);}
 body.theme-light #sig-canvas{background:white;}
+body.theme-light terrasuite-kalkulation{--bg:#eef0ea;--surface:#ffffff;--surface2:#f0f2ec;--line:#c2ccb0;--text:#1f2a0d;--muted:#5a6748;--accent:#3a6818;--warn:#b25e18;}
 body.theme-light .vbar{background:rgba(196,72,40,.08);}
 .theme-btn{background:none;border:1px solid var(--b);border-radius:var(--rad);padding:6px 10px;color:var(--m);font-size:14px;cursor:pointer;line-height:1;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
@@ -309,6 +310,7 @@ select option{background:var(--s2);}
     <div class="admin-tab" id="atab-ausw" ontouchstart="showAdminTab('ausw')" onclick="showAdminTab('ausw')">Auswertung</div>
     <div class="admin-tab" id="atab-pfl" ontouchstart="showAdminTab('pfl')" onclick="showAdminTab('pfl')">Pflege</div>
     <div class="admin-tab" id="atab-cock" ontouchstart="showAdminTab('cock')" onclick="showAdminTab('cock')">Cockpit</div>
+    <div class="admin-tab" id="atab-kalk" ontouchstart="showAdminTab('kalk')" onclick="showAdminTab('kalk')">Kalkulation</div>
     <div class="admin-tab" id="atab-exp" ontouchstart="showAdminTab('exp')" onclick="showAdminTab('exp')">Export</div>
   </div>
   <div class="admin-content">
@@ -321,6 +323,7 @@ select option{background:var(--s2);}
     <div class="admin-panel" id="apanel-ausw"></div>
     <div class="admin-panel" id="apanel-pfl"></div>
     <div class="admin-panel" id="apanel-cock"></div>
+    <div class="admin-panel" id="apanel-kalk"></div>
     <div class="admin-panel" id="apanel-exp"></div>
   </div>
 </div>
@@ -338,11 +341,13 @@ select option{background:var(--s2);}
     <div class="admin-tab pl-tab act" id="pltab-ber" ontouchstart="showPLTab('ber')" onclick="showPLTab('ber')">Berichte</div>
     <div class="admin-tab pl-tab" id="pltab-proj" ontouchstart="showPLTab('proj')" onclick="showPLTab('proj')">Nach Projekt</div>
     <div class="admin-tab pl-tab" id="pltab-offen" ontouchstart="showPLTab('offen')" onclick="showPLTab('offen')">Offen</div>
+    <div class="admin-tab pl-tab" id="pltab-kalk" ontouchstart="showPLTab('kalk')" onclick="showPLTab('kalk')">Kalkulation</div>
   </div>
   <div class="admin-content">
     <div class="admin-panel act" id="appanel-ber"></div>
     <div class="admin-panel" id="appanel-proj"></div>
     <div class="admin-panel" id="appanel-offen"></div>
+    <div class="admin-panel" id="appanel-kalk"></div>
   </div>
 </div>
 
@@ -815,7 +820,7 @@ function openAdmin(){
   const nurBuchhaltung=(currentUser.rolle==='verwaltung');
   const badge=document.querySelector('#admin-screen .admin-badge');
   if(badge)badge.textContent=nurBuchhaltung?'Buchhaltung':'Admin';
-  ['ma','proj','fz','email','ber','ausw','pfl','cock','exp'].forEach(t=>{
+  ['ma','proj','fz','email','ber','ausw','pfl','cock','kalk','exp'].forEach(t=>{
     const el=document.getElementById('atab-'+t);if(el)el.style.display=nurBuchhaltung?'none':'';
   });
   showAdminTab('frei');
@@ -829,6 +834,7 @@ function showAdminTab(name){
   if(name==='email')renderAdminEmail();if(name==='ber')renderAdminBer();if(name==='exp')renderAdminExp();
   if(name==='ausw')renderAdminAusw();
   if(name==='pfl')renderAdminPflege();if(name==='cock')renderAdminCockpit();
+  if(name==='kalk')renderKalkPanel('apanel-kalk');
 }
 
 // ══════ BUCHHALTUNGS-FREIGABE (finale Instanz) ══════
@@ -2201,12 +2207,50 @@ function exportCockpitCSV(){
 }
 
 // ══════ PROJEKTLEITER ══════
+// ══════ KALKULATION SPORTPLATZBAU (Terrasuite-Modul) ══════
+// Nutzt die externen Modul-Dateien kalk-data.js, kalk-engine.js und
+// terrasuite-kalkulation.js, die im selben Repo-Ordner wie diese index.html
+// liegen muessen. Das Modul wird erst beim ersten Oeffnen des Tabs geladen.
+var _kalkModulGeladen=false;
+var _kalkModulFehler=false;
+var _kalkCallbacks=[];
+function ladeKalkModul(cb){
+  if(_kalkModulGeladen||_kalkModulFehler){cb();return;}
+  _kalkCallbacks.push(cb);
+  if(_kalkCallbacks.length>1)return; // laedt bereits
+  var s=document.createElement('script');
+  s.type='module';
+  s.src='./terrasuite-kalkulation.js';
+  s.onload=function(){_kalkModulGeladen=true;var cbs=_kalkCallbacks;_kalkCallbacks=[];cbs.forEach(function(f){f();});};
+  s.onerror=function(){_kalkModulFehler=true;var cbs=_kalkCallbacks;_kalkCallbacks=[];cbs.forEach(function(f){f();});};
+  document.head.appendChild(s);
+}
+function renderKalkPanel(panelId){
+  var panel=document.getElementById(panelId);
+  if(!panel)return;
+  if(panel.querySelector('terrasuite-kalkulation'))return; // schon eingebunden, Eingaben bleiben erhalten
+  panel.innerHTML='<div class="a-sec"><div class="a-sec-title">Kalkulation Sportplatzbau</div>'+
+    '<div style="font-size:11px;color:var(--m);line-height:1.5;margin-bottom:10px">Budget-Kalkulation fuer Sportplatz-Projekte: 75 LV-Positionen, Region Kassel/Nordhessen, Preisstand Juli 2026. Alle Preise netto, ohne Planungs- und Baunebenkosten (Budgetreserve 10-20 % empfohlen). Vor einer Vergabe die Einheitspreise mit aktuellen regionalen Preisen abgleichen.</div>'+
+    '<div id="'+panelId+'-kalkslot"><div style="color:var(--m);font-size:11px;padding:8px">Kalkulationsmodul wird geladen...</div></div></div>';
+  ladeKalkModul(function(){
+    var slot=document.getElementById(panelId+'-kalkslot');
+    if(!slot)return;
+    if(_kalkModulFehler){
+      slot.innerHTML='<div style="color:var(--r);font-size:11px;padding:8px;line-height:1.5">Kalkulationsmodul konnte nicht geladen werden.<br>Bitte pruefen, ob die drei Dateien <b>kalk-data.js</b>, <b>kalk-engine.js</b> und <b>terrasuite-kalkulation.js</b> im Repo neben der index.html liegen.</div>';
+      return;
+    }
+    slot.innerHTML='';
+    slot.appendChild(document.createElement('terrasuite-kalkulation'));
+  });
+}
+
 function openPL(){document.getElementById('pl-screen').style.display='flex';document.getElementById('pl-user-name').textContent=currentUser.name;showPLTab('ber');}
 function showPLTab(name){
   document.querySelectorAll('#pl-screen .admin-tab').forEach(t=>t.classList.remove('act'));
   document.querySelectorAll('#pl-screen .admin-panel').forEach(p=>p.classList.remove('act'));
   document.getElementById('pltab-'+name).classList.add('act');document.getElementById('appanel-'+name).classList.add('act');
   if(name==='ber')renderPLBer();if(name==='proj')renderPLProj();if(name==='offen')renderPLOffen();
+  if(name==='kalk')renderKalkPanel('appanel-kalk');
 }
 
 async function renderPLBer(){
