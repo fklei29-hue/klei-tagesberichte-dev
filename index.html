@@ -67,6 +67,21 @@ body{background:var(--bg);color:var(--t);font-family:'IBM Plex Sans',sans-serif;
 .az-opt-txt{flex:1;font-size:13px;color:var(--t);}
 .az-ansok{color:var(--g);font-weight:600;}
 .az-ansbad{color:var(--r);font-weight:600;}
+.az-qmeta{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sky);margin-bottom:6px;}
+.az-hinweis{background:var(--skyg);border-left:2px solid var(--sky);padding:8px 10px;border-radius:3px;font-size:11px;color:var(--t);line-height:1.5;margin-top:8px;}
+.az-loesung{background:var(--gg);border-left:2px solid var(--g);padding:8px 10px;border-radius:3px;font-size:11px;color:var(--t);line-height:1.5;margin-top:6px;}
+.az-qbox em,.az-card em,.az-muted em{font-style:italic;}
+.az-pkt{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--m);}
+.az-bilder{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;}
+.az-bild{width:calc(50% - 4px);max-width:230px;background:var(--s2);border:1px solid var(--b);border-radius:6px;overflow:hidden;margin:0;}
+.az-bild img{width:100%;height:150px;object-fit:cover;display:block;background:var(--s3);}
+.az-bild figcaption{padding:6px 8px;font-size:11px;color:var(--t);line-height:1.4;}
+.az-bild-quelle{display:block;font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--m);margin-top:3px;}
+.az-upload{border:1px dashed var(--b);border-radius:6px;padding:12px;margin-top:8px;}
+.az-bild-edit{display:flex;gap:8px;align-items:flex-start;background:var(--s3);border:1px solid var(--b);border-radius:6px;padding:8px;margin-bottom:8px;}
+.az-bild-edit img{width:74px;height:74px;object-fit:cover;border-radius:4px;flex-shrink:0;background:var(--s2);}
+.az-bild-edit-felder{flex:1;min-width:0;}
+.az-bild-edit input{margin-bottom:5px;}
 .az-muted{font-size:11px;color:var(--m);line-height:1.5;}
 .az-empty{color:var(--m);font-size:11px;padding:12px;text-align:center;}
 .az-subnav{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
@@ -3966,10 +3981,186 @@ function openBaurechner(){
 // ════════════════════════════════════════════════════════════
 let AUSB_MAT=[],AUSB_TESTS=[],AUSB_ABG=[];
 let laufTest=null,tEdit=null,matEditId=null,verwView='mat';
+let matBilder=[],fqBilder=[];   // Arbeitsstand der Bilder im Verwaltungs-Editor
+const AUSB_BUCKET='ausbildung';  // Supabase-Storage-Bucket
 
 function escH(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function azFmtD(d){if(!d)return'--';const p=String(d).substring(0,10).split('-');return p.length===3?p[2]+'.'+p[1]+'.'+p[0]:d;}
 function azFmtDT(d){if(!d)return'--';const dt=new Date(d);if(isNaN(dt))return azFmtD(d);return azFmtD(d)+' '+String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');}
+// Botanische Namen: *Text* wird kursiv dargestellt (nach dem Escapen!).
+function botH(s){
+  var e=escH(s);
+  return e.replace(/\*([^*]+)\*/g,'<em>$1</em>');
+}
+// Normalisiert eine Freitext-Antwort fuer den Vergleich:
+// Kleinschreibung, Umlaute/ss vereinheitlicht, Sternchen/Satzzeichen weg, Leerzeichen zusammengefasst.
+function azNorm(s){
+  var t=String(s==null?'':s).toLowerCase();
+  t=t.replace(/\*/g,' ');
+  t=t.replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss');
+  t=t.replace(/[.,;:!?()\[\]"'\u0060\-\u2013\u2014\/]/g,' ');
+  t=t.replace(/\s+/g,' ').trim();
+  return t;
+}
+// Punkte einer Frage (Default 1, damit alte Tests unveraendert zaehlen).
+function fragePunkte(f){
+  var p=parseFloat(f.punkte);
+  return(isNaN(p)||p<=0)?1:p;
+}
+function frageTeilPunkte(f){
+  var p=parseFloat(f.teil_punkte);
+  if(isNaN(p)||p<0)return Math.floor(fragePunkte(f)/2)||1;
+  return p;
+}
+function testMaxPunkte(fragen){
+  var s=0;
+  (fragen||[]).forEach(function(f){s+=fragePunkte(f);});
+  return s;
+}
+// Bewertet eine Freitext-Antwort automatisch.
+// Rueckgabe: {punkte, korrekt: true|false|null, auto: bool}
+// null = konnte nicht automatisch bewertet werden -> Ausbilder.
+function bewerteText(f,antwort){
+  var a=azNorm(antwort);
+  // Aufzaehlungsfrage: es zaehlt, wie viele der gueltigen Begriffe genannt wurden.
+  var mind=parseInt(f.mind_anzahl,10);
+  if(!isNaN(mind)&&mind>0&&(f.varianten||[]).length){
+    if(a==='')return{punkte:0,korrekt:false,auto:true};
+    var treffer=0;
+    (f.varianten||[]).forEach(function(v){
+      var nv=azNorm(v);
+      if(nv!==''&&a.indexOf(nv)>=0)treffer++;
+    });
+    if(treffer>=mind)return{punkte:fragePunkte(f),korrekt:true,auto:true,treffer:treffer};
+    if(treffer>0)return{punkte:frageTeilPunkte(f),korrekt:false,auto:true,teil:true,treffer:treffer};
+    return{punkte:0,korrekt:false,auto:true,treffer:0};
+  }
+  if(a===''){
+    if(f.loesung)return{punkte:0,korrekt:false,auto:true};
+    return{punkte:0,korrekt:null,auto:false};
+  }
+  if(!f.loesung)return{punkte:0,korrekt:null,auto:false};
+  var voll=[f.loesung].concat(f.varianten||[]).map(azNorm).filter(function(x){return x!=='';});
+  for(var i=0;i<voll.length;i++){
+    if(a===voll[i])return{punkte:fragePunkte(f),korrekt:true,auto:true};
+  }
+  var teil=(f.teil_varianten||[]).map(azNorm).filter(function(x){return x!=='';});
+  var ersteswort=a.split(' ')[0];
+  for(var j=0;j<teil.length;j++){
+    if(a===teil[j]||ersteswort===teil[j])return{punkte:frageTeilPunkte(f),korrekt:false,auto:true,teil:true};
+  }
+  return{punkte:0,korrekt:false,auto:true};
+}
+// Bewertet eine Mehrfachauswahl.
+// Regel: eine falsche Auswahl -> 0 Punkte. Alle richtigen -> volle Punkte.
+// Ein Teil der richtigen (ohne falsche) -> Teilpunkte.
+function bewerteMulti(f,gewaehlt){
+  var richtige=(f.richtige||[]).map(Number);
+  var g=(gewaehlt||[]).map(Number);
+  var falsch=g.filter(function(x){return richtige.indexOf(x)<0;});
+  if(falsch.length>0)return{punkte:0,korrekt:false,auto:true};
+  var treffer=g.filter(function(x){return richtige.indexOf(x)>=0;});
+  if(treffer.length===0)return{punkte:0,korrekt:false,auto:true};
+  if(treffer.length===richtige.length)return{punkte:fragePunkte(f),korrekt:true,auto:true};
+  return{punkte:frageTeilPunkte(f),korrekt:false,auto:true,teil:true};
+}
+// Zeigt Bilder an (Lernmaterial und Fragen). Quelle steht als Nachweis unter dem Bild.
+function bilderHTML(bilder){
+  if(!bilder||!bilder.length)return'';
+  var html='<div class="az-bilder">';
+  bilder.forEach(function(b){
+    if(!b||!b.url)return;
+    html+='<figure class="az-bild">'+
+      '<a href="'+escH(b.url)+'" target="_blank" rel="noopener">'+
+      '<img src="'+escH(b.url)+'" alt="'+escH(b.bez||'Bild')+'" loading="lazy">'+
+      '</a>'+
+      '<figcaption>'+escH(b.bez||'')+
+      (b.quelle?'<span class="az-bild-quelle">'+escH(b.quelle)+'</span>':'')+
+      '</figcaption></figure>';
+  });
+  return html+'</div>';
+}
+// Zufaelliger Dateiname - darf die Pflanze NICHT verraten (Vorgabe aus dem Lernmaterial).
+function zufallsBildName(){
+  var z='abcdefghijklmnopqrstuvwxyz0123456789';
+  var s='';
+  for(var i=0;i<12;i++)s+=z.charAt(Math.floor(Math.random()*z.length));
+  return 'img_'+Date.now().toString(36)+'_'+s+'.jpg';
+}
+// Verkleinert ein Foto vor dem Upload (iPad-Fotos haben sonst 3-4 MB).
+function bildVerkleinern(datei,maxPx,fertig){
+  var leser=new FileReader();
+  leser.onerror=function(){fertig(null);};
+  leser.onload=function(e){
+    var img=new Image();
+    img.onerror=function(){fertig(null);};
+    img.onload=function(){
+      var w=img.width,h=img.height;
+      if(w>=h&&w>maxPx){h=Math.round(h*maxPx/w);w=maxPx;}
+      else if(h>w&&h>maxPx){w=Math.round(w*maxPx/h);h=maxPx;}
+      var c=document.createElement('canvas');
+      c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      c.toBlob(function(blob){fertig(blob);},'image/jpeg',0.8);
+    };
+    img.src=e.target.result;
+  };
+  leser.readAsDataURL(datei);
+}
+// Laedt ein Bild in den Storage-Bucket und haengt es an Material oder Frage.
+function bildHochladen(feld,ziel){
+  if(!feld||!feld.files||!feld.files.length)return;
+  var datei=feld.files[0];
+  feld.value='';
+  if(datei.size>25*1024*1024){toast('Bild ist zu gross (max 25 MB)','err');return;}
+  toast('Bild wird verkleinert...','ok');
+  bildVerkleinern(datei,1200,function(blob){
+    if(!blob){toast('Bild konnte nicht gelesen werden','err');return;}
+    var name=zufallsBildName();
+    toast('Bild wird hochgeladen...','ok');
+    sb.storage.from(AUSB_BUCKET).upload(name,blob,{contentType:'image/jpeg',upsert:false}).then(function(res){
+      if(res.error){toast('Upload fehlgeschlagen: '+res.error.message,'err');return;}
+      var pub=sb.storage.from(AUSB_BUCKET).getPublicUrl(name);
+      var url=(pub&&pub.data&&pub.data.publicUrl)?pub.data.publicUrl:'';
+      if(!url){toast('Bild-URL konnte nicht ermittelt werden','err');return;}
+      var eintrag={url:url,bez:'',quelle:''};
+      if(ziel==='mat'){matBilder.push(eintrag);zeichneMatBilder();}
+      else{fqBilder.push(eintrag);zeichneFqBilder();}
+      toast('Bild hinzugefuegt','ok');
+    });
+  });
+}
+function setMatBild(i,feld,wert){if(matBilder[i])matBilder[i][feld]=wert;}
+function setFqBild(i,feld,wert){if(fqBilder[i])fqBilder[i][feld]=wert;}
+function entfernMatBild(i){
+  if(!confirm('Dieses Bild aus dem Material entfernen?'))return;
+  matBilder.splice(i,1);zeichneMatBilder();
+}
+function entfernFqBild(i){fqBilder.splice(i,1);zeichneFqBilder();}
+// Baut die Bearbeitungsliste. Aendert NUR diesen Container - sonst gingen
+// bereits getippte Texte im Formular verloren.
+function bildEditHTML(arr,praefix,setFn,delFn){
+  if(!arr.length)return'<div class="az-muted">Noch keine Bilder.</div>';
+  var html='';
+  arr.forEach(function(b,i){
+    html+='<div class="az-bild-edit">'+
+      '<img src="'+escH(b.url)+'" alt="Bild '+(i+1)+'">'+
+      '<div class="az-bild-edit-felder">'+
+      '<input id="'+praefix+'bz-'+i+'" value="'+escH(b.bez||'')+'" placeholder="Bezeichnung, z.B. Rotbuche - Blatt" oninput="'+setFn+'('+i+',\'bez\',this.value)">'+
+      '<input id="'+praefix+'bq-'+i+'" value="'+escH(b.quelle||'')+'" placeholder="Quelle, z.B. Foto: Friedrich Klei GmbH" oninput="'+setFn+'('+i+',\'quelle\',this.value)">'+
+      '<button class="btn btn-r" style="font-size:11px;padding:4px 8px;min-height:30px" ontouchstart="'+delFn+'('+i+')" onclick="'+delFn+'('+i+')">Entfernen</button>'+
+      '</div></div>';
+  });
+  return html;
+}
+function zeichneMatBilder(){
+  var el=document.getElementById('mat-bilder-liste');
+  if(el)el.innerHTML=bildEditHTML(matBilder,'m','setMatBild','entfernMatBild');
+}
+function zeichneFqBilder(){
+  var el=document.getElementById('fq-bilder-liste');
+  if(el)el.innerHTML=bildEditHTML(fqBilder,'f','setFqBild','entfernFqBild');
+}
 function istAusbilder(){return currentUser&&(currentUser.rolle==='admin'||currentUser.rolle==='projektleiter'||currentUser.rolle==='verwaltung');}
 
 // Laedt eine Tabelle vollstaendig in 1000er-Bloecken (Konvention).
@@ -4044,7 +4235,8 @@ function filterLernen(){
   items.forEach(function(m){
     html+='<div class="az-card" ontouchstart="openMaterial(\''+m.id+'\')" onclick="openMaterial(\''+m.id+'\')" style="cursor:pointer">'+
       '<div class="az-card-title">'+escH(m.titel)+'</div>'+
-      '<div class="az-card-sub">'+escH(m.kategorie||'Allgemein')+' &middot; '+azFmtD(m.erstellt_am)+'</div>'+
+      '<div class="az-card-sub">'+escH(m.kategorie||'Allgemein')+' &middot; '+azFmtD(m.erstellt_am)+
+      ((m.bilder&&m.bilder.length)?' &middot; '+m.bilder.length+' Bilder':'')+'</div>'+
       (m.beschreibung?'<div class="az-muted" style="margin-top:6px">'+escH(m.beschreibung)+'</div>':'')+
       '</div>';
   });
@@ -4057,7 +4249,7 @@ function openMaterial(id){
   let inhalt='';
   if(m.inhalt){
     const teile=String(m.inhalt).split('\n');
-    teile.forEach(function(z){inhalt+='<div style="min-height:8px;font-size:13px;line-height:1.6;color:var(--t)">'+escH(z)+'</div>';});
+    teile.forEach(function(z){inhalt+='<div style="min-height:8px;font-size:13px;line-height:1.6;color:var(--t)">'+botH(z)+'</div>';});
   }
   el.innerHTML=
     '<div class="a-sec">'+
@@ -4066,6 +4258,7 @@ function openMaterial(id){
     '<div class="az-card-sub" style="margin-bottom:12px">'+escH(m.kategorie||'Allgemein')+' &middot; '+azFmtD(m.erstellt_am)+'</div>'+
     (m.beschreibung?'<div class="az-muted" style="margin-bottom:12px">'+escH(m.beschreibung)+'</div>':'')+
     inhalt+
+    bilderHTML(m.bilder)+
     (m.link_url?'<div style="margin-top:14px"><a href="'+escH(m.link_url)+'" target="_blank" rel="noopener" class="btn btn-sky" style="text-decoration:none">Externes Material oeffnen &#8599;</a></div>':'')+
     '</div>';
 }
@@ -4085,8 +4278,8 @@ async function renderTests(){
     eigene.forEach(function(a){if(a.punkte!=null&&(best===null||parseFloat(a.punkte)>best))best=parseFloat(a.punkte);});
     html+='<div class="az-card">'+
       '<div class="az-card-title">'+escH(t.titel)+'</div>'+
-      '<div class="az-card-sub">'+escH(t.kategorie||'Allgemein')+' &middot; '+(t.fragen||[]).length+' Fragen</div>'+
-      (t.beschreibung?'<div class="az-muted" style="margin-top:6px">'+escH(t.beschreibung)+'</div>':'')+
+      '<div class="az-card-sub">'+escH(t.kategorie||'Allgemein')+' &middot; '+(t.fragen||[]).length+' Fragen &middot; '+testMaxPunkte(t.fragen)+' Punkte</div>'+
+      (t.beschreibung?'<div class="az-muted" style="margin-top:6px">'+botH(t.beschreibung)+'</div>':'')+
       '<div style="margin-top:8px">'+
       (eigene.length?'<span class="az-pill info">'+eigene.length+'x abgegeben</span>':'<span class="az-pill">noch nicht gemacht</span>')+
       (best!==null?'<span class="az-pill ok">Beste: '+best+' Pkt.</span>':'')+
@@ -4107,14 +4300,26 @@ function startTest(id){
     '<div class="a-sec-title">'+escH(t.titel)+'</div>'+
     (t.beschreibung?'<div class="az-muted" style="margin-bottom:12px">'+escH(t.beschreibung)+'</div>':'');
   (t.fragen||[]).forEach(function(f,i){
-    html+='<div class="az-qbox"><div class="az-qnr">Frage '+(i+1)+' von '+(t.fragen||[]).length+(f.typ==='text'?' &middot; Freitext':'')+'</div>'+
-      '<div class="az-qfrage">'+escH(f.frage)+'</div>';
+    var typTxt=f.typ==='text'?'Freitext':(f.typ==='multi'?'Mehrfachauswahl':'Multiple Choice');
+    var meta=typTxt+' &middot; '+fragePunkte(f)+(fragePunkte(f)===1?' Punkt':' Punkte');
+    if(f.typ==='multi')meta+=' &middot; '+(f.richtige||[]).length+' Antworten sind richtig';
+    if(f.typ==='text'&&parseInt(f.mind_anzahl,10)>0)meta+=' &middot; mindestens '+parseInt(f.mind_anzahl,10)+' Nennungen';
+    if(f.schwierigkeit)meta+=' &middot; '+escH(f.schwierigkeit);
+    html+='<div class="az-qbox"><div class="az-qnr">Frage '+(i+1)+' von '+(t.fragen||[]).length+'</div>'+
+      '<div class="az-qmeta">'+meta+'</div>'+
+      '<div class="az-qfrage">'+botH(f.frage)+'</div>'+
+      bilderHTML(f.bilder);
     if(f.typ==='text'){
       html+='<textarea id="azq-'+i+'" placeholder="Antwort eingeben..." style="min-height:70px"></textarea>';
+    }else if(f.typ==='multi'){
+      (f.optionen||[]).forEach(function(o,oi){
+        if(String(o||'').trim()==='')return;
+        html+='<label class="az-opt"><input type="checkbox" name="azq'+i+'" value="'+oi+'"><span class="az-opt-txt">'+botH(o)+'</span></label>';
+      });
     }else{
       (f.optionen||[]).forEach(function(o,oi){
         if(String(o||'').trim()==='')return;
-        html+='<label class="az-opt"><input type="radio" name="azq'+i+'" value="'+oi+'"><span class="az-opt-txt">'+escH(o)+'</span></label>';
+        html+='<label class="az-opt"><input type="radio" name="azq'+i+'" value="'+oi+'"><span class="az-opt-txt">'+botH(o)+'</span></label>';
       });
     }
     html+='</div>';
@@ -4129,21 +4334,33 @@ async function submitTest(){
   if(!laufTest)return;
   const fragen=laufTest.fragen||[];
   const antworten=[];
-  let punkte=0;let offenText=false;let unbeantwortet=0;
+  let punkte=0;let manuellNoetig=false;let unbeantwortet=0;
   fragen.forEach(function(f,i){
+    const maxP=fragePunkte(f);
     if(f.typ==='text'){
       const feld=document.getElementById('azq-'+i);
       const v=feld?feld.value.trim():'';
       if(!v)unbeantwortet++;
-      antworten.push({frage:f.frage,typ:'text',antwort:v,korrekt:null});
-      offenText=true;
+      const b=bewerteText(f,v);
+      if(!b.auto)manuellNoetig=true;
+      punkte+=b.punkte;
+      antworten.push({frage:f.frage,typ:'text',bilder:f.bilder||[],antwort:v,korrekt:b.korrekt,punkte:b.punkte,max:maxP,teil:!!b.teil,auto:b.auto,loesung:f.loesung||'',fachhinweis:f.fachhinweis||'',treffer:(b.treffer!=null?b.treffer:null),mind_anzahl:(parseInt(f.mind_anzahl,10)>0?parseInt(f.mind_anzahl,10):null)});
+    }else if(f.typ==='multi'){
+      const gewEls=document.querySelectorAll('input[name="azq'+i+'"]:checked');
+      const idxs=[];
+      for(let k=0;k<gewEls.length;k++)idxs.push(parseInt(gewEls[k].value,10));
+      if(!idxs.length)unbeantwortet++;
+      const b=bewerteMulti(f,idxs);
+      punkte+=b.punkte;
+      antworten.push({frage:f.frage,typ:'multi',bilder:f.bilder||[],optionen:f.optionen||[],richtige:(f.richtige||[]).map(Number),antwort:idxs,korrekt:b.korrekt,punkte:b.punkte,max:maxP,teil:!!b.teil,auto:true,fachhinweis:f.fachhinweis||''});
     }else{
       const gew=document.querySelector('input[name="azq'+i+'"]:checked');
       const idx=gew?parseInt(gew.value,10):null;
       if(idx===null)unbeantwortet++;
       const korrekt=(idx!==null&&idx===parseInt(f.richtig,10));
-      if(korrekt)punkte++;
-      antworten.push({frage:f.frage,typ:'mc',optionen:f.optionen||[],richtig:parseInt(f.richtig,10),antwort:idx,korrekt:korrekt});
+      const p=korrekt?maxP:0;
+      punkte+=p;
+      antworten.push({frage:f.frage,typ:'mc',bilder:f.bilder||[],optionen:f.optionen||[],richtig:parseInt(f.richtig,10),antwort:idx,korrekt:korrekt,punkte:p,max:maxP,auto:true,fachhinweis:f.fachhinweis||''});
     }
   });
   if(unbeantwortet>0){
@@ -4158,8 +4375,8 @@ async function submitTest(){
     mitarbeiter_name:currentUser.name,
     antworten:antworten,
     punkte:punkte,
-    max_punkte:fragen.length,
-    bewertet:!offenText
+    max_punkte:testMaxPunkte(fragen),
+    bewertet:!manuellNoetig
   };
   const res=await sb.from('ausbildung_abgaben').insert(abgabe);
   if(res.error){toast('Fehler beim Abgeben: '+res.error.message,'err');return;}
@@ -4194,19 +4411,34 @@ async function renderErgebnisse(){
 function abgDetailHTML(a){
   let html='';
   (a.antworten||[]).forEach(function(x,i){
-    html+='<div class="az-qbox"><div class="az-qnr">Frage '+(i+1)+'</div>'+
-      '<div class="az-qfrage">'+escH(x.frage)+'</div>';
+    const hatP=(x.punkte!=null&&x.max!=null);
+    html+='<div class="az-qbox"><div class="az-qnr">Frage '+(i+1)+(hatP?' &middot; '+x.punkte+' / '+x.max+' Punkte':'')+'</div>'+
+      '<div class="az-qfrage">'+botH(x.frage)+'</div>'+
+      bilderHTML(x.bilder);
     if(x.typ==='text'){
-      html+='<div class="az-muted"><b>Antwort:</b> '+(x.antwort?escH(x.antwort):'<i>keine Antwort</i>')+'</div>';
-      if(x.korrekt===true)html+='<div class="az-ansok" style="margin-top:4px">&#10003; als richtig bewertet</div>';
-      if(x.korrekt===false)html+='<div class="az-ansbad" style="margin-top:4px">&#10007; als falsch bewertet</div>';
+      html+='<div class="az-muted"><b>Antwort:</b> '+(x.antwort?botH(x.antwort):'<i>keine Antwort</i>')+'</div>';
+      var trefferTxt=(x.mind_anzahl&&x.treffer!=null)?' ('+x.treffer+' von '+x.mind_anzahl+' geforderten Nennungen erkannt)':'';
+      if(x.teil)html+='<div class="az-ansbad" style="margin-top:4px">&#8226; teilweise richtig'+trefferTxt+'</div>';
+      else if(x.korrekt===true)html+='<div class="az-ansok" style="margin-top:4px">&#10003; richtig'+trefferTxt+'</div>';
+      else if(x.korrekt===false)html+='<div class="az-ansbad" style="margin-top:4px">&#10007; falsch'+trefferTxt+'</div>';
+      else html+='<div class="az-muted" style="margin-top:4px"><i>Bewertung durch den Ausbilder</i></div>';
+      if(x.loesung)html+='<div class="az-loesung"><b>Musterloesung:</b> '+botH(x.loesung)+'</div>';
+    }else if(x.typ==='multi'){
+      const gewTxt=(x.antwort||[]).map(function(k){return(x.optionen&&x.optionen[k]!=null)?x.optionen[k]:'?';});
+      const richTxt=(x.richtige||[]).map(function(k){return(x.optionen&&x.optionen[k]!=null)?x.optionen[k]:'?';});
+      html+='<div class="az-muted"><b>Deine Auswahl:</b> '+(gewTxt.length?botH(gewTxt.join(' | ')):'<i>keine Antwort</i>')+'</div>';
+      if(x.teil)html+='<div class="az-ansbad" style="margin-top:4px">&#8226; teilweise richtig</div>';
+      else if(x.korrekt)html+='<div class="az-ansok" style="margin-top:4px">&#10003; richtig</div>';
+      else html+='<div class="az-ansbad" style="margin-top:4px">&#10007; falsch</div>';
+      if(!x.korrekt)html+='<div class="az-loesung"><b>Richtig waere:</b> '+botH(richTxt.join(' | '))+'</div>';
     }else{
       const gew=(x.antwort!=null&&x.optionen&&x.optionen[x.antwort]!=null)?x.optionen[x.antwort]:null;
       const richtig=(x.optionen&&x.optionen[x.richtig]!=null)?x.optionen[x.richtig]:'';
-      html+='<div class="az-muted"><b>Deine Antwort:</b> '+(gew!==null?escH(gew):'<i>keine Antwort</i>')+'</div>';
+      html+='<div class="az-muted"><b>Deine Antwort:</b> '+(gew!==null?botH(gew):'<i>keine Antwort</i>')+'</div>';
       if(x.korrekt)html+='<div class="az-ansok" style="margin-top:4px">&#10003; richtig</div>';
-      else html+='<div class="az-ansbad" style="margin-top:4px">&#10007; falsch &middot; Richtig waere: '+escH(richtig)+'</div>';
+      else html+='<div class="az-ansbad" style="margin-top:4px">&#10007; falsch &middot; Richtig waere: '+botH(richtig)+'</div>';
     }
+    if(x.fachhinweis)html+='<div class="az-hinweis"><b>Fachhinweis:</b> '+botH(x.fachhinweis)+'</div>';
     html+='</div>';
   });
   return html;
@@ -4247,6 +4479,11 @@ async function renderVerwMat(){
     '<div class="row"><div class="fg w100"><label>Kurzbeschreibung</label><input id="mat-beschr" value="'+(m?escH(m.beschreibung||''):'')+'" placeholder="Worum geht es?"></div></div>'+
     '<div class="row"><div class="fg w100"><label>Inhalt (Text, optional)</label><textarea id="mat-inhalt" placeholder="Lerntext direkt hier eingeben..." style="min-height:90px">'+(m?escH(m.inhalt||''):'')+'</textarea></div></div>'+
     '<div class="row"><div class="fg w100"><label>Link (optional, z.B. PDF in Drive)</label><input id="mat-link" value="'+(m?escH(m.link_url||''):'')+'" placeholder="https://..."></div></div>'+
+    '<div class="row"><div class="fg w100"><label>Bilder (Blatt, Rinde, Frucht, Bluete)</label>'+
+    '<div id="mat-bilder-liste"></div>'+
+    '<div class="az-upload"><input type="file" accept="image/*" id="mat-bild-datei" onchange="bildHochladen(this,\'mat\')">'+
+    '<div class="az-muted" style="margin-top:6px">Wird automatisch verkleinert. Der Dateiname wird zufaellig vergeben und verraet die Pflanze nicht. Bei fremden Bildern bitte immer die Quelle eintragen.</div></div>'+
+    '</div></div>'+
     '<div style="display:flex;gap:8px">'+
     '<button class="btn btn-p" ontouchstart="saveMat()" onclick="saveMat()">'+(m?'Aenderung speichern':'Material anlegen')+'</button>'+
     (m?'<button class="btn" ontouchstart="cancelMatEdit()" onclick="cancelMatEdit()">Abbrechen</button>':'')+
@@ -4265,6 +4502,7 @@ async function renderVerwMat(){
   });
   html+='</div>';
   el.innerHTML=html;
+  zeichneMatBilder();
 }
 async function saveMat(){
   const titel=document.getElementById('mat-titel').value.trim();
@@ -4274,17 +4512,24 @@ async function saveMat(){
     kategorie:document.getElementById('mat-kat').value.trim()||'Allgemein',
     beschreibung:document.getElementById('mat-beschr').value.trim(),
     inhalt:document.getElementById('mat-inhalt').value,
-    link_url:document.getElementById('mat-link').value.trim()
+    link_url:document.getElementById('mat-link').value.trim(),
+    bilder:matBilder
   };
   let res;
   if(matEditId)res=await sb.from('ausbildung_material').update(werte).eq('id',matEditId);
   else{werte.aktiv=true;res=await sb.from('ausbildung_material').insert(werte);}
   if(res.error){toast('Fehler: '+res.error.message,'err');return;}
   toast(matEditId?'Gespeichert':'Material angelegt','ok');
-  matEditId=null;renderVerwMat();
+  matEditId=null;matBilder=[];renderVerwMat();
 }
-function editMat(id){matEditId=id;renderVerwMat();const sc=document.querySelector('#ausb-screen .admin-content');if(sc)sc.scrollTop=0;}
-function cancelMatEdit(){matEditId=null;renderVerwMat();}
+function editMat(id){
+  matEditId=id;
+  const m=AUSB_MAT.find(function(x){return String(x.id)===String(id);});
+  matBilder=(m&&Array.isArray(m.bilder))?JSON.parse(JSON.stringify(m.bilder)):[];
+  renderVerwMat();
+  const sc=document.querySelector('#ausb-screen .admin-content');if(sc)sc.scrollTop=0;
+}
+function cancelMatEdit(){matEditId=null;matBilder=[];renderVerwMat();}
 async function toggleMatAktiv(id){
   const x=AUSB_MAT.find(function(y){return String(y.id)===String(id);});
   if(!x)return;
@@ -4313,6 +4558,7 @@ function renderVerwTestsMitDaten(){
   if(!el)return;
   el.innerHTML=bauVerwTestsHTML();
   fqTypChanged();
+  zeichneFqBilder();
 }
 function bauVerwTestsHTML(){
   let html='<div class="a-sec"><div class="a-sec-title">'+(tEdit.id?'Test bearbeiten':'Neuen Test erstellen')+'</div>'+
@@ -4322,21 +4568,49 @@ function bauVerwTestsHTML(){
   html+='<div style="margin:10px 0 4px;font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--m)">Fragen ('+tEdit.fragen.length+')</div>';
   if(!tEdit.fragen.length)html+='<div class="az-empty">Noch keine Fragen. Unten Frage hinzufuegen.</div>';
   tEdit.fragen.forEach(function(f,i){
-    html+='<div class="az-qbox"><div class="az-qnr">Frage '+(i+1)+' &middot; '+(f.typ==='text'?'Freitext':'Multiple Choice')+'</div>'+
-      '<div class="az-qfrage">'+escH(f.frage)+'</div>';
+    var typTxt=f.typ==='text'?'Freitext':(f.typ==='multi'?'Mehrfachauswahl':'Multiple Choice');
+    html+='<div class="az-qbox"><div class="az-qnr">Frage '+(i+1)+' &middot; '+typTxt+' &middot; '+fragePunkte(f)+' P.'+
+      ((f.bilder&&f.bilder.length)?' &middot; '+f.bilder.length+' Bilder':'')+'</div>'+
+      '<div class="az-qfrage">'+botH(f.frage)+'</div>'+
+      bilderHTML(f.bilder);
     if(f.typ==='mc'){
       (f.optionen||[]).forEach(function(o,oi){
         if(String(o||'').trim()==='')return;
-        html+='<div class="az-muted" style="margin-bottom:2px">'+(oi===parseInt(f.richtig,10)?'<span class="az-ansok">&#10003;</span> ':'&middot; ')+escH(o)+'</div>';
+        html+='<div class="az-muted" style="margin-bottom:2px">'+(oi===parseInt(f.richtig,10)?'<span class="az-ansok">&#10003;</span> ':'&middot; ')+botH(o)+'</div>';
       });
+    }else if(f.typ==='multi'){
+      (f.optionen||[]).forEach(function(o,oi){
+        if(String(o||'').trim()==='')return;
+        var ist=(f.richtige||[]).map(Number).indexOf(oi)>=0;
+        html+='<div class="az-muted" style="margin-bottom:2px">'+(ist?'<span class="az-ansok">&#10003;</span> ':'&middot; ')+botH(o)+'</div>';
+      });
+    }else if(f.loesung){
+      html+='<div class="az-muted" style="margin-bottom:2px"><b>Musterloesung:</b> '+botH(f.loesung)+'</div>';
     }
     html+='<div style="margin-top:8px"><button class="btn btn-r" style="font-size:11px;padding:4px 8px;min-height:30px" ontouchstart="delFrage('+i+')" onclick="delFrage('+i+')">Frage entfernen</button></div>'+
       '</div>';
   });
   html+='<div style="border-top:1px dashed var(--b);margin:14px 0;padding-top:12px">'+
     '<div class="row"><div class="fg w100"><label>Neue Frage</label><input id="fq-frage" placeholder="z.B. Wie heisst die Rotbuche botanisch?"></div></div>'+
-    '<div class="row"><div class="fg w50"><label>Typ</label><select id="fq-typ" onchange="fqTypChanged()"><option value="mc">Multiple Choice</option><option value="text">Freitext</option></select></div>'+
-    '<div class="fg w50" id="fq-richtig-wrap"><label>Richtige Antwort</label><select id="fq-richtig"><option value="0">Antwort A</option><option value="1">Antwort B</option><option value="2">Antwort C</option><option value="3">Antwort D</option></select></div></div>'+
+    '<div class="row"><div class="fg w33"><label>Typ</label><select id="fq-typ" onchange="fqTypChanged()"><option value="mc">Multiple Choice</option><option value="multi">Mehrfachauswahl</option><option value="text">Freitext</option></select></div>'+
+    '<div class="fg w33" id="fq-richtig-wrap"><label>Richtige Antwort</label><select id="fq-richtig"><option value="0">Antwort A</option><option value="1">Antwort B</option><option value="2">Antwort C</option><option value="3">Antwort D</option></select></div>'+
+    '<div class="fg w33"><label>Punkte</label><input id="fq-punkte" inputmode="decimal" value="1"></div></div>'+
+    '<div class="row" id="fq-multi-wrap" style="display:none"><div class="fg w100"><label>Richtige Antworten (mehrere moeglich)</label>'+
+    '<div style="display:flex;gap:14px;flex-wrap:wrap;padding:4px 0">'+
+    ['A','B','C','D'].map(function(L,k){return '<label style="display:flex;align-items:center;gap:6px;text-transform:none;font-size:12px;color:var(--t);letter-spacing:0;margin:0"><input type="checkbox" id="fq-r'+k+'" style="width:auto"> Antwort '+L+'</label>';}).join('')+
+    '</div></div></div>'+
+    '<div class="row" id="fq-text-wrap" style="display:none">'+
+    '<div class="fg w33"><label>Musterloesung (leer = Ausbilder bewertet)</label><input id="fq-loesung" placeholder="z.B. Fagus sylvatica"></div>'+
+    '<div class="fg w33"><label>Auch als voll richtig (Komma getrennt)</label><input id="fq-varianten" placeholder="z.B. Fluegelfrucht, Doppel-Samara"></div>'+
+    '<div class="fg w33"><label>Aufzaehlung: geforderte Nennungen</label><input id="fq-mind" inputmode="numeric" placeholder="leer = keine Aufzaehlung"></div></div>'+
+    '<div class="row" id="fq-teil-wrap" style="display:none">'+
+    '<div class="fg w50"><label>Teilpunkte fuer (Komma getrennt)</label><input id="fq-teilvar" placeholder="z.B. Fagus"></div>'+
+    '<div class="fg w50"><label>Teilpunkte-Wert</label><input id="fq-teilpunkte" inputmode="decimal" placeholder="1"></div></div>'+
+    '<div class="row"><div class="fg w100"><label>Fachhinweis (optional, erscheint bei der Auswertung)</label><input id="fq-hinweis" placeholder="Ergaenzende Erklaerung"></div></div>'+
+    '<div class="row"><div class="fg w100"><label>Bilder zur Frage (optional)</label>'+
+    '<div id="fq-bilder-liste"></div>'+
+    '<div class="az-upload"><input type="file" accept="image/*" id="fq-bild-datei" onchange="bildHochladen(this,\'frage\')"></div>'+
+    '</div></div>'+
     '<div id="fq-opts">'+
     '<div class="row"><div class="fg w50"><label>Antwort A</label><input id="fq-o0"></div><div class="fg w50"><label>Antwort B</label><input id="fq-o1"></div></div>'+
     '<div class="row"><div class="fg w50"><label>Antwort C (optional)</label><input id="fq-o2"></div><div class="fg w50"><label>Antwort D (optional)</label><input id="fq-o3"></div></div>'+
@@ -4370,27 +4644,82 @@ function tEditLesen(){
 function fqTypChanged(){
   const typEl=document.getElementById('fq-typ');
   const typ=typEl?typEl.value:'mc';
-  const opts=document.getElementById('fq-opts');
-  const rw=document.getElementById('fq-richtig-wrap');
-  if(opts)opts.style.display=typ==='mc'?'':'none';
-  if(rw)rw.style.display=typ==='mc'?'':'none';
+  const zeig=function(id,an){const el=document.getElementById(id);if(el)el.style.display=an?'':'none';};
+  zeig('fq-opts',typ==='mc'||typ==='multi');
+  zeig('fq-richtig-wrap',typ==='mc');
+  zeig('fq-multi-wrap',typ==='multi');
+  zeig('fq-text-wrap',typ==='text');
+  zeig('fq-teil-wrap',typ==='text'||typ==='multi');
 }
 function addFrage(){
   tEditLesen();
   const frage=document.getElementById('fq-frage').value.trim();
   if(!frage){toast('Fragetext fehlt','err');return;}
   const typ=document.getElementById('fq-typ').value;
+  const lesePunkte=function(id,std){
+    const el=document.getElementById(id);
+    if(!el||el.value.trim()==='')return std;
+    const v=parseFloat(el.value.replace(',','.'));
+    return isNaN(v)?std:v;
+  };
+  const listeLesen=function(id){
+    const el=document.getElementById(id);
+    if(!el)return[];
+    return el.value.split(',').map(function(s){return s.trim();}).filter(function(s){return s!=='';});
+  };
+  const punkte=lesePunkte('fq-punkte',1);
+  if(punkte<=0){toast('Punkte muessen groesser als 0 sein','err');return;}
+  const hinweisEl=document.getElementById('fq-hinweis');
+  const hinweis=hinweisEl?hinweisEl.value.trim():'';
+  const neueFrage={frage:frage,typ:typ,punkte:punkte};
+  if(hinweis)neueFrage.fachhinweis=hinweis;
+  if(fqBilder.length)neueFrage.bilder=fqBilder.slice();
   if(typ==='text'){
-    tEdit.fragen.push({frage:frage,typ:'text'});
+    const loesEl=document.getElementById('fq-loesung');
+    const loes=loesEl?loesEl.value.trim():'';
+    const mindEl=document.getElementById('fq-mind');
+    const mindRoh=mindEl?mindEl.value.trim():'';
+    const mind=mindRoh===''?0:parseInt(mindRoh,10);
+    if(mindRoh!==''&&(isNaN(mind)||mind<1)){toast('Geforderte Nennungen muessen eine Zahl ab 1 sein','err');return;}
+    if(loes){
+      neueFrage.loesung=loes;
+      const varianten=listeLesen('fq-varianten');
+      if(varianten.length)neueFrage.varianten=varianten;
+      if(mind>0){
+        if(!varianten.length){toast('Fuer eine Aufzaehlung bitte die gueltigen Begriffe bei "Auch als voll richtig" eintragen','err');return;}
+        neueFrage.mind_anzahl=mind;
+        neueFrage.teil_punkte=lesePunkte('fq-teilpunkte',Math.floor(punkte/2)||1);
+      }
+      const teilvar=listeLesen('fq-teilvar');
+      if(teilvar.length){
+        neueFrage.teil_varianten=teilvar;
+        neueFrage.teil_punkte=lesePunkte('fq-teilpunkte',Math.floor(punkte/2)||1);
+      }
+    }
+    tEdit.fragen.push(neueFrage);
   }else{
     const optionen=[];
     for(let i=0;i<4;i++){optionen.push(document.getElementById('fq-o'+i).value.trim());}
     const gefuellt=optionen.filter(function(o){return o!=='';});
     if(gefuellt.length<2){toast('Mindestens 2 Antworten (A und B) noetig','err');return;}
-    const richtig=parseInt(document.getElementById('fq-richtig').value,10);
-    if(optionen[richtig]===''){toast('Die als richtig markierte Antwort ist leer','err');return;}
-    tEdit.fragen.push({frage:frage,typ:'mc',optionen:optionen,richtig:richtig});
+    neueFrage.optionen=optionen;
+    if(typ==='multi'){
+      const richtige=[];
+      for(let k=0;k<4;k++){const c=document.getElementById('fq-r'+k);if(c&&c.checked)richtige.push(k);}
+      if(!richtige.length){toast('Bitte mindestens eine richtige Antwort ankreuzen','err');return;}
+      for(let k=0;k<richtige.length;k++){
+        if(optionen[richtige[k]]===''){toast('Eine als richtig markierte Antwort ist leer','err');return;}
+      }
+      neueFrage.richtige=richtige;
+      neueFrage.teil_punkte=lesePunkte('fq-teilpunkte',Math.floor(punkte/2)||1);
+    }else{
+      const richtig=parseInt(document.getElementById('fq-richtig').value,10);
+      if(optionen[richtig]===''){toast('Die als richtig markierte Antwort ist leer','err');return;}
+      neueFrage.richtig=richtig;
+    }
+    tEdit.fragen.push(neueFrage);
   }
+  fqBilder=[];
   renderVerwTestsMitDaten();
   toast('Frage hinzugefuegt','ok');
 }
@@ -4408,7 +4737,7 @@ async function saveTest(){
   tEdit=leererTest();
   renderVerwTests();
 }
-function neuTest(){tEdit=leererTest();renderVerwTestsMitDaten();}
+function neuTest(){tEdit=leererTest();fqBilder=[];renderVerwTestsMitDaten();}
 function editTest(id){
   const t=AUSB_TESTS.find(function(x){return String(x.id)===String(id);});
   if(!t)return;
