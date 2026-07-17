@@ -42,6 +42,35 @@ body{background:var(--bg);color:var(--t);font-family:'IBM Plex Sans',sans-serif;
 @keyframes spin{to{transform:rotate(360deg)}}
 #admin-screen{position:fixed;inset:0;background:var(--bg);z-index:9998;display:none;flex-direction:column;}
 #pl-screen{position:fixed;inset:0;background:var(--bg);z-index:9997;display:none;flex-direction:column;}
+#menu-screen{position:fixed;inset:0;background:var(--bg);z-index:9990;display:none;flex-direction:column;}
+#ausb-screen{position:fixed;inset:0;background:var(--bg);z-index:9993;display:none;flex-direction:column;}
+#br-screen{position:fixed;inset:0;background:var(--bg);z-index:9993;display:none;flex-direction:column;}
+.badge-azubi{background:var(--gg);border:1px solid var(--b);color:var(--gl);}
+.menu-wrap{flex:1;overflow-y:auto;padding:28px 16px;display:flex;flex-direction:column;align-items:center;-webkit-overflow-scrolling:touch;}
+.menu-title{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--m);margin-bottom:16px;}
+.menu-tile{width:100%;max-width:460px;background:var(--s2);border:1px solid var(--b);border-radius:8px;padding:18px;margin-bottom:12px;cursor:pointer;}
+.menu-tile:active{border-color:var(--g);}
+.menu-tile-name{font-size:16px;font-weight:700;color:var(--c);}
+.menu-tile-sub{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--m);margin-top:4px;}
+.az-card{background:var(--s3);border:1px solid var(--b);border-radius:6px;padding:12px;margin-bottom:8px;}
+.az-card-title{font-size:13px;font-weight:600;color:var(--c);}
+.az-card-sub{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--m);margin-top:2px;}
+.az-pill{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;padding:2px 7px;border-radius:10px;border:1px solid var(--b);color:var(--m);margin-right:4px;}
+.az-pill.ok{background:var(--gg);color:var(--gl);border-color:transparent;}
+.az-pill.warn{background:var(--rg);color:var(--r);border-color:transparent;}
+.az-pill.info{background:var(--skyg);color:var(--sky);border-color:transparent;}
+.az-qbox{background:var(--s3);border:1px solid var(--b);border-radius:6px;padding:12px;margin-bottom:10px;}
+.az-qnr{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--m);margin-bottom:4px;}
+.az-qfrage{font-size:13px;font-weight:600;color:var(--c);margin-bottom:10px;}
+.az-opt{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--b);border-radius:var(--rad);margin-bottom:6px;cursor:pointer;background:var(--s2);}
+.az-opt input{width:auto;}
+.az-opt-txt{flex:1;font-size:13px;color:var(--t);}
+.az-ansok{color:var(--g);font-weight:600;}
+.az-ansbad{color:var(--r);font-weight:600;}
+.az-muted{font-size:11px;color:var(--m);line-height:1.5;}
+.az-empty{color:var(--m);font-size:11px;padding:12px;text-align:center;}
+.az-subnav{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+.az-subnav .btn{flex:1;justify-content:center;min-width:100px;}
 .admin-header{background:var(--s1);border-bottom:1px solid var(--b);padding:12px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .admin-badge{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:2px 8px;border-radius:10px;}
 .badge-admin{background:var(--skyg);border:1px solid rgba(61,143,168,.3);color:var(--sky);}
@@ -298,6 +327,7 @@ select option{background:var(--s2);}
     <span id="admin-user-name" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--m)"></span>
     <button class="theme-btn" style="margin-left:auto" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
     <button class="hbtn" ontouchstart="openProfil()" onclick="openProfil()">Profil</button>
+    <button class="hbtn menu-hbtn" style="display:none" ontouchstart="zumMenue()" onclick="zumMenue()">Menue</button>
     <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
   </div>
   <div class="admin-tabs">
@@ -335,6 +365,7 @@ select option{background:var(--s2);}
     <span id="pl-user-name" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--m)"></span>
     <button class="theme-btn" style="margin-left:auto" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
     <button class="hbtn" ontouchstart="openProfil()" onclick="openProfil()">Profil</button>
+    <button class="hbtn menu-hbtn" style="display:none" ontouchstart="zumMenue()" onclick="zumMenue()">Menue</button>
     <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
   </div>
   <div class="admin-tabs">
@@ -351,6 +382,58 @@ select option{background:var(--s2);}
   </div>
 </div>
 
+<div id="menu-screen">
+  <div class="admin-header">
+    <img src="https://www.klei-sportplatzbau.de/images/logos/KLEI_LOGO_FARBIG_RGB_72DPI.png" style="height:24px" alt="KLEI" onerror="this.style.display='none'">
+    <span class="admin-badge badge-admin">Hauptmenue</span>
+    <span id="menu-user-name" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--m)"></span>
+    <button class="theme-btn" style="margin-left:auto" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
+    <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
+  </div>
+  <div class="menu-wrap">
+    <div class="menu-title">Bereich auswaehlen</div>
+    <div id="menu-tiles" style="width:100%;max-width:460px"></div>
+  </div>
+</div>
+
+<div id="ausb-screen">
+  <div class="admin-header">
+    <img src="https://www.klei-sportplatzbau.de/images/logos/KLEI_LOGO_FARBIG_RGB_72DPI.png" style="height:24px" alt="KLEI" onerror="this.style.display='none'">
+    <span class="admin-badge badge-azubi" id="ausb-badge">Azubi</span>
+    <span id="ausb-user-name" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--m)"></span>
+    <button class="theme-btn" style="margin-left:auto" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
+    <button class="hbtn menu-hbtn" style="display:none" ontouchstart="zumMenue()" onclick="zumMenue()">Menue</button>
+    <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
+  </div>
+  <div class="admin-tabs">
+    <div class="admin-tab act" id="aztab-lernen" ontouchstart="azShowTab('lernen')" onclick="azShowTab('lernen')">Lernen</div>
+    <div class="admin-tab" id="aztab-tests" ontouchstart="azShowTab('tests')" onclick="azShowTab('tests')">Tests</div>
+    <div class="admin-tab" id="aztab-erg" ontouchstart="azShowTab('erg')" onclick="azShowTab('erg')">Ergebnisse</div>
+    <div class="admin-tab" id="aztab-verw" style="display:none" ontouchstart="azShowTab('verw')" onclick="azShowTab('verw')">Verwaltung</div>
+  </div>
+  <div class="admin-content">
+    <div class="admin-panel act" id="azpanel-lernen"></div>
+    <div class="admin-panel" id="azpanel-tests"></div>
+    <div class="admin-panel" id="azpanel-erg"></div>
+    <div class="admin-panel" id="azpanel-verw"></div>
+  </div>
+</div>
+
+<div id="br-screen">
+  <div class="admin-header">
+    <img src="https://www.klei-sportplatzbau.de/images/logos/KLEI_LOGO_FARBIG_RGB_72DPI.png" style="height:24px" alt="KLEI" onerror="this.style.display='none'">
+    <span class="admin-badge badge-admin">Baurechner</span>
+    <span id="br-user-name" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--m)"></span>
+    <button class="theme-btn" style="margin-left:auto" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
+    <button class="hbtn menu-hbtn" style="display:none" ontouchstart="zumMenue()" onclick="zumMenue()">Menue</button>
+    <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
+  </div>
+  <div class="admin-content">
+    <div class="a-sec"><div class="a-sec-title">Baurechner</div>
+    <div class="az-empty">Der Baurechner ist in Entwicklung und wird hier freigeschaltet, sobald er verfuegbar ist.</div></div>
+  </div>
+</div>
+
 <header>
   <img src="https://www.klei-sportplatzbau.de/images/logos/KLEI_LOGO_FARBIG_RGB_72DPI.png" class="h-logo" alt="KLEI" onerror="this.style.display='none'">
   <div class="h-divider"></div>
@@ -359,6 +442,7 @@ select option{background:var(--s2);}
   <div class="h-right">
     <button class="theme-btn" id="theme-btn" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
     <button class="hbtn" id="profil-btn" ontouchstart="openProfil()" onclick="openProfil()">Profil</button>
+    <button class="hbtn menu-hbtn" style="display:none" ontouchstart="zumMenue()" onclick="zumMenue()">Menue</button>
     <button class="hbtn va-only" ontouchstart="openMo('mo-df')" onclick="openMo('mo-df')">Dataflor</button>
     <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
   </div>
@@ -712,10 +796,10 @@ async function doLogin(){
     unterschriftData=data.unterschrift_data||null;
     document.getElementById('login-screen').style.display='none';
     await loadProjekte();
-    if(data.rolle==='admin')openAdmin();
-    else if(data.rolle==='verwaltung')openAdmin();
-    else if(data.rolle==='projektleiter')openPL();
-    else await initApp();
+    const mods=userModule(data);
+    document.querySelectorAll('.menu-hbtn').forEach(b=>b.style.display=mods.length>1?'':'none');
+    if(mods.length>1)openMenu();
+    else await openModul(mods[0]);
     setTimeout(()=>checkErstLogin(),400);
   }catch(e){errEl.textContent='Verbindungsfehler: '+e.message;btn.innerHTML='Anmelden';btn.disabled=false;}
 }
@@ -725,7 +809,8 @@ document.getElementById('login-nr').addEventListener('keydown',e=>{if(e.key==='E
 function doLogout(){
   stopVAAutoSave();
   currentUser=null;reports=[];currentId=null;currentRole=null;unterschriftData=null;
-  ['admin-screen','pl-screen'].forEach(id=>document.getElementById(id).style.display='none');
+  laufTest=null;tEdit=null;matEditId=null;AUSB_MAT=[];AUSB_TESTS=[];AUSB_ABG=[];
+  ['admin-screen','pl-screen','menu-screen','ausb-screen','br-screen'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('login-nr').value='';document.getElementById('login-pw').value='';
   document.getElementById('login-err').textContent='';
@@ -983,7 +1068,8 @@ async function renderAdminMA(){
     '<div class="fg w50"><label>Name</label><input id="new-ma-name" placeholder="Max Mustermann"></div>'+
     '<div class="fg w25"><label>Kuerzel</label><input id="new-ma-kuerzel" placeholder="MM"></div></div>'+
     '<div class="row"><div class="fg w50"><label>Qualifikation</label><select id="new-ma-qual"><option>Facharbeiter GaLa</option><option>Helfer</option><option>Azubi</option><option>Subunternehmer</option><option>VA</option><option>Werkstatt</option></select></div>'+
-    '<div class="fg w50"><label>Rolle</label><select id="new-ma-rolle"><option value="arbeiter">Arbeiter</option><option value="vorarbeiter">Vorarbeiter</option><option value="werkstatt">Werkstatt</option><option value="projektleiter">Projektleiter</option><option value="admin">Admin</option></select></div></div>'+
+    '<div class="fg w50"><label>Rolle</label><select id="new-ma-rolle"><option value="arbeiter">Arbeiter</option><option value="vorarbeiter">Vorarbeiter</option><option value="werkstatt">Werkstatt</option><option value="azubi">Azubi</option><option value="projektleiter">Projektleiter</option><option value="admin">Admin</option></select></div></div>'+
+    '<div class="row"><div class="fg w100"><label>Modul-Freigaben</label><div style="display:flex;gap:14px;flex-wrap:wrap;padding:6px 0">'+modCheckboxHTML('new-ma-mod',['tagesberichte'])+'</div></div></div>'+
     '<div class="row"><div class="fg w50"><label>Passwort</label><input id="new-ma-pw" placeholder="Initiales Passwort" type="text"></div></div>'+
     '<button class="btn btn-sky" ontouchstart="adminAddMA()" onclick="adminAddMA()">+ Mitarbeiter anlegen</button></div>'+
     '<div class="a-sec"><div class="a-sec-title">Alle Mitarbeiter (<span id="ma-count">...</span>)</div><div id="ma-list"><div class="empty"><div class="spin"></div></div></div></div>';
@@ -1007,7 +1093,8 @@ async function adminAddMA(){
   const kuerzel=document.getElementById('new-ma-kuerzel').value.trim(),qual=document.getElementById('new-ma-qual').value;
   const rolle=document.getElementById('new-ma-rolle').value,pw=document.getElementById('new-ma-pw').value.trim();
   if(!nr||!name||!pw){toast('Nummer, Name und Passwort erforderlich','err');return;}
-  const{error}=await sb.from('mitarbeiter').insert({mitarbeiter_nr:nr,name,kuerzel,qualifikation:qual,rolle,passwort_hash:pw,aktiv:true});
+  const module=modCheckboxLesen('new-ma-mod');
+  const{error}=await sb.from('mitarbeiter').insert({mitarbeiter_nr:nr,name,kuerzel,qualifikation:qual,rolle,passwort_hash:pw,aktiv:true,module:module});
   if(error){toast('Fehler: '+error.message,'err');return;}
   toast('Mitarbeiter angelegt','ok');['new-ma-nr','new-ma-name','new-ma-kuerzel','new-ma-pw'].forEach(id=>document.getElementById(id).value='');renderAdminMA();
 }
@@ -1022,14 +1109,15 @@ async function editMA(id){
     '<div class="row"><div class="fg w33"><label>Qualifikation</label><select id="edit-qual-'+id+'">'+
     ['Facharbeiter GaLa','Helfer','Azubi','Subunternehmer','VA','Werkstatt'].map(q=>'<option '+(data.qualifikation===q?'selected':'')+'>'+q+'</option>').join('')+'</select></div>'+
     '<div class="fg w33"><label>Rolle</label><select id="edit-rolle-'+id+'">'+
-    ['arbeiter','vorarbeiter','werkstatt','projektleiter','admin'].map(r=>'<option value="'+r+'" '+(data.rolle===r?'selected':'')+'>'+r+'</option>').join('')+'</select></div>'+
+    ['arbeiter','vorarbeiter','werkstatt','azubi','projektleiter','admin'].map(r=>'<option value="'+r+'" '+(data.rolle===r?'selected':'')+'>'+r+'</option>').join('')+'</select></div>'+
     '<div class="fg w33"><label>Neues Passwort</label><input id="edit-pw-'+id+'" placeholder="Leer = unveraendert" type="text"></div></div>'+
+    '<div class="row"><div class="fg w100"><label>Modul-Freigaben</label><div style="display:flex;gap:14px;flex-wrap:wrap;padding:6px 0">'+modCheckboxHTML('edit-mod-'+id,userModule(data))+'</div></div></div>'+
     '<div style="display:flex;gap:6px"><button class="btn btn-sky" ontouchstart="saveEditMA(\''+id+'\')" onclick="saveEditMA(\''+id+'\')">Speichern</button>'+
     '<button class="btn" ontouchstart="renderAdminMA()" onclick="renderAdminMA()">Abbrechen</button></div></div>';
 }
 
 async function saveEditMA(id){
-  const updates={mitarbeiter_nr:document.getElementById('edit-nr-'+id).value.trim(),name:document.getElementById('edit-name-'+id).value.trim(),kuerzel:document.getElementById('edit-kuerzel-'+id).value.trim(),qualifikation:document.getElementById('edit-qual-'+id).value,rolle:document.getElementById('edit-rolle-'+id).value};
+  const updates={mitarbeiter_nr:document.getElementById('edit-nr-'+id).value.trim(),name:document.getElementById('edit-name-'+id).value.trim(),kuerzel:document.getElementById('edit-kuerzel-'+id).value.trim(),qualifikation:document.getElementById('edit-qual-'+id).value,rolle:document.getElementById('edit-rolle-'+id).value,module:modCheckboxLesen('edit-mod-'+id)};
   const pw=document.getElementById('edit-pw-'+id).value.trim();if(pw)updates.passwort_hash=pw;
   const{error}=await sb.from('mitarbeiter').update(updates).eq('id',id);
   if(error){toast('Fehler: '+error.message,'err');return;}
@@ -3805,6 +3893,609 @@ function showTab(name){
   if(name==='kalender'){kalMonat=new Date().getMonth();kalJahr=new Date().getFullYear();buildKalender();}
   if(name==='fzliste')buildFZListe();
   stopVoice();
+}
+
+// ════════════════════════════════════════════════════════════
+// MODULE / HAUPTMENUE
+// Freigaben pro Account in mitarbeiter.module (JSONB-Array),
+// z.B. ["tagesberichte","ausbildung"]. NULL = Standard nach Rolle.
+// ════════════════════════════════════════════════════════════
+const MODULE_DEFS=[
+  {key:'tagesberichte',name:'Tagesberichte',sub:'Zeiterfassung, Berichte, Freigaben'},
+  {key:'ausbildung',name:'Ausbildung',sub:'Lernen, Tests, Ergebnisse'},
+  {key:'baurechner',name:'Baurechner',sub:'In Entwicklung'}
+];
+function userModule(u){
+  let m=u?u.module:null;
+  if(typeof m==='string'){try{m=JSON.parse(m);}catch(e){m=null;}}
+  if(Array.isArray(m)&&m.length){
+    const g=m.filter(x=>MODULE_DEFS.some(d=>d.key===x));
+    if(g.length)return g;
+  }
+  if(u.rolle==='azubi')return['ausbildung'];
+  if(u.rolle==='admin')return['tagesberichte','ausbildung','baurechner'];
+  return['tagesberichte'];
+}
+function modCheckboxHTML(prefix,checkedMods){
+  let html='';
+  MODULE_DEFS.forEach(d=>{
+    const chk=checkedMods.indexOf(d.key)>=0?' checked':'';
+    html+='<label style="display:flex;align-items:center;gap:6px;text-transform:none;font-size:12px;color:var(--t);letter-spacing:0;margin:0"><input type="checkbox" id="'+prefix+'-'+d.key+'"'+chk+' style="width:auto"> '+d.name+'</label>';
+  });
+  return html;
+}
+function modCheckboxLesen(prefix){
+  const module=[];
+  MODULE_DEFS.forEach(d=>{const c=document.getElementById(prefix+'-'+d.key);if(c&&c.checked)module.push(d.key);});
+  return module.length?module:['tagesberichte'];
+}
+function openMenu(){
+  ['admin-screen','pl-screen','ausb-screen','br-screen'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  document.getElementById('menu-user-name').textContent=currentUser.name;
+  const mods=userModule(currentUser);
+  let html='';
+  mods.forEach(k=>{
+    const d=MODULE_DEFS.find(x=>x.key===k);if(!d)return;
+    html+='<div class="menu-tile" ontouchstart="openModul(\''+k+'\')" onclick="openModul(\''+k+'\')">'+
+      '<div class="menu-tile-name">'+d.name+'</div><div class="menu-tile-sub">'+d.sub+'</div></div>';
+  });
+  document.getElementById('menu-tiles').innerHTML=html;
+  document.getElementById('menu-screen').style.display='flex';
+}
+async function openModul(k){
+  document.getElementById('menu-screen').style.display='none';
+  if(k==='ausbildung'){openAusb();return;}
+  if(k==='baurechner'){openBaurechner();return;}
+  // Modul Tagesberichte: bisheriges Rollen-Routing bleibt unveraendert
+  if(currentUser.rolle==='admin'||currentUser.rolle==='verwaltung')openAdmin();
+  else if(currentUser.rolle==='projektleiter')openPL();
+  else await initApp();
+}
+function zumMenue(){
+  ['admin-screen','pl-screen','ausb-screen','br-screen'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  openMenu();
+}
+function openBaurechner(){
+  document.getElementById('br-user-name').textContent=currentUser.name;
+  document.getElementById('br-screen').style.display='flex';
+}
+
+// ════════════════════════════════════════════════════════════
+// MODUL AUSBILDUNG
+// Tabellen: ausbildung_material, ausbildung_tests, ausbildung_abgaben
+// ════════════════════════════════════════════════════════════
+let AUSB_MAT=[],AUSB_TESTS=[],AUSB_ABG=[];
+let laufTest=null,tEdit=null,matEditId=null,verwView='mat';
+
+function escH(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function azFmtD(d){if(!d)return'--';const p=String(d).substring(0,10).split('-');return p.length===3?p[2]+'.'+p[1]+'.'+p[0]:d;}
+function azFmtDT(d){if(!d)return'--';const dt=new Date(d);if(isNaN(dt))return azFmtD(d);return azFmtD(d)+' '+String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');}
+function istAusbilder(){return currentUser&&(currentUser.rolle==='admin'||currentUser.rolle==='projektleiter'||currentUser.rolle==='verwaltung');}
+
+// Laedt eine Tabelle vollstaendig in 1000er-Bloecken (Konvention).
+async function loadAlle(tabelle,orderCol,filterFn){
+  let alle=[];let from=0;
+  while(true){
+    let q=sb.from(tabelle).select('*').order(orderCol,{ascending:false}).range(from,from+999);
+    if(filterFn)q=filterFn(q);
+    const res=await q;
+    if(res.error){toast('Fehler beim Laden ('+tabelle+')','err');return alle;}
+    const data=res.data||[];
+    alle=alle.concat(data);
+    if(data.length<1000)break;
+    from+=1000;
+  }
+  return alle;
+}
+async function loadAusbMaterial(){AUSB_MAT=await loadAlle('ausbildung_material','erstellt_am');}
+async function loadAusbTests(){AUSB_TESTS=await loadAlle('ausbildung_tests','erstellt_am');}
+async function loadAusbAbgabenEigene(){AUSB_ABG=await loadAlle('ausbildung_abgaben','abgegeben_am',function(q){return q.eq('mitarbeiter_id',String(currentUser.id));});}
+async function loadAusbAbgabenAlle(){AUSB_ABG=await loadAlle('ausbildung_abgaben','abgegeben_am');}
+
+function openAusb(){
+  document.getElementById('ausb-screen').style.display='flex';
+  document.getElementById('ausb-user-name').textContent=currentUser.name+' #'+(currentUser.mitarbeiter_nr||'');
+  const badge=document.getElementById('ausb-badge');
+  if(istAusbilder()){badge.textContent='Ausbilder';badge.className='admin-badge badge-admin';}
+  else{badge.textContent='Azubi';badge.className='admin-badge badge-azubi';}
+  document.getElementById('aztab-verw').style.display=istAusbilder()?'':'none';
+  azShowTab('lernen');
+}
+function azShowTab(name){
+  document.querySelectorAll('#ausb-screen .admin-tab').forEach(t=>t.classList.remove('act'));
+  document.querySelectorAll('#ausb-screen .admin-panel').forEach(p=>p.classList.remove('act'));
+  document.getElementById('aztab-'+name).classList.add('act');
+  document.getElementById('azpanel-'+name).classList.add('act');
+  if(name==='lernen')renderLernen();
+  if(name==='tests')renderTests();
+  if(name==='erg')renderErgebnisse();
+  if(name==='verw')renderVerwaltung();
+}
+
+// ── Lernen ──
+async function renderLernen(){
+  const el=document.getElementById('azpanel-lernen');
+  el.innerHTML='<div class="az-empty">Lade Lernmaterial...</div>';
+  await loadAusbMaterial();
+  const aktive=AUSB_MAT.filter(function(m){return m.aktiv;});
+  const kats=[];
+  aktive.forEach(function(m){const k=m.kategorie||'Allgemein';if(kats.indexOf(k)<0)kats.push(k);});
+  kats.sort();
+  let katOpts='<option value="">Alle Kategorien</option>';
+  kats.forEach(function(k){katOpts+='<option value="'+escH(k)+'">'+escH(k)+'</option>';});
+  el.innerHTML=
+    '<div class="a-sec"><div class="a-sec-title">Lernmaterial</div>'+
+    '<div class="row"><div class="fg w50"><label>Suchen</label><input id="lern-such" placeholder="Titel oder Inhalt..." oninput="filterLernen()"></div>'+
+    '<div class="fg w50"><label>Kategorie</label><select id="lern-kat" onchange="filterLernen()">'+katOpts+'</select></div></div>'+
+    '<div id="lern-liste"></div></div>';
+  filterLernen();
+}
+function filterLernen(){
+  const such=(document.getElementById('lern-such').value||'').toLowerCase();
+  const kat=document.getElementById('lern-kat').value;
+  const liste=document.getElementById('lern-liste');
+  let items=AUSB_MAT.filter(function(m){return m.aktiv;});
+  if(kat)items=items.filter(function(m){return(m.kategorie||'Allgemein')===kat;});
+  if(such)items=items.filter(function(m){
+    return(String(m.titel||'')+' '+String(m.beschreibung||'')+' '+String(m.inhalt||'')).toLowerCase().indexOf(such)>=0;
+  });
+  if(!items.length){liste.innerHTML='<div class="az-empty">Kein Lernmaterial gefunden.</div>';return;}
+  let html='';
+  items.forEach(function(m){
+    html+='<div class="az-card" ontouchstart="openMaterial(\''+m.id+'\')" onclick="openMaterial(\''+m.id+'\')" style="cursor:pointer">'+
+      '<div class="az-card-title">'+escH(m.titel)+'</div>'+
+      '<div class="az-card-sub">'+escH(m.kategorie||'Allgemein')+' &middot; '+azFmtD(m.erstellt_am)+'</div>'+
+      (m.beschreibung?'<div class="az-muted" style="margin-top:6px">'+escH(m.beschreibung)+'</div>':'')+
+      '</div>';
+  });
+  liste.innerHTML=html;
+}
+function openMaterial(id){
+  const m=AUSB_MAT.find(function(x){return String(x.id)===String(id);});
+  if(!m)return;
+  const el=document.getElementById('azpanel-lernen');
+  let inhalt='';
+  if(m.inhalt){
+    const teile=String(m.inhalt).split('\n');
+    teile.forEach(function(z){inhalt+='<div style="min-height:8px;font-size:13px;line-height:1.6;color:var(--t)">'+escH(z)+'</div>';});
+  }
+  el.innerHTML=
+    '<div class="a-sec">'+
+    '<button class="btn" style="margin-bottom:12px" ontouchstart="renderLernen()" onclick="renderLernen()">&larr; Zurueck zur Uebersicht</button>'+
+    '<div class="a-sec-title">'+escH(m.titel)+'</div>'+
+    '<div class="az-card-sub" style="margin-bottom:12px">'+escH(m.kategorie||'Allgemein')+' &middot; '+azFmtD(m.erstellt_am)+'</div>'+
+    (m.beschreibung?'<div class="az-muted" style="margin-bottom:12px">'+escH(m.beschreibung)+'</div>':'')+
+    inhalt+
+    (m.link_url?'<div style="margin-top:14px"><a href="'+escH(m.link_url)+'" target="_blank" rel="noopener" class="btn btn-sky" style="text-decoration:none">Externes Material oeffnen &#8599;</a></div>':'')+
+    '</div>';
+}
+
+// ── Tests ──
+async function renderTests(){
+  const el=document.getElementById('azpanel-tests');
+  el.innerHTML='<div class="az-empty">Lade Tests...</div>';
+  await loadAusbTests();
+  await loadAusbAbgabenEigene();
+  const aktive=AUSB_TESTS.filter(function(t){return t.aktiv&&(t.fragen||[]).length>0;});
+  if(!aktive.length){el.innerHTML='<div class="a-sec"><div class="a-sec-title">Tests</div><div class="az-empty">Aktuell sind keine Tests verfuegbar.</div></div>';return;}
+  let html='<div class="a-sec"><div class="a-sec-title">Verfuegbare Tests</div>';
+  aktive.forEach(function(t){
+    const eigene=AUSB_ABG.filter(function(a){return String(a.test_id)===String(t.id);});
+    let best=null;
+    eigene.forEach(function(a){if(a.punkte!=null&&(best===null||parseFloat(a.punkte)>best))best=parseFloat(a.punkte);});
+    html+='<div class="az-card">'+
+      '<div class="az-card-title">'+escH(t.titel)+'</div>'+
+      '<div class="az-card-sub">'+escH(t.kategorie||'Allgemein')+' &middot; '+(t.fragen||[]).length+' Fragen</div>'+
+      (t.beschreibung?'<div class="az-muted" style="margin-top:6px">'+escH(t.beschreibung)+'</div>':'')+
+      '<div style="margin-top:8px">'+
+      (eigene.length?'<span class="az-pill info">'+eigene.length+'x abgegeben</span>':'<span class="az-pill">noch nicht gemacht</span>')+
+      (best!==null?'<span class="az-pill ok">Beste: '+best+' Pkt.</span>':'')+
+      '</div>'+
+      '<div style="margin-top:10px"><button class="btn btn-p" ontouchstart="startTest(\''+t.id+'\')" onclick="startTest(\''+t.id+'\')">Test starten</button></div>'+
+      '</div>';
+  });
+  html+='</div>';
+  el.innerHTML=html;
+}
+function startTest(id){
+  const t=AUSB_TESTS.find(function(x){return String(x.id)===String(id);});
+  if(!t)return;
+  laufTest=t;
+  const el=document.getElementById('azpanel-tests');
+  let html='<div class="a-sec">'+
+    '<button class="btn" style="margin-bottom:12px" ontouchstart="abbruchTest()" onclick="abbruchTest()">&larr; Abbrechen</button>'+
+    '<div class="a-sec-title">'+escH(t.titel)+'</div>'+
+    (t.beschreibung?'<div class="az-muted" style="margin-bottom:12px">'+escH(t.beschreibung)+'</div>':'');
+  (t.fragen||[]).forEach(function(f,i){
+    html+='<div class="az-qbox"><div class="az-qnr">Frage '+(i+1)+' von '+(t.fragen||[]).length+(f.typ==='text'?' &middot; Freitext':'')+'</div>'+
+      '<div class="az-qfrage">'+escH(f.frage)+'</div>';
+    if(f.typ==='text'){
+      html+='<textarea id="azq-'+i+'" placeholder="Antwort eingeben..." style="min-height:70px"></textarea>';
+    }else{
+      (f.optionen||[]).forEach(function(o,oi){
+        if(String(o||'').trim()==='')return;
+        html+='<label class="az-opt"><input type="radio" name="azq'+i+'" value="'+oi+'"><span class="az-opt-txt">'+escH(o)+'</span></label>';
+      });
+    }
+    html+='</div>';
+  });
+  html+='<button class="btn btn-p" style="width:100%;justify-content:center;font-size:14px" ontouchstart="submitTest()" onclick="submitTest()">Test abgeben</button>'+
+    '</div>';
+  el.innerHTML=html;
+  const sc=document.querySelector('#ausb-screen .admin-content');if(sc)sc.scrollTop=0;
+}
+function abbruchTest(){laufTest=null;renderTests();}
+async function submitTest(){
+  if(!laufTest)return;
+  const fragen=laufTest.fragen||[];
+  const antworten=[];
+  let punkte=0;let offenText=false;let unbeantwortet=0;
+  fragen.forEach(function(f,i){
+    if(f.typ==='text'){
+      const feld=document.getElementById('azq-'+i);
+      const v=feld?feld.value.trim():'';
+      if(!v)unbeantwortet++;
+      antworten.push({frage:f.frage,typ:'text',antwort:v,korrekt:null});
+      offenText=true;
+    }else{
+      const gew=document.querySelector('input[name="azq'+i+'"]:checked');
+      const idx=gew?parseInt(gew.value,10):null;
+      if(idx===null)unbeantwortet++;
+      const korrekt=(idx!==null&&idx===parseInt(f.richtig,10));
+      if(korrekt)punkte++;
+      antworten.push({frage:f.frage,typ:'mc',optionen:f.optionen||[],richtig:parseInt(f.richtig,10),antwort:idx,korrekt:korrekt});
+    }
+  });
+  if(unbeantwortet>0){
+    if(!confirm(unbeantwortet+' Frage(n) sind noch unbeantwortet. Trotzdem abgeben?'))return;
+  }else{
+    if(!confirm('Test jetzt abgeben?'))return;
+  }
+  const abgabe={
+    test_id:String(laufTest.id),
+    test_titel:laufTest.titel,
+    mitarbeiter_id:String(currentUser.id),
+    mitarbeiter_name:currentUser.name,
+    antworten:antworten,
+    punkte:punkte,
+    max_punkte:fragen.length,
+    bewertet:!offenText
+  };
+  const res=await sb.from('ausbildung_abgaben').insert(abgabe);
+  if(res.error){toast('Fehler beim Abgeben: '+res.error.message,'err');return;}
+  laufTest=null;
+  toast('Test abgegeben','ok');
+  azShowTab('erg');
+}
+
+// ── Ergebnisse (eigene Abgaben) ──
+async function renderErgebnisse(){
+  const el=document.getElementById('azpanel-erg');
+  el.innerHTML='<div class="az-empty">Lade Ergebnisse...</div>';
+  await loadAusbAbgabenEigene();
+  if(!AUSB_ABG.length){el.innerHTML='<div class="a-sec"><div class="a-sec-title">Meine Ergebnisse</div><div class="az-empty">Noch keine Tests abgegeben.</div></div>';return;}
+  let html='<div class="a-sec"><div class="a-sec-title">Meine Ergebnisse</div>';
+  AUSB_ABG.forEach(function(a){
+    html+='<div class="az-card">'+
+      '<div class="az-card-title">'+escH(a.test_titel||'Test')+'</div>'+
+      '<div class="az-card-sub">'+azFmtDT(a.abgegeben_am)+'</div>'+
+      '<div style="margin-top:8px">'+
+      '<span class="az-pill '+(a.bewertet?'ok':'warn')+'">'+(a.bewertet?'Bewertet':'Bewertung offen')+'</span>'+
+      '<span class="az-pill info">'+(a.punkte!=null?a.punkte:'-')+' / '+(a.max_punkte!=null?a.max_punkte:'-')+' Punkte</span>'+
+      '</div>'+
+      (a.kommentar?'<div class="az-muted" style="margin-top:8px"><b>Kommentar Ausbilder:</b> '+escH(a.kommentar)+'</div>':'')+
+      '<div style="margin-top:8px"><button class="btn" ontouchstart="toggleAbgDetail(\''+a.id+'\')" onclick="toggleAbgDetail(\''+a.id+'\')">Details</button></div>'+
+      '<div id="abg-det-'+a.id+'" style="display:none;margin-top:10px"></div>'+
+      '</div>';
+  });
+  html+='</div>';
+  el.innerHTML=html;
+}
+function abgDetailHTML(a){
+  let html='';
+  (a.antworten||[]).forEach(function(x,i){
+    html+='<div class="az-qbox"><div class="az-qnr">Frage '+(i+1)+'</div>'+
+      '<div class="az-qfrage">'+escH(x.frage)+'</div>';
+    if(x.typ==='text'){
+      html+='<div class="az-muted"><b>Antwort:</b> '+(x.antwort?escH(x.antwort):'<i>keine Antwort</i>')+'</div>';
+      if(x.korrekt===true)html+='<div class="az-ansok" style="margin-top:4px">&#10003; als richtig bewertet</div>';
+      if(x.korrekt===false)html+='<div class="az-ansbad" style="margin-top:4px">&#10007; als falsch bewertet</div>';
+    }else{
+      const gew=(x.antwort!=null&&x.optionen&&x.optionen[x.antwort]!=null)?x.optionen[x.antwort]:null;
+      const richtig=(x.optionen&&x.optionen[x.richtig]!=null)?x.optionen[x.richtig]:'';
+      html+='<div class="az-muted"><b>Deine Antwort:</b> '+(gew!==null?escH(gew):'<i>keine Antwort</i>')+'</div>';
+      if(x.korrekt)html+='<div class="az-ansok" style="margin-top:4px">&#10003; richtig</div>';
+      else html+='<div class="az-ansbad" style="margin-top:4px">&#10007; falsch &middot; Richtig waere: '+escH(richtig)+'</div>';
+    }
+    html+='</div>';
+  });
+  return html;
+}
+function toggleAbgDetail(id){
+  const a=AUSB_ABG.find(function(x){return String(x.id)===String(id);});
+  const box=document.getElementById('abg-det-'+id);
+  if(!a||!box)return;
+  if(box.style.display==='none'){box.innerHTML=abgDetailHTML(a);box.style.display='';}
+  else box.style.display='none';
+}
+
+// ── Verwaltung (nur Ausbilder: admin / projektleiter / verwaltung) ──
+function renderVerwaltung(){
+  if(!istAusbilder()){document.getElementById('azpanel-verw').innerHTML='<div class="az-empty">Kein Zugriff.</div>';return;}
+  const el=document.getElementById('azpanel-verw');
+  el.innerHTML=
+    '<div class="az-subnav">'+
+    '<button class="btn '+(verwView==='mat'?'btn-sky':'')+'" ontouchstart="setVerwView(\'mat\')" onclick="setVerwView(\'mat\')">Material</button>'+
+    '<button class="btn '+(verwView==='tests'?'btn-sky':'')+'" ontouchstart="setVerwView(\'tests\')" onclick="setVerwView(\'tests\')">Tests</button>'+
+    '<button class="btn '+(verwView==='abg'?'btn-sky':'')+'" ontouchstart="setVerwView(\'abg\')" onclick="setVerwView(\'abg\')">Abgaben</button>'+
+    '</div>'+
+    '<div id="verw-inhalt"></div>';
+  if(verwView==='mat')renderVerwMat();
+  if(verwView==='tests')renderVerwTests();
+  if(verwView==='abg')renderVerwAbg();
+}
+function setVerwView(v){verwView=v;renderVerwaltung();}
+
+async function renderVerwMat(){
+  const el=document.getElementById('verw-inhalt');
+  el.innerHTML='<div class="az-empty">Lade...</div>';
+  await loadAusbMaterial();
+  const m=matEditId?AUSB_MAT.find(function(x){return String(x.id)===String(matEditId);}):null;
+  let html='<div class="a-sec"><div class="a-sec-title">'+(m?'Material bearbeiten':'Neues Lernmaterial')+'</div>'+
+    '<div class="row"><div class="fg w50"><label>Titel</label><input id="mat-titel" value="'+(m?escH(m.titel):'')+'" placeholder="z.B. Pflanzenliste Stauden"></div>'+
+    '<div class="fg w50"><label>Kategorie</label><input id="mat-kat" value="'+(m?escH(m.kategorie||''):'')+'" placeholder="z.B. Pflanzenkunde"></div></div>'+
+    '<div class="row"><div class="fg w100"><label>Kurzbeschreibung</label><input id="mat-beschr" value="'+(m?escH(m.beschreibung||''):'')+'" placeholder="Worum geht es?"></div></div>'+
+    '<div class="row"><div class="fg w100"><label>Inhalt (Text, optional)</label><textarea id="mat-inhalt" placeholder="Lerntext direkt hier eingeben..." style="min-height:90px">'+(m?escH(m.inhalt||''):'')+'</textarea></div></div>'+
+    '<div class="row"><div class="fg w100"><label>Link (optional, z.B. PDF in Drive)</label><input id="mat-link" value="'+(m?escH(m.link_url||''):'')+'" placeholder="https://..."></div></div>'+
+    '<div style="display:flex;gap:8px">'+
+    '<button class="btn btn-p" ontouchstart="saveMat()" onclick="saveMat()">'+(m?'Aenderung speichern':'Material anlegen')+'</button>'+
+    (m?'<button class="btn" ontouchstart="cancelMatEdit()" onclick="cancelMatEdit()">Abbrechen</button>':'')+
+    '</div></div>';
+  html+='<div class="a-sec"><div class="a-sec-title">Vorhandenes Material ('+AUSB_MAT.length+')</div>';
+  if(!AUSB_MAT.length)html+='<div class="az-empty">Noch kein Material angelegt.</div>';
+  AUSB_MAT.forEach(function(x){
+    html+='<div class="az-card">'+
+      '<div class="az-card-title">'+escH(x.titel)+(x.aktiv?'':' <span class="az-pill warn">inaktiv</span>')+'</div>'+
+      '<div class="az-card-sub">'+escH(x.kategorie||'Allgemein')+' &middot; '+azFmtD(x.erstellt_am)+'</div>'+
+      '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+
+      '<button class="btn" ontouchstart="editMat(\''+x.id+'\')" onclick="editMat(\''+x.id+'\')">Bearbeiten</button>'+
+      '<button class="btn" ontouchstart="toggleMatAktiv(\''+x.id+'\')" onclick="toggleMatAktiv(\''+x.id+'\')">'+(x.aktiv?'Deaktivieren':'Aktivieren')+'</button>'+
+      '<button class="btn btn-r" ontouchstart="delMat(\''+x.id+'\')" onclick="delMat(\''+x.id+'\')">Loeschen</button>'+
+      '</div></div>';
+  });
+  html+='</div>';
+  el.innerHTML=html;
+}
+async function saveMat(){
+  const titel=document.getElementById('mat-titel').value.trim();
+  if(!titel){toast('Titel fehlt','err');return;}
+  const werte={
+    titel:titel,
+    kategorie:document.getElementById('mat-kat').value.trim()||'Allgemein',
+    beschreibung:document.getElementById('mat-beschr').value.trim(),
+    inhalt:document.getElementById('mat-inhalt').value,
+    link_url:document.getElementById('mat-link').value.trim()
+  };
+  let res;
+  if(matEditId)res=await sb.from('ausbildung_material').update(werte).eq('id',matEditId);
+  else{werte.aktiv=true;res=await sb.from('ausbildung_material').insert(werte);}
+  if(res.error){toast('Fehler: '+res.error.message,'err');return;}
+  toast(matEditId?'Gespeichert':'Material angelegt','ok');
+  matEditId=null;renderVerwMat();
+}
+function editMat(id){matEditId=id;renderVerwMat();const sc=document.querySelector('#ausb-screen .admin-content');if(sc)sc.scrollTop=0;}
+function cancelMatEdit(){matEditId=null;renderVerwMat();}
+async function toggleMatAktiv(id){
+  const x=AUSB_MAT.find(function(y){return String(y.id)===String(id);});
+  if(!x)return;
+  const res=await sb.from('ausbildung_material').update({aktiv:!x.aktiv}).eq('id',id);
+  if(res.error){toast('Fehler: '+res.error.message,'err');return;}
+  toast(x.aktiv?'Deaktiviert':'Aktiviert','ok');renderVerwMat();
+}
+async function delMat(id){
+  if(!confirm('Dieses Material wirklich loeschen?'))return;
+  const res=await sb.from('ausbildung_material').delete().eq('id',id);
+  if(res.error){toast('Fehler: '+res.error.message,'err');return;}
+  toast('Geloescht','ok');renderVerwMat();
+}
+
+function leererTest(){return{id:null,titel:'',kategorie:'Pflanzenkunde',beschreibung:'',fragen:[]};}
+async function renderVerwTests(){
+  const el=document.getElementById('verw-inhalt');
+  el.innerHTML='<div class="az-empty">Lade...</div>';
+  await loadAusbTests();
+  if(!tEdit)tEdit=leererTest();
+  renderVerwTestsMitDaten();
+}
+function renderVerwTestsMitDaten(){
+  // Baut die Tests-Ansicht aus dem Speicher (AUSB_TESTS + tEdit) neu auf - ohne DB-Load.
+  const el=document.getElementById('verw-inhalt');
+  if(!el)return;
+  el.innerHTML=bauVerwTestsHTML();
+  fqTypChanged();
+}
+function bauVerwTestsHTML(){
+  let html='<div class="a-sec"><div class="a-sec-title">'+(tEdit.id?'Test bearbeiten':'Neuen Test erstellen')+'</div>'+
+    '<div class="row"><div class="fg w50"><label>Titel</label><input id="te-titel" value="'+escH(tEdit.titel)+'" placeholder="z.B. Pflanzentest Gehoelze 1"></div>'+
+    '<div class="fg w50"><label>Kategorie</label><input id="te-kat" value="'+escH(tEdit.kategorie)+'" placeholder="z.B. Pflanzenkunde"></div></div>'+
+    '<div class="row"><div class="fg w100"><label>Beschreibung (optional)</label><input id="te-beschr" value="'+escH(tEdit.beschreibung)+'" placeholder="Hinweis fuer die Azubis"></div></div>';
+  html+='<div style="margin:10px 0 4px;font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--m)">Fragen ('+tEdit.fragen.length+')</div>';
+  if(!tEdit.fragen.length)html+='<div class="az-empty">Noch keine Fragen. Unten Frage hinzufuegen.</div>';
+  tEdit.fragen.forEach(function(f,i){
+    html+='<div class="az-qbox"><div class="az-qnr">Frage '+(i+1)+' &middot; '+(f.typ==='text'?'Freitext':'Multiple Choice')+'</div>'+
+      '<div class="az-qfrage">'+escH(f.frage)+'</div>';
+    if(f.typ==='mc'){
+      (f.optionen||[]).forEach(function(o,oi){
+        if(String(o||'').trim()==='')return;
+        html+='<div class="az-muted" style="margin-bottom:2px">'+(oi===parseInt(f.richtig,10)?'<span class="az-ansok">&#10003;</span> ':'&middot; ')+escH(o)+'</div>';
+      });
+    }
+    html+='<div style="margin-top:8px"><button class="btn btn-r" style="font-size:11px;padding:4px 8px;min-height:30px" ontouchstart="delFrage('+i+')" onclick="delFrage('+i+')">Frage entfernen</button></div>'+
+      '</div>';
+  });
+  html+='<div style="border-top:1px dashed var(--b);margin:14px 0;padding-top:12px">'+
+    '<div class="row"><div class="fg w100"><label>Neue Frage</label><input id="fq-frage" placeholder="z.B. Wie heisst die Rotbuche botanisch?"></div></div>'+
+    '<div class="row"><div class="fg w50"><label>Typ</label><select id="fq-typ" onchange="fqTypChanged()"><option value="mc">Multiple Choice</option><option value="text">Freitext</option></select></div>'+
+    '<div class="fg w50" id="fq-richtig-wrap"><label>Richtige Antwort</label><select id="fq-richtig"><option value="0">Antwort A</option><option value="1">Antwort B</option><option value="2">Antwort C</option><option value="3">Antwort D</option></select></div></div>'+
+    '<div id="fq-opts">'+
+    '<div class="row"><div class="fg w50"><label>Antwort A</label><input id="fq-o0"></div><div class="fg w50"><label>Antwort B</label><input id="fq-o1"></div></div>'+
+    '<div class="row"><div class="fg w50"><label>Antwort C (optional)</label><input id="fq-o2"></div><div class="fg w50"><label>Antwort D (optional)</label><input id="fq-o3"></div></div>'+
+    '</div>'+
+    '<button class="btn" ontouchstart="addFrage()" onclick="addFrage()">+ Frage hinzufuegen</button>'+
+    '</div>';
+  html+='<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+
+    '<button class="btn btn-p" ontouchstart="saveTest()" onclick="saveTest()">'+(tEdit.id?'Aenderung speichern':'Test speichern')+'</button>'+
+    '<button class="btn" ontouchstart="neuTest()" onclick="neuTest()">'+(tEdit.id?'Abbrechen / Neu':'Formular leeren')+'</button>'+
+    '</div></div>';
+  html+='<div class="a-sec"><div class="a-sec-title">Vorhandene Tests ('+AUSB_TESTS.length+')</div>';
+  if(!AUSB_TESTS.length)html+='<div class="az-empty">Noch keine Tests angelegt.</div>';
+  AUSB_TESTS.forEach(function(t){
+    html+='<div class="az-card">'+
+      '<div class="az-card-title">'+escH(t.titel)+(t.aktiv?'':' <span class="az-pill warn">inaktiv</span>')+'</div>'+
+      '<div class="az-card-sub">'+escH(t.kategorie||'Allgemein')+' &middot; '+(t.fragen||[]).length+' Fragen &middot; '+azFmtD(t.erstellt_am)+'</div>'+
+      '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+
+      '<button class="btn" ontouchstart="editTest(\''+t.id+'\')" onclick="editTest(\''+t.id+'\')">Bearbeiten</button>'+
+      '<button class="btn" ontouchstart="toggleTestAktiv(\''+t.id+'\')" onclick="toggleTestAktiv(\''+t.id+'\')">'+(t.aktiv?'Deaktivieren':'Aktivieren')+'</button>'+
+      '<button class="btn btn-r" ontouchstart="delTest(\''+t.id+'\')" onclick="delTest(\''+t.id+'\')">Loeschen</button>'+
+      '</div></div>';
+  });
+  html+='</div>';
+  return html;
+}
+function tEditLesen(){
+  const t=document.getElementById('te-titel');if(t)tEdit.titel=t.value;
+  const k=document.getElementById('te-kat');if(k)tEdit.kategorie=k.value;
+  const b=document.getElementById('te-beschr');if(b)tEdit.beschreibung=b.value;
+}
+function fqTypChanged(){
+  const typEl=document.getElementById('fq-typ');
+  const typ=typEl?typEl.value:'mc';
+  const opts=document.getElementById('fq-opts');
+  const rw=document.getElementById('fq-richtig-wrap');
+  if(opts)opts.style.display=typ==='mc'?'':'none';
+  if(rw)rw.style.display=typ==='mc'?'':'none';
+}
+function addFrage(){
+  tEditLesen();
+  const frage=document.getElementById('fq-frage').value.trim();
+  if(!frage){toast('Fragetext fehlt','err');return;}
+  const typ=document.getElementById('fq-typ').value;
+  if(typ==='text'){
+    tEdit.fragen.push({frage:frage,typ:'text'});
+  }else{
+    const optionen=[];
+    for(let i=0;i<4;i++){optionen.push(document.getElementById('fq-o'+i).value.trim());}
+    const gefuellt=optionen.filter(function(o){return o!=='';});
+    if(gefuellt.length<2){toast('Mindestens 2 Antworten (A und B) noetig','err');return;}
+    const richtig=parseInt(document.getElementById('fq-richtig').value,10);
+    if(optionen[richtig]===''){toast('Die als richtig markierte Antwort ist leer','err');return;}
+    tEdit.fragen.push({frage:frage,typ:'mc',optionen:optionen,richtig:richtig});
+  }
+  renderVerwTestsMitDaten();
+  toast('Frage hinzugefuegt','ok');
+}
+function delFrage(i){tEditLesen();tEdit.fragen.splice(i,1);renderVerwTestsMitDaten();}
+async function saveTest(){
+  tEditLesen();
+  if(!tEdit.titel.trim()){toast('Titel fehlt','err');return;}
+  if(!tEdit.fragen.length){toast('Mindestens eine Frage noetig','err');return;}
+  const werte={titel:tEdit.titel.trim(),kategorie:tEdit.kategorie.trim()||'Allgemein',beschreibung:tEdit.beschreibung.trim(),fragen:tEdit.fragen};
+  let res;
+  if(tEdit.id)res=await sb.from('ausbildung_tests').update(werte).eq('id',tEdit.id);
+  else{werte.aktiv=true;res=await sb.from('ausbildung_tests').insert(werte);}
+  if(res.error){toast('Fehler: '+res.error.message,'err');return;}
+  toast(tEdit.id?'Test gespeichert':'Test angelegt','ok');
+  tEdit=leererTest();
+  renderVerwTests();
+}
+function neuTest(){tEdit=leererTest();renderVerwTestsMitDaten();}
+function editTest(id){
+  const t=AUSB_TESTS.find(function(x){return String(x.id)===String(id);});
+  if(!t)return;
+  tEdit={id:t.id,titel:t.titel||'',kategorie:t.kategorie||'',beschreibung:t.beschreibung||'',fragen:JSON.parse(JSON.stringify(t.fragen||[]))};
+  renderVerwTestsMitDaten();
+  const sc=document.querySelector('#ausb-screen .admin-content');if(sc)sc.scrollTop=0;
+}
+async function toggleTestAktiv(id){
+  const t=AUSB_TESTS.find(function(x){return String(x.id)===String(id);});
+  if(!t)return;
+  const res=await sb.from('ausbildung_tests').update({aktiv:!t.aktiv}).eq('id',id);
+  if(res.error){toast('Fehler: '+res.error.message,'err');return;}
+  toast(t.aktiv?'Deaktiviert':'Aktiviert','ok');renderVerwTests();
+}
+async function delTest(id){
+  if(!confirm('Diesen Test wirklich loeschen? Bereits vorhandene Abgaben bleiben erhalten.'))return;
+  const res=await sb.from('ausbildung_tests').delete().eq('id',id);
+  if(res.error){toast('Fehler: '+res.error.message,'err');return;}
+  toast('Geloescht','ok');
+  if(tEdit&&String(tEdit.id)===String(id))tEdit=leererTest();
+  renderVerwTests();
+}
+
+async function renderVerwAbg(){
+  const el=document.getElementById('verw-inhalt');
+  el.innerHTML='<div class="az-empty">Lade Abgaben...</div>';
+  await loadAusbAbgabenAlle();
+  let testOpts='<option value="">Alle Tests</option>';
+  const titelListe=[];
+  AUSB_ABG.forEach(function(a){const t=a.test_titel||'Test';if(titelListe.indexOf(t)<0)titelListe.push(t);});
+  titelListe.sort();
+  titelListe.forEach(function(t){testOpts+='<option value="'+escH(t)+'">'+escH(t)+'</option>';});
+  el.innerHTML=
+    '<div class="a-sec"><div class="a-sec-title">Abgaben ('+AUSB_ABG.length+')</div>'+
+    '<div class="row"><div class="fg w50"><label>Test</label><select id="abg-filter-test" onchange="filterVerwAbg()">'+testOpts+'</select></div>'+
+    '<div class="fg w50"><label>Status</label><select id="abg-filter-status" onchange="filterVerwAbg()"><option value="">Alle</option><option value="offen">Bewertung offen</option><option value="fertig">Bewertet</option></select></div></div>'+
+    '<div id="abg-liste"></div></div>';
+  filterVerwAbg();
+}
+function filterVerwAbg(){
+  const ftest=document.getElementById('abg-filter-test').value;
+  const fstatus=document.getElementById('abg-filter-status').value;
+  let items=AUSB_ABG.slice();
+  if(ftest)items=items.filter(function(a){return(a.test_titel||'Test')===ftest;});
+  if(fstatus==='offen')items=items.filter(function(a){return!a.bewertet;});
+  if(fstatus==='fertig')items=items.filter(function(a){return a.bewertet;});
+  const liste=document.getElementById('abg-liste');
+  if(!items.length){liste.innerHTML='<div class="az-empty">Keine Abgaben gefunden.</div>';return;}
+  let html='';
+  items.forEach(function(a){
+    html+='<div class="az-card">'+
+      '<div class="az-card-title">'+escH(a.mitarbeiter_name||'--')+' &middot; '+escH(a.test_titel||'Test')+'</div>'+
+      '<div class="az-card-sub">'+azFmtDT(a.abgegeben_am)+'</div>'+
+      '<div style="margin-top:8px">'+
+      '<span class="az-pill '+(a.bewertet?'ok':'warn')+'">'+(a.bewertet?'Bewertet':'Bewertung offen')+'</span>'+
+      '<span class="az-pill info">'+(a.punkte!=null?a.punkte:'-')+' / '+(a.max_punkte!=null?a.max_punkte:'-')+' Punkte</span>'+
+      '</div>'+
+      '<div style="margin-top:8px"><button class="btn" ontouchstart="toggleVerwAbg(\''+a.id+'\')" onclick="toggleVerwAbg(\''+a.id+'\')">Ansehen / Bewerten</button></div>'+
+      '<div id="vabg-det-'+a.id+'" style="display:none;margin-top:10px"></div>'+
+      '</div>';
+  });
+  liste.innerHTML=html;
+}
+function toggleVerwAbg(id){
+  const a=AUSB_ABG.find(function(x){return String(x.id)===String(id);});
+  const box=document.getElementById('vabg-det-'+id);
+  if(!a||!box)return;
+  if(box.style.display!=='none'){box.style.display='none';return;}
+  let html=abgDetailHTML(a);
+  html+='<div style="border-top:1px dashed var(--b);margin-top:10px;padding-top:10px">'+
+    '<div class="row"><div class="fg w50"><label>Punkte</label><input id="bw-pkt-'+a.id+'" inputmode="decimal" value="'+(a.punkte!=null?a.punkte:'')+'"></div>'+
+    '<div class="fg w50"><label>Max. Punkte</label><input value="'+(a.max_punkte!=null?a.max_punkte:'')+'" disabled></div></div>'+
+    '<div class="row"><div class="fg w100"><label>Kommentar an den Azubi</label><textarea id="bw-kom-'+a.id+'" style="min-height:70px">'+escH(a.kommentar||'')+'</textarea></div></div>'+
+    '<button class="btn btn-p" ontouchstart="saveBewertung(\''+a.id+'\')" onclick="saveBewertung(\''+a.id+'\')">Bewertung speichern</button>'+
+    '</div>';
+  box.innerHTML=html;
+  box.style.display='';
+}
+async function saveBewertung(id){
+  const pktRaw=document.getElementById('bw-pkt-'+id).value.replace(',','.').trim();
+  const pkt=pktRaw===''?null:parseFloat(pktRaw);
+  if(pkt===null||isNaN(pkt)){toast('Bitte Punkte eingeben','err');return;}
+  const kom=document.getElementById('bw-kom-'+id).value.trim();
+  const res=await sb.from('ausbildung_abgaben').update({punkte:pkt,kommentar:kom,bewertet:true}).eq('id',id);
+  if(res.error){toast('Fehler: '+res.error.message,'err');return;}
+  toast('Bewertung gespeichert','ok');
+  renderVerwAbg();
 }
 </script>
 </body>
