@@ -82,6 +82,11 @@ body{background:var(--bg);color:var(--t);font-family:'IBM Plex Sans',sans-serif;
 .az-bild-edit img{width:74px;height:74px;object-fit:cover;border-radius:4px;flex-shrink:0;background:var(--s2);}
 .az-bild-edit-felder{flex:1;min-width:0;}
 .az-bild-edit input{margin-bottom:5px;}
+.bh-card{background:var(--s3);border:1px solid var(--b);border-radius:6px;padding:12px;margin-bottom:8px;}
+.bh-status{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;padding:2px 7px;border-radius:10px;margin-right:4px;}
+.bh-status.entwurf{background:var(--rg);color:var(--o);}
+.bh-status.abgegeben{background:var(--skyg);color:var(--sky);}
+.bh-status.gezeichnet{background:var(--gg);color:var(--gl);}
 .az-muted{font-size:11px;color:var(--m);line-height:1.5;}
 .az-empty{color:var(--m);font-size:11px;padding:12px;text-align:center;}
 .az-subnav{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
@@ -424,12 +429,14 @@ select option{background:var(--s2);}
     <div class="admin-tab act" id="aztab-lernen" ontouchstart="azShowTab('lernen')" onclick="azShowTab('lernen')">Lernen</div>
     <div class="admin-tab" id="aztab-tests" ontouchstart="azShowTab('tests')" onclick="azShowTab('tests')">Tests</div>
     <div class="admin-tab" id="aztab-erg" ontouchstart="azShowTab('erg')" onclick="azShowTab('erg')">Ergebnisse</div>
+    <div class="admin-tab" id="aztab-bh" ontouchstart="azShowTab('bh')" onclick="azShowTab('bh')">Berichtsheft</div>
     <div class="admin-tab" id="aztab-verw" style="display:none" ontouchstart="azShowTab('verw')" onclick="azShowTab('verw')">Verwaltung</div>
   </div>
   <div class="admin-content">
     <div class="admin-panel act" id="azpanel-lernen"></div>
     <div class="admin-panel" id="azpanel-tests"></div>
     <div class="admin-panel" id="azpanel-erg"></div>
+    <div class="admin-panel" id="azpanel-bh"></div>
     <div class="admin-panel" id="azpanel-verw"></div>
   </div>
 </div>
@@ -444,8 +451,7 @@ select option{background:var(--s2);}
     <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
   </div>
   <div class="admin-content">
-    <div class="a-sec"><div class="a-sec-title">Baurechner</div>
-    <div class="az-empty">Der Baurechner ist in Entwicklung und wird hier freigeschaltet, sobald er verfuegbar ist.</div></div>
+    <div class="admin-panel act" id="brpanel-kalk"></div>
   </div>
 </div>
 
@@ -824,7 +830,7 @@ document.getElementById('login-nr').addEventListener('keydown',e=>{if(e.key==='E
 function doLogout(){
   stopVAAutoSave();
   currentUser=null;reports=[];currentId=null;currentRole=null;unterschriftData=null;
-  laufTest=null;tEdit=null;matEditId=null;AUSB_MAT=[];AUSB_TESTS=[];AUSB_ABG=[];
+  laufTest=null;tEdit=null;matEditId=null;bhEditId=null;AUSB_MAT=[];AUSB_TESTS=[];AUSB_ABG=[];AUSB_BH=[];
   ['admin-screen','pl-screen','menu-screen','ausb-screen','br-screen'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('login-nr').value='';document.getElementById('login-pw').value='';
@@ -3918,7 +3924,7 @@ function showTab(name){
 const MODULE_DEFS=[
   {key:'tagesberichte',name:'Tagesberichte',sub:'Zeiterfassung, Berichte, Freigaben'},
   {key:'ausbildung',name:'Ausbildung',sub:'Lernen, Tests, Ergebnisse'},
-  {key:'baurechner',name:'Baurechner',sub:'In Entwicklung'}
+  {key:'baurechner',name:'Baurechner',sub:'Kalkulation Sportplatzbau'}
 ];
 function userModule(u){
   let m=u?u.module:null;
@@ -3973,6 +3979,7 @@ function zumMenue(){
 function openBaurechner(){
   document.getElementById('br-user-name').textContent=currentUser.name;
   document.getElementById('br-screen').style.display='flex';
+  renderKalkPanel('brpanel-kalk');
 }
 
 // ════════════════════════════════════════════════════════════
@@ -3982,6 +3989,8 @@ function openBaurechner(){
 let AUSB_MAT=[],AUSB_TESTS=[],AUSB_ABG=[];
 let laufTest=null,tEdit=null,matEditId=null,verwView='mat';
 let matBilder=[],fqBilder=[];   // Arbeitsstand der Bilder im Verwaltungs-Editor
+let AUSB_BH=[];        // Berichtsheft-Eintraege (Kontext: eigene oder alle)
+let bhEditId=null;     // gerade bearbeiteter Berichtsheft-Eintrag
 const AUSB_BUCKET='ausbildung';  // Supabase-Storage-Bucket
 
 function escH(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -4161,6 +4170,24 @@ function zeichneFqBilder(){
   var el=document.getElementById('fq-bilder-liste');
   if(el)el.innerHTML=bildEditHTML(fqBilder,'f','setFqBild','entfernFqBild');
 }
+// Liefert die 2-Wochen-Periode (Mo-So) fuer ein Datum, ausgerichtet an einem festen Anker.
+// Anker: Montag, 05.01.2026. So sind die Perioden fuer alle Azubis identisch.
+function bhPeriode(datum){
+  var anker=Date.UTC(2026,0,5); // 05.01.2026, ein Montag
+  var d=datum?new Date(datum):new Date();
+  var tag=Date.UTC(d.getFullYear(),d.getMonth(),d.getDate());
+  var diffTage=Math.floor((tag-anker)/86400000);
+  var periodenNr=Math.floor(diffTage/14);
+  var startMs=anker+periodenNr*14*86400000;
+  var endeMs=startMs+13*86400000;
+  var start=new Date(startMs),ende=new Date(endeMs);
+  function iso(x){return x.getUTCFullYear()+'-'+String(x.getUTCMonth()+1).padStart(2,'0')+'-'+String(x.getUTCDate()).padStart(2,'0');}
+  return{nr:periodenNr,start:iso(start),ende:iso(ende)};
+}
+function bhPeriodeLabel(startIso){
+  var p=bhPeriode(startIso);
+  return azFmtD(p.start)+' - '+azFmtD(p.ende);
+}
 function istAusbilder(){return currentUser&&(currentUser.rolle==='admin'||currentUser.rolle==='projektleiter'||currentUser.rolle==='verwaltung');}
 
 // Laedt eine Tabelle vollstaendig in 1000er-Bloecken (Konvention).
@@ -4182,6 +4209,8 @@ async function loadAusbMaterial(){AUSB_MAT=await loadAlle('ausbildung_material',
 async function loadAusbTests(){AUSB_TESTS=await loadAlle('ausbildung_tests','erstellt_am');}
 async function loadAusbAbgabenEigene(){AUSB_ABG=await loadAlle('ausbildung_abgaben','abgegeben_am',function(q){return q.eq('mitarbeiter_id',String(currentUser.id));});}
 async function loadAusbAbgabenAlle(){AUSB_ABG=await loadAlle('ausbildung_abgaben','abgegeben_am');}
+async function loadBHeigene(){AUSB_BH=await loadAlle('ausbildung_berichtsheft','periode_start',function(q){return q.eq('mitarbeiter_id',String(currentUser.id));});}
+async function loadBHalle(){AUSB_BH=await loadAlle('ausbildung_berichtsheft','periode_start');}
 
 function openAusb(){
   document.getElementById('ausb-screen').style.display='flex';
@@ -4200,6 +4229,7 @@ function azShowTab(name){
   if(name==='lernen')renderLernen();
   if(name==='tests')renderTests();
   if(name==='erg')renderErgebnisse();
+  if(name==='bh')renderBerichtsheft();
   if(name==='verw')renderVerwaltung();
 }
 
@@ -4451,6 +4481,117 @@ function toggleAbgDetail(id){
   else box.style.display='none';
 }
 
+// ── Berichtsheft (Azubi-Ansicht) ──
+async function renderBerichtsheft(){
+  var el=document.getElementById('azpanel-bh');
+  el.innerHTML='<div class="az-empty">Lade Berichtsheft...</div>';
+  await loadBHeigene();
+  var bearbeiten=bhEditId?AUSB_BH.find(function(x){return String(x.id)===String(bhEditId);}):null;
+  var aktuelle=bhPeriode(null);
+  // Eintrag fuer die aktuelle Periode schon vorhanden?
+  var vorhandenAktuell=AUSB_BH.find(function(x){return x.periode_start===aktuelle.start;});
+  var html='<div class="a-sec"><div class="a-sec-title">Berichtsheft</div>';
+  if(bearbeiten){
+    html+=bhFormularHTML(bearbeiten);
+  }else{
+    html+='<div class="az-muted" style="margin-bottom:10px">Aktueller Zeitraum: <b>'+bhPeriodeLabel(aktuelle.start)+'</b></div>';
+    if(vorhandenAktuell&&vorhandenAktuell.status!=='entwurf'){
+      html+='<div class="az-muted">Fuer diesen Zeitraum ist bereits ein Bericht abgegeben. Du findest ihn unten.</div>';
+    }else{
+      html+='<button class="btn btn-p" ontouchstart="bhNeu()" onclick="bhNeu()">'+(vorhandenAktuell?'Entwurf fortsetzen':'Neuer Bericht fuer diesen Zeitraum')+'</button>';
+    }
+  }
+  html+='</div>';
+  html+='<div class="a-sec"><div class="a-sec-title">Meine Berichte ('+AUSB_BH.length+')</div>';
+  if(!AUSB_BH.length)html+='<div class="az-empty">Noch keine Berichte angelegt.</div>';
+  AUSB_BH.forEach(function(b){
+    html+='<div class="bh-card">'+
+      '<div class="az-card-title">'+bhPeriodeLabel(b.periode_start)+'</div>'+
+      '<div style="margin-top:6px">'+bhStatusPill(b)+'</div>'+
+      (b.taetigkeiten?'<div class="az-muted" style="margin-top:6px">'+escH(String(b.taetigkeiten).substring(0,120))+(String(b.taetigkeiten).length>120?'...':'')+'</div>':'')+
+      (b.ausbilder_kommentar?'<div class="az-loesung"><b>Ausbilder:</b> '+escH(b.ausbilder_kommentar)+'</div>':'')+
+      '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+
+      (b.status==='entwurf'?'<button class="btn" ontouchstart="bhBearbeiten(\''+b.id+'\')" onclick="bhBearbeiten(\''+b.id+'\')">Bearbeiten</button>':'<button class="btn" ontouchstart="bhAnsehen(\''+b.id+'\')" onclick="bhAnsehen(\''+b.id+'\')">Ansehen</button>')+
+      '</div></div>';
+  });
+  html+='</div>';
+  el.innerHTML=html;
+}
+function bhStatusPill(b){
+  if(b.status==='gezeichnet')return'<span class="bh-status gezeichnet">Gegengezeichnet</span>';
+  if(b.status==='abgegeben')return'<span class="bh-status abgegeben">Abgegeben</span>';
+  return'<span class="bh-status entwurf">Entwurf</span>';
+}
+function bhFormularHTML(b){
+  var nurLesen=(b.status&&b.status!=='entwurf');
+  var dis=nurLesen?' disabled':'';
+  var h='<div class="az-muted" style="margin-bottom:10px">Zeitraum: <b>'+bhPeriodeLabel(b.periode_start)+'</b></div>'+
+    '<div class="row"><div class="fg w100"><label>Betriebliche Taetigkeiten</label><textarea id="bh-tae" style="min-height:110px"'+dis+' placeholder="Was hast du in diesen zwei Wochen im Betrieb gemacht?">'+escH(b.taetigkeiten||'')+'</textarea></div></div>'+
+    '<div class="row"><div class="fg w100"><label>Berufsschule / Unterweisung (optional)</label><textarea id="bh-schule" style="min-height:70px"'+dis+' placeholder="Themen aus Berufsschule oder Unterweisung">'+escH(b.schule||'')+'</textarea></div></div>'+
+    '<div class="row"><div class="fg w100"><label>Was habe ich gelernt? (optional)</label><textarea id="bh-gelernt" style="min-height:70px"'+dis+' placeholder="Neue Kenntnisse, Fertigkeiten">'+escH(b.gelernt||'')+'</textarea></div></div>';
+  if(!nurLesen){
+    h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">'+
+      '<button class="btn" ontouchstart="bhSpeichern(false)" onclick="bhSpeichern(false)">Entwurf speichern</button>'+
+      '<button class="btn btn-p" ontouchstart="bhSpeichern(true)" onclick="bhSpeichern(true)">Abgeben</button>'+
+      '<button class="btn" ontouchstart="bhAbbrechen()" onclick="bhAbbrechen()">Abbrechen</button>'+
+      '</div>';
+    if(b.ausbilder_kommentar)h+='<div class="az-loesung" style="margin-top:8px"><b>Ausbilder:</b> '+escH(b.ausbilder_kommentar)+'</div>';
+  }else{
+    h+='<div style="margin-top:6px">'+bhStatusPill(b)+'</div>';
+    if(b.ausbilder_kommentar)h+='<div class="az-loesung"><b>Ausbilder:</b> '+escH(b.ausbilder_kommentar)+'</div>';
+    h+='<div style="margin-top:8px"><button class="btn" ontouchstart="bhAbbrechen()" onclick="bhAbbrechen()">Zurueck</button></div>';
+  }
+  return h;
+}
+function bhNeu(){
+  var p=bhPeriode(null);
+  var vorhanden=AUSB_BH.find(function(x){return x.periode_start===p.start;});
+  bhEditId=vorhanden?vorhanden.id:'neu';
+  if(!vorhanden){
+    AUSB_BH.unshift({id:'neu',periode_start:p.start,status:'entwurf',taetigkeiten:'',schule:'',gelernt:''});
+  }
+  renderBHFormularNur();
+}
+function bhBearbeiten(id){bhEditId=id;renderBHFormularNur();}
+function bhAnsehen(id){bhEditId=id;renderBHFormularNur();}
+function bhAbbrechen(){
+  bhEditId=null;
+  AUSB_BH=AUSB_BH.filter(function(x){return String(x.id)!=='neu';});
+  renderBerichtsheft();
+}
+function renderBHFormularNur(){
+  var b=AUSB_BH.find(function(x){return String(x.id)===String(bhEditId);});
+  if(!b){renderBerichtsheft();return;}
+  var el=document.getElementById('azpanel-bh');
+  el.innerHTML='<div class="a-sec"><div class="a-sec-title">Berichtsheft</div>'+bhFormularHTML(b)+'</div>';
+  var sc=document.querySelector('#ausb-screen .admin-content');if(sc)sc.scrollTop=0;
+}
+async function bhSpeichern(abgeben){
+  var b=AUSB_BH.find(function(x){return String(x.id)===String(bhEditId);});
+  if(!b)return;
+  var tae=(document.getElementById('bh-tae')||{value:''}).value.trim();
+  if(abgeben&&!tae){toast('Bitte zuerst die Taetigkeiten eintragen','err');return;}
+  var werte={
+    mitarbeiter_id:String(currentUser.id),
+    mitarbeiter_name:currentUser.name,
+    periode_start:b.periode_start,
+    periode_ende:bhPeriode(b.periode_start).ende,
+    taetigkeiten:tae,
+    schule:(document.getElementById('bh-schule')||{value:''}).value.trim(),
+    gelernt:(document.getElementById('bh-gelernt')||{value:''}).value.trim(),
+    status:abgeben?'abgegeben':'entwurf'
+  };
+  if(abgeben&&!confirm('Bericht fuer '+bhPeriodeLabel(b.periode_start)+' abgeben? Danach ist er nicht mehr aenderbar.'))return;
+  var res;
+  if(b.id&&b.id!=='neu')res=await sb.from('ausbildung_berichtsheft').update(werte).eq('id',b.id);
+  else res=await sb.from('ausbildung_berichtsheft').insert(werte);
+  if(res.error){toast('Fehler: '+res.error.message,'err');return;}
+  toast(abgeben?'Bericht abgegeben':'Entwurf gespeichert','ok');
+  bhEditId=null;
+  AUSB_BH=AUSB_BH.filter(function(x){return String(x.id)!=='neu';});
+  renderBerichtsheft();
+}
+
 // ── Verwaltung (nur Ausbilder: admin / projektleiter / verwaltung) ──
 function renderVerwaltung(){
   if(!istAusbilder()){document.getElementById('azpanel-verw').innerHTML='<div class="az-empty">Kein Zugriff.</div>';return;}
@@ -4460,11 +4601,13 @@ function renderVerwaltung(){
     '<button class="btn '+(verwView==='mat'?'btn-sky':'')+'" ontouchstart="setVerwView(\'mat\')" onclick="setVerwView(\'mat\')">Material</button>'+
     '<button class="btn '+(verwView==='tests'?'btn-sky':'')+'" ontouchstart="setVerwView(\'tests\')" onclick="setVerwView(\'tests\')">Tests</button>'+
     '<button class="btn '+(verwView==='abg'?'btn-sky':'')+'" ontouchstart="setVerwView(\'abg\')" onclick="setVerwView(\'abg\')">Abgaben</button>'+
+    '<button class="btn '+(verwView==='bh'?'btn-sky':'')+'" ontouchstart="setVerwView(\'bh\')" onclick="setVerwView(\'bh\')">Berichtshefte</button>'+
     '</div>'+
     '<div id="verw-inhalt"></div>';
   if(verwView==='mat')renderVerwMat();
   if(verwView==='tests')renderVerwTests();
   if(verwView==='abg')renderVerwAbg();
+  if(verwView==='bh')renderVerwBH();
 }
 function setVerwView(v){verwView=v;renderVerwaltung();}
 
@@ -4825,6 +4968,78 @@ async function saveBewertung(id){
   if(res.error){toast('Fehler: '+res.error.message,'err');return;}
   toast('Bewertung gespeichert','ok');
   renderVerwAbg();
+}
+
+// ── Verwaltung: Berichtshefte (Ausbilder-Uebersicht) ──
+async function renderVerwBH(){
+  var el=document.getElementById('verw-inhalt');
+  el.innerHTML='<div class="az-empty">Lade Berichtshefte...</div>';
+  await loadBHalle();
+  // Namen fuer den Filter sammeln
+  var namen=[];
+  AUSB_BH.forEach(function(b){var n=b.mitarbeiter_name||'--';if(namen.indexOf(n)<0)namen.push(n);});
+  namen.sort();
+  var nameOpts='<option value="">Alle Azubis</option>';
+  namen.forEach(function(n){nameOpts+='<option value="'+escH(n)+'">'+escH(n)+'</option>';});
+  el.innerHTML='<div class="a-sec"><div class="a-sec-title">Berichtshefte ('+AUSB_BH.length+')</div>'+
+    '<div class="row"><div class="fg w50"><label>Azubi</label><select id="bh-filter-name" onchange="filterVerwBH()">'+nameOpts+'</select></div>'+
+    '<div class="fg w50"><label>Status</label><select id="bh-filter-status" onchange="filterVerwBH()"><option value="">Alle</option><option value="abgegeben">Abgegeben (offen)</option><option value="gezeichnet">Gegengezeichnet</option><option value="entwurf">Entwurf</option></select></div></div>'+
+    '<div id="bh-liste"></div></div>';
+  filterVerwBH();
+}
+function filterVerwBH(){
+  var fname=document.getElementById('bh-filter-name').value;
+  var fstatus=document.getElementById('bh-filter-status').value;
+  var items=AUSB_BH.slice();
+  if(fname)items=items.filter(function(b){return(b.mitarbeiter_name||'--')===fname;});
+  if(fstatus)items=items.filter(function(b){return(b.status||'entwurf')===fstatus;});
+  var liste=document.getElementById('bh-liste');
+  if(!items.length){liste.innerHTML='<div class="az-empty">Keine Berichtshefte gefunden.</div>';return;}
+  var html='';
+  items.forEach(function(b){
+    html+='<div class="bh-card">'+
+      '<div class="az-card-title">'+escH(b.mitarbeiter_name||'--')+' &middot; '+bhPeriodeLabel(b.periode_start)+'</div>'+
+      '<div style="margin-top:6px">'+bhStatusPill(b)+'</div>'+
+      '<div style="margin-top:8px"><button class="btn" ontouchstart="toggleVerwBH(\''+b.id+'\')" onclick="toggleVerwBH(\''+b.id+'\')">Ansehen</button></div>'+
+      '<div id="vbh-det-'+b.id+'" style="display:none;margin-top:10px"></div>'+
+      '</div>';
+  });
+  liste.innerHTML=html;
+}
+function toggleVerwBH(id){
+  var b=AUSB_BH.find(function(x){return String(x.id)===String(id);});
+  var box=document.getElementById('vbh-det-'+id);
+  if(!b||!box)return;
+  if(box.style.display!=='none'){box.style.display='none';return;}
+  var h='';
+  h+='<div class="az-qbox"><div class="az-qnr">Betriebliche Taetigkeiten</div><div class="az-muted" style="white-space:pre-wrap">'+escH(b.taetigkeiten||'--')+'</div></div>';
+  if(b.schule)h+='<div class="az-qbox"><div class="az-qnr">Berufsschule / Unterweisung</div><div class="az-muted" style="white-space:pre-wrap">'+escH(b.schule)+'</div></div>';
+  if(b.gelernt)h+='<div class="az-qbox"><div class="az-qnr">Was gelernt</div><div class="az-muted" style="white-space:pre-wrap">'+escH(b.gelernt)+'</div></div>';
+  if(b.status==='entwurf'){
+    h+='<div class="az-muted"><i>Dieser Bericht ist noch ein Entwurf und wurde vom Azubi nicht abgegeben.</i></div>';
+  }else{
+    h+='<div style="border-top:1px dashed var(--b);margin-top:10px;padding-top:10px">'+
+      '<div class="row"><div class="fg w100"><label>Kommentar an den Azubi</label><textarea id="bhk-'+b.id+'" style="min-height:60px">'+escH(b.ausbilder_kommentar||'')+'</textarea></div></div>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
+      '<button class="btn" ontouchstart="bhKommentarSpeichern(\''+b.id+'\')" onclick="bhKommentarSpeichern(\''+b.id+'\')">Kommentar speichern</button>'+
+      (b.status!=='gezeichnet'?'<button class="btn btn-p" ontouchstart="bhGegenzeichnen(\''+b.id+'\')" onclick="bhGegenzeichnen(\''+b.id+'\')">Gegenzeichnen</button>':'')+
+      '</div></div>';
+  }
+  box.innerHTML=h;
+  box.style.display='';
+}
+async function bhKommentarSpeichern(id){
+  var kom=(document.getElementById('bhk-'+id)||{value:''}).value.trim();
+  var res=await sb.from('ausbildung_berichtsheft').update({ausbilder_kommentar:kom}).eq('id',id);
+  if(res.error){toast('Fehler: '+res.error.message,'err');return;}
+  toast('Kommentar gespeichert','ok');renderVerwBH();
+}
+async function bhGegenzeichnen(id){
+  if(!confirm('Diesen Bericht als gegengezeichnet markieren?'))return;
+  var kom=(document.getElementById('bhk-'+id)||{value:''}).value.trim();
+  var res=await sb.from('ausbildung_berichtsheft').update({status:'gezeichnet',ausbilder_kommentar:kom,gezeichnet_von:currentUser.name,gezeichnet_am:new Date().toISOString()}).eq('id',id);
+  if(res.error){toast('Fehler: '+res.error.message,'err');return;}
+  toast('Gegengezeichnet','ok');renderVerwBH();
 }
 </script>
 </body>
