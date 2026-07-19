@@ -87,6 +87,15 @@ body{background:var(--bg);color:var(--t);font-family:'IBM Plex Sans',sans-serif;
 .bh-status.entwurf{background:var(--rg);color:var(--o);}
 .bh-status.abgegeben{background:var(--skyg);color:var(--sky);}
 .bh-status.gezeichnet{background:var(--gg);color:var(--gl);}
+.bh-woche-titel{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--earth);margin:14px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--b);}
+.bh-tag{background:var(--s2);border:1px solid var(--b);border-radius:6px;padding:10px;margin-bottom:8px;}
+.bh-tag-kopf{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+.bh-tag-name{font-size:12px;font-weight:600;color:var(--c);min-width:104px;}
+.bh-tag-status{font-size:11px;padding:6px 8px;width:auto;min-width:120px;flex:0 0 auto;}
+.bh-tag-wetter{font-size:11px;padding:6px 8px;width:auto;flex:1;min-width:90px;}
+.bh-tag-tae textarea{min-height:44px;}
+.bh-tag.frei .bh-tag-tae{display:none;}
+.bh-summe{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--m);margin:6px 0 2px;}
 .az-muted{font-size:11px;color:var(--m);line-height:1.5;}
 .az-empty{color:var(--m);font-size:11px;padding:12px;text-align:center;}
 .az-subnav{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
@@ -830,7 +839,7 @@ document.getElementById('login-nr').addEventListener('keydown',e=>{if(e.key==='E
 function doLogout(){
   stopVAAutoSave();
   currentUser=null;reports=[];currentId=null;currentRole=null;unterschriftData=null;
-  laufTest=null;tEdit=null;matEditId=null;bhEditId=null;AUSB_MAT=[];AUSB_TESTS=[];AUSB_ABG=[];AUSB_BH=[];
+  laufTest=null;tEdit=null;matEditId=null;bhEditId=null;bhArbeit=null;AUSB_MAT=[];AUSB_TESTS=[];AUSB_ABG=[];AUSB_BH=[];
   ['admin-screen','pl-screen','menu-screen','ausb-screen','br-screen'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('login-nr').value='';document.getElementById('login-pw').value='';
@@ -4482,33 +4491,56 @@ function toggleAbgDetail(id){
 }
 
 // ── Berichtsheft (Azubi-Ansicht) ──
+// Wochentage (Mo-Fr) einer Woche ab einem Montag (ISO-Datum).
+var BH_TAGE=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag'];
+var BH_STATUS=[['arbeit','Betrieb'],['schule','Berufsschule'],['ulu','ULU-Lehrgang'],['urlaub','Urlaub'],['krank','Krank'],['ausfall','Ausfall']];
+function bhAddTage(startIso,n){
+  var d=new Date(startIso+'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate()+n);
+  return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');
+}
+// Leeres Tagesgeruest fuer eine 2-Wochen-Periode: 2 Wochen x 5 Arbeitstage.
+function bhLeereTage(periodeStart){
+  var wochen=[];
+  for(var w=0;w<2;w++){
+    var wStart=bhAddTage(periodeStart,w*7);
+    var tage=[];
+    for(var t=0;t<5;t++){
+      tage.push({datum:bhAddTage(wStart,t),status:'arbeit',taetigkeit:'',wetter:''});
+    }
+    wochen.push({start:wStart,tage:tage});
+  }
+  return wochen;
+}
+// Vorhandene Tage laden oder frisch anlegen (robust gegen fehlende Struktur).
+function bhTageOf(b){
+  if(b&&Array.isArray(b.tage)&&b.tage.length)return b.tage;
+  return bhLeereTage(b.periode_start);
+}
+
 async function renderBerichtsheft(){
   var el=document.getElementById('azpanel-bh');
   el.innerHTML='<div class="az-empty">Lade Berichtsheft...</div>';
   await loadBHeigene();
-  var bearbeiten=bhEditId?AUSB_BH.find(function(x){return String(x.id)===String(bhEditId);}):null;
   var aktuelle=bhPeriode(null);
-  // Eintrag fuer die aktuelle Periode schon vorhanden?
   var vorhandenAktuell=AUSB_BH.find(function(x){return x.periode_start===aktuelle.start;});
-  var html='<div class="a-sec"><div class="a-sec-title">Berichtsheft</div>';
-  if(bearbeiten){
-    html+=bhFormularHTML(bearbeiten);
+  var html='<div class="a-sec"><div class="a-sec-title">Ausbildungsnachweis</div>'+
+    '<div class="az-muted" style="margin-bottom:10px">Aktueller Zeitraum: <b>'+bhPeriodeLabel(aktuelle.start)+'</b>. Trage fuer jeden Arbeitstag deine Taetigkeiten ein. Die Abgabe erfolgt alle zwei Wochen.</div>';
+  if(vorhandenAktuell&&vorhandenAktuell.status!=='entwurf'){
+    html+='<div class="az-muted">Fuer diesen Zeitraum ist bereits ein Nachweis abgegeben. Du findest ihn unten.</div>';
   }else{
-    html+='<div class="az-muted" style="margin-bottom:10px">Aktueller Zeitraum: <b>'+bhPeriodeLabel(aktuelle.start)+'</b></div>';
-    if(vorhandenAktuell&&vorhandenAktuell.status!=='entwurf'){
-      html+='<div class="az-muted">Fuer diesen Zeitraum ist bereits ein Bericht abgegeben. Du findest ihn unten.</div>';
-    }else{
-      html+='<button class="btn btn-p" ontouchstart="bhNeu()" onclick="bhNeu()">'+(vorhandenAktuell?'Entwurf fortsetzen':'Neuer Bericht fuer diesen Zeitraum')+'</button>';
-    }
+    html+='<button class="btn btn-p" ontouchstart="bhOeffnen()" onclick="bhOeffnen()">'+(vorhandenAktuell?'Entwurf fortsetzen':'Nachweis fuer diesen Zeitraum ausfuellen')+'</button>';
   }
   html+='</div>';
-  html+='<div class="a-sec"><div class="a-sec-title">Meine Berichte ('+AUSB_BH.length+')</div>';
-  if(!AUSB_BH.length)html+='<div class="az-empty">Noch keine Berichte angelegt.</div>';
+  html+='<div class="a-sec"><div class="a-sec-title">Meine Nachweise ('+AUSB_BH.length+')</div>';
+  if(!AUSB_BH.length)html+='<div class="az-empty">Noch kein Nachweis angelegt.</div>';
   AUSB_BH.forEach(function(b){
+    var tage=bhTageOf(b);
+    var befuellt=0,gesamt=0;
+    tage.forEach(function(w){w.tage.forEach(function(t){gesamt++;if(t.status!=='arbeit'||String(t.taetigkeit||'').trim()!=='')befuellt++;});});
     html+='<div class="bh-card">'+
       '<div class="az-card-title">'+bhPeriodeLabel(b.periode_start)+'</div>'+
-      '<div style="margin-top:6px">'+bhStatusPill(b)+'</div>'+
-      (b.taetigkeiten?'<div class="az-muted" style="margin-top:6px">'+escH(String(b.taetigkeiten).substring(0,120))+(String(b.taetigkeiten).length>120?'...':'')+'</div>':'')+
+      '<div style="margin-top:6px">'+bhStatusPill(b)+' <span class="az-pill">'+befuellt+' / '+gesamt+' Tagen ausgefuellt</span></div>'+
       (b.ausbilder_kommentar?'<div class="az-loesung"><b>Ausbilder:</b> '+escH(b.ausbilder_kommentar)+'</div>':'')+
       '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+
       (b.status==='entwurf'?'<button class="btn" ontouchstart="bhBearbeiten(\''+b.id+'\')" onclick="bhBearbeiten(\''+b.id+'\')">Bearbeiten</button>':'<button class="btn" ontouchstart="bhAnsehen(\''+b.id+'\')" onclick="bhAnsehen(\''+b.id+'\')">Ansehen</button>')+
@@ -4522,13 +4554,51 @@ function bhStatusPill(b){
   if(b.status==='abgegeben')return'<span class="bh-status abgegeben">Abgegeben</span>';
   return'<span class="bh-status entwurf">Entwurf</span>';
 }
+// Arbeitsstand des offenen Nachweises (damit Tippen nicht verloren geht)
+var bhArbeit=null;
+function bhOeffnen(){
+  var p=bhPeriode(null);
+  var vorhanden=AUSB_BH.find(function(x){return x.periode_start===p.start;});
+  if(vorhanden){bhArbeit=JSON.parse(JSON.stringify(vorhanden));bhArbeit.tage=bhTageOf(vorhanden);}
+  else bhArbeit={id:'neu',periode_start:p.start,periode_ende:p.ende,status:'entwurf',tage:bhLeereTage(p.start),schule:'',gelernt:''};
+  bhEditId=bhArbeit.id;
+  renderBHFormular();
+}
+function bhBearbeiten(id){
+  var b=AUSB_BH.find(function(x){return String(x.id)===String(id);});
+  if(!b)return;
+  bhArbeit=JSON.parse(JSON.stringify(b));bhArbeit.tage=bhTageOf(b);
+  bhEditId=id;renderBHFormular();
+}
+function bhAnsehen(id){bhBearbeiten(id);}
+function bhAbbrechen(){bhArbeit=null;bhEditId=null;renderBerichtsheft();}
+function renderBHFormular(){
+  var el=document.getElementById('azpanel-bh');
+  if(!bhArbeit){renderBerichtsheft();return;}
+  el.innerHTML='<div class="a-sec"><div class="a-sec-title">Ausbildungsnachweis</div>'+bhFormularHTML(bhArbeit)+'</div>';
+  var sc=document.querySelector('#ausb-screen .admin-content');if(sc)sc.scrollTop=0;
+}
 function bhFormularHTML(b){
   var nurLesen=(b.status&&b.status!=='entwurf');
   var dis=nurLesen?' disabled':'';
-  var h='<div class="az-muted" style="margin-bottom:10px">Zeitraum: <b>'+bhPeriodeLabel(b.periode_start)+'</b></div>'+
-    '<div class="row"><div class="fg w100"><label>Betriebliche Taetigkeiten</label><textarea id="bh-tae" style="min-height:110px"'+dis+' placeholder="Was hast du in diesen zwei Wochen im Betrieb gemacht?">'+escH(b.taetigkeiten||'')+'</textarea></div></div>'+
-    '<div class="row"><div class="fg w100"><label>Berufsschule / Unterweisung (optional)</label><textarea id="bh-schule" style="min-height:70px"'+dis+' placeholder="Themen aus Berufsschule oder Unterweisung">'+escH(b.schule||'')+'</textarea></div></div>'+
-    '<div class="row"><div class="fg w100"><label>Was habe ich gelernt? (optional)</label><textarea id="bh-gelernt" style="min-height:70px"'+dis+' placeholder="Neue Kenntnisse, Fertigkeiten">'+escH(b.gelernt||'')+'</textarea></div></div>';
+  var h='<div class="az-muted" style="margin-bottom:10px">Zeitraum: <b>'+bhPeriodeLabel(b.periode_start)+'</b></div>';
+  b.tage.forEach(function(woche,wi){
+    h+='<div class="bh-woche-titel">Woche '+(wi+1)+' &middot; ab '+azFmtD(woche.start)+'</div>';
+    woche.tage.forEach(function(tag,ti){
+      var frei=(tag.status!=='arbeit'&&tag.status!=='schule'&&tag.status!=='ulu');
+      h+='<div class="bh-tag'+(frei?' frei':'')+'" id="bhtag-'+wi+'-'+ti+'">'+
+        '<div class="bh-tag-kopf">'+
+        '<span class="bh-tag-name">'+BH_TAGE[ti]+'<br><span class="az-pill">'+azFmtD(tag.datum)+'</span></span>'+
+        '<select class="bh-tag-status" id="bhs-'+wi+'-'+ti+'"'+dis+' onchange="bhStatusChange('+wi+','+ti+',this.value)">'+
+        BH_STATUS.map(function(s){return '<option value="'+s[0]+'"'+(tag.status===s[0]?' selected':'')+'>'+s[1]+'</option>';}).join('')+
+        '</select>'+
+        '<input class="bh-tag-wetter" id="bhw-'+wi+'-'+ti+'"'+dis+' value="'+escH(tag.wetter||'')+'" placeholder="Wetter" oninput="bhFeld('+wi+','+ti+',\'wetter\',this.value)">'+
+        '</div>'+
+        '<div class="bh-tag-tae"><textarea id="bht-'+wi+'-'+ti+'"'+dis+' placeholder="Taetigkeiten an diesem Tag" oninput="bhFeld('+wi+','+ti+',\'taetigkeit\',this.value)">'+escH(tag.taetigkeit||'')+'</textarea></div>'+
+        '</div>';
+    });
+  });
+  h+='<div class="row" style="margin-top:12px"><div class="fg w100"><label>Berufsschule / Unterweisung: behandelte Themen (optional)</label><textarea id="bh-schule" style="min-height:60px"'+dis+' placeholder="Ausfuehrliche Themen, nicht nur Faecher">'+escH(b.schule||'')+'</textarea></div></div>';
   if(!nurLesen){
     h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">'+
       '<button class="btn" ontouchstart="bhSpeichern(false)" onclick="bhSpeichern(false)">Entwurf speichern</button>'+
@@ -4543,53 +4613,44 @@ function bhFormularHTML(b){
   }
   return h;
 }
-function bhNeu(){
-  var p=bhPeriode(null);
-  var vorhanden=AUSB_BH.find(function(x){return x.periode_start===p.start;});
-  bhEditId=vorhanden?vorhanden.id:'neu';
-  if(!vorhanden){
-    AUSB_BH.unshift({id:'neu',periode_start:p.start,status:'entwurf',taetigkeiten:'',schule:'',gelernt:''});
+function bhFeld(wi,ti,feld,wert){if(bhArbeit&&bhArbeit.tage[wi]&&bhArbeit.tage[wi].tage[ti])bhArbeit.tage[wi].tage[ti][feld]=wert;}
+function bhStatusChange(wi,ti,wert){
+  bhFeld(wi,ti,'status',wert);
+  // Tagesbox ein-/ausblenden ohne Neuaufbau (getippte Texte bleiben)
+  var box=document.getElementById('bhtag-'+wi+'-'+ti);
+  if(box){
+    var frei=(wert!=='arbeit'&&wert!=='schule'&&wert!=='ulu');
+    if(frei)box.classList.add('frei');else box.classList.remove('frei');
   }
-  renderBHFormularNur();
-}
-function bhBearbeiten(id){bhEditId=id;renderBHFormularNur();}
-function bhAnsehen(id){bhEditId=id;renderBHFormularNur();}
-function bhAbbrechen(){
-  bhEditId=null;
-  AUSB_BH=AUSB_BH.filter(function(x){return String(x.id)!=='neu';});
-  renderBerichtsheft();
-}
-function renderBHFormularNur(){
-  var b=AUSB_BH.find(function(x){return String(x.id)===String(bhEditId);});
-  if(!b){renderBerichtsheft();return;}
-  var el=document.getElementById('azpanel-bh');
-  el.innerHTML='<div class="a-sec"><div class="a-sec-title">Berichtsheft</div>'+bhFormularHTML(b)+'</div>';
-  var sc=document.querySelector('#ausb-screen .admin-content');if(sc)sc.scrollTop=0;
 }
 async function bhSpeichern(abgeben){
-  var b=AUSB_BH.find(function(x){return String(x.id)===String(bhEditId);});
-  if(!b)return;
-  var tae=(document.getElementById('bh-tae')||{value:''}).value.trim();
-  if(abgeben&&!tae){toast('Bitte zuerst die Taetigkeiten eintragen','err');return;}
+  if(!bhArbeit)return;
+  // Mindestpruefung bei Abgabe: jeder Arbeitstag braucht einen Eintrag ODER einen Nicht-Arbeit-Status
+  if(abgeben){
+    var luecke=null;
+    bhArbeit.tage.forEach(function(w,wi){w.tage.forEach(function(t,ti){
+      if(luecke)return;
+      var frei=(t.status!=='arbeit'&&t.status!=='schule'&&t.status!=='ulu');
+      if(!frei&&String(t.taetigkeit||'').trim()===''){luecke=BH_TAGE[ti]+' (Woche '+(wi+1)+')';}
+    });});
+    if(luecke){toast('Bitte noch ausfuellen: '+luecke+' - oder Status auf Urlaub/Krank/Ausfall setzen','err');return;}
+    if(!confirm('Nachweis fuer '+bhPeriodeLabel(bhArbeit.periode_start)+' abgeben? Danach ist er nicht mehr aenderbar.'))return;
+  }
   var werte={
     mitarbeiter_id:String(currentUser.id),
     mitarbeiter_name:currentUser.name,
-    periode_start:b.periode_start,
-    periode_ende:bhPeriode(b.periode_start).ende,
-    taetigkeiten:tae,
+    periode_start:bhArbeit.periode_start,
+    periode_ende:bhPeriode(bhArbeit.periode_start).ende,
+    tage:bhArbeit.tage,
     schule:(document.getElementById('bh-schule')||{value:''}).value.trim(),
-    gelernt:(document.getElementById('bh-gelernt')||{value:''}).value.trim(),
     status:abgeben?'abgegeben':'entwurf'
   };
-  if(abgeben&&!confirm('Bericht fuer '+bhPeriodeLabel(b.periode_start)+' abgeben? Danach ist er nicht mehr aenderbar.'))return;
   var res;
-  if(b.id&&b.id!=='neu')res=await sb.from('ausbildung_berichtsheft').update(werte).eq('id',b.id);
+  if(bhArbeit.id&&bhArbeit.id!=='neu')res=await sb.from('ausbildung_berichtsheft').update(werte).eq('id',bhArbeit.id);
   else res=await sb.from('ausbildung_berichtsheft').insert(werte);
   if(res.error){toast('Fehler: '+res.error.message,'err');return;}
-  toast(abgeben?'Bericht abgegeben':'Entwurf gespeichert','ok');
-  bhEditId=null;
-  AUSB_BH=AUSB_BH.filter(function(x){return String(x.id)!=='neu';});
-  renderBerichtsheft();
+  toast(abgeben?'Nachweis abgegeben':'Entwurf gespeichert','ok');
+  bhArbeit=null;bhEditId=null;renderBerichtsheft();
 }
 
 // ── Verwaltung (nur Ausbilder: admin / projektleiter / verwaltung) ──
@@ -5012,9 +5073,20 @@ function toggleVerwBH(id){
   if(!b||!box)return;
   if(box.style.display!=='none'){box.style.display='none';return;}
   var h='';
-  h+='<div class="az-qbox"><div class="az-qnr">Betriebliche Taetigkeiten</div><div class="az-muted" style="white-space:pre-wrap">'+escH(b.taetigkeiten||'--')+'</div></div>';
+  var tage=bhTageOf(b);
+  tage.forEach(function(woche,wi){
+    h+='<div class="bh-woche-titel">Woche '+(wi+1)+' &middot; ab '+azFmtD(woche.start)+'</div>';
+    woche.tage.forEach(function(t,ti){
+      var stLabel=(BH_STATUS.filter(function(s){return s[0]===t.status;})[0]||['','Betrieb'])[1];
+      var frei=(t.status!=='arbeit'&&t.status!=='schule'&&t.status!=='ulu');
+      h+='<div class="bh-tag"><div class="bh-tag-kopf"><span class="bh-tag-name">'+BH_TAGE[ti]+' <span class="az-pill">'+azFmtD(t.datum)+'</span></span>'+
+        '<span class="az-pill '+(frei?'warn':'info')+'">'+escH(stLabel)+'</span>'+
+        (t.wetter?'<span class="az-pill">'+escH(t.wetter)+'</span>':'')+'</div>'+
+        (frei?'':'<div class="az-muted" style="white-space:pre-wrap">'+escH(t.taetigkeit||'--')+'</div>')+
+        '</div>';
+    });
+  });
   if(b.schule)h+='<div class="az-qbox"><div class="az-qnr">Berufsschule / Unterweisung</div><div class="az-muted" style="white-space:pre-wrap">'+escH(b.schule)+'</div></div>';
-  if(b.gelernt)h+='<div class="az-qbox"><div class="az-qnr">Was gelernt</div><div class="az-muted" style="white-space:pre-wrap">'+escH(b.gelernt)+'</div></div>';
   if(b.status==='entwurf'){
     h+='<div class="az-muted"><i>Dieser Bericht ist noch ein Entwurf und wurde vom Azubi nicht abgegeben.</i></div>';
   }else{
