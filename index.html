@@ -1440,7 +1440,11 @@ async function renderAdminExp(){
     '<label style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--c);margin-bottom:10px;cursor:pointer"><input type="checkbox" id="exp-nur-frei" checked style="width:16px;height:16px"> Nur von der Buchhaltung freigegebene Berichte exportieren</label>'+
     '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
     '<button class="btn btn-sky" ontouchstart="expBuchhaltungCSV()" onclick="expBuchhaltungCSV()">CSV Buchhaltung</button>'+
-    '<button class="btn btn-e" ontouchstart="expDFCSVAdmin()" onclick="expDFCSVAdmin()">Dataflor CSV</button></div></div>'+
+    '<button class="btn btn-e" ontouchstart="expDFCSVAdmin()" onclick="expDFCSVAdmin()">Dataflor CSV</button>'+
+    '<button class="btn btn-sky" ontouchstart="expNKImport()" onclick="expNKImport()">DATAflor NK-Import (XML)</button></div>'+
+    '<div class="row" style="margin-top:8px"><div class="fg w50"><label>Standard-Lohnart (DATAflor)</label><input id="exp-lohnart" inputmode="numeric" value="1" placeholder="z.B. 1"></div>'+
+    '<div class="fg w50" style="display:flex;align-items:flex-end"><label style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--c);margin:0;cursor:pointer"><input type="checkbox" id="exp-nk-zeiten" checked style="width:16px;height:16px"> Von/Bis-Zeiten ausgeben</label></div></div>'+
+    '<div style="font-size:10px;color:var(--m);line-height:1.5;margin-top:6px">NK-Import erzeugt eine schema-valide XML (DFNKImport) fuer den Digitalen Posteingang. Nur Berichte mit LV-Nummer werden verbucht; Zeilen mit Position gehen auf die Position, sonst als Taglohn. Lohnart und Personalnummern muessen im DATAflor BUSINESS existieren.</div></div>'+
     '<div class="a-sec"><div class="a-sec-title">Statistik</div><div id="exp-stats"><div class="empty"><div class="spin"></div></div></div></div>';
   loadExpStats();
 }
@@ -1474,6 +1478,63 @@ async function expBuchhaltungCSV(){
   const rows=data.map(b=>{const proj=PROJEKTE.find(p=>p.id===b.projekt_id);return[b.datum,b.mitarbeiter_name,b.mitarbeiter_nr||'--',b.projekt_nr,proj?.name||'',b.von||'',b.bis||'',b.pause_min||30,b.netto_arbeit_h||'0',b.fahrzeit_min||0,b.netto_gesamt_h||b.netto_arbeit_h||'0',b.wetter||'',(b.taetigkeiten||[]).join('|'),b.rolle].join(';');});
   dlFile('KLEI_Buchhaltung_'+(von||'')+'_'+(bis||new Date().toISOString().split('T')[0])+'.csv',[hdr,...rows].join('\n'),'text/csv;charset=utf-8');
   toast('CSV exportiert - '+data.length+' Eintraege'+(nurFrei!==false?' (nur freigegebene)':''),'ok');
+}
+
+// DATAflor NK-Import (schema-valide gegen DFNKImport.xsd)
+function nkEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function nkNum(v){var n=parseFloat(String(v==null?'':v).replace(',','.'));return isNaN(n)?0:n;}
+function nkZeit(s){s=String(s==null?'':s).trim();var m=s.match(/^(\d{1,2}):(\d{2})/);if(!m)return null;return ('0'+m[1]).slice(-2)+':'+m[2]+':00';}
+function nkLohn(o){
+  var x='  <Lohn>\n';
+  x+='    <Datum>'+nkEsc(o.datum)+'</Datum>\n';
+  x+='    <LVNr>'+nkEsc(String(o.lvNr).substring(0,16))+'</LVNr>\n';
+  if(o.posNr)x+='    <PosNr>'+nkEsc(String(o.posNr).substring(0,16))+'</PosNr>\n';
+  else x+='    <IstTaglohn>true</IstTaglohn>\n';
+  if(o.bemerkung)x+='    <Bemerkung>'+nkEsc(String(o.bemerkung).substring(0,60))+'</Bemerkung>\n';
+  if(o.erfasstVon)x+='    <ErfasstVon>'+nkEsc(String(o.erfasstVon).substring(0,60))+'</ErfasstVon>\n';
+  x+='    <PersonalNr>'+nkEsc(o.personalNr)+'</PersonalNr>\n';
+  x+='    <Lohnart>'+parseInt(o.lohnart,10)+'</Lohnart>\n';
+  if(o.von&&o.bis){x+='    <von>'+o.von+'</von>\n    <bis>'+o.bis+'</bis>\n    <Pause>'+(Math.round(nkNum(o.pause)*100)/100)+'</Pause>\n';}
+  x+='    <Stunden>'+nkNum(o.stunden)+'</Stunden>\n  </Lohn>\n';
+  return x;
+}
+async function expNKImport(){
+  var von=document.getElementById('exp-von').value,bis=document.getElementById('exp-bis').value;
+  var nfEl=document.getElementById('exp-nur-frei');
+  var nurFrei=nfEl?nfEl.checked:true;
+  var lohnart=parseInt(((document.getElementById('exp-lohnart')||{value:'1'}).value||'1').trim(),10);
+  if(isNaN(lohnart)||lohnart<=0){toast('Bitte eine gueltige Standard-Lohnart eintragen','err');return;}
+  var zEl=document.getElementById('exp-nk-zeiten');
+  var mitZeiten=zEl?zEl.checked:true;
+  var q=sb.from('berichte').select('*').order('datum');
+  if(von)q=q.gte('datum',von);
+  if(bis)q=q.lte('datum',bis);
+  if(nurFrei)q=q.eq('bh_freigegeben',true);
+  var res=await q;
+  if(res.error){toast('Fehler beim Laden: '+res.error.message,'err');return;}
+  var data=res.data||[];
+  if(!data.length){toast(nurFrei?'Keine FREIGEGEBENEN Berichte im Zeitraum':'Keine Daten','err');return;}
+  var lohn=[],uebersprungen=0;
+  data.forEach(function(b){
+    var zr=b.zeit_rows||[];
+    var quelle=zr.length?zr:[null];
+    quelle.forEach(function(t){
+      var lvNr=(t&&t.projektNr)?t.projektNr:b.projekt_nr;
+      var persNr=(t&&t.personalNr)?t.personalNr:(b.mitarbeiter_nr||'');
+      if(!lvNr||!persNr){uebersprungen++;return;}
+      var stunden=t?nkNum(t.nettoArbeit):nkNum(b.netto_arbeit_h);
+      if(stunden<=0)return;
+      var von2=null,bis2=null;
+      if(mitZeiten){von2=nkZeit(t?t.von:b.von);bis2=nkZeit(t?t.bis:b.bis);}
+      lohn.push({datum:b.datum,lvNr:lvNr,posNr:(t&&t.pos)?t.pos:'',personalNr:persNr,lohnart:lohnart,von:von2,bis:bis2,pause:t?(nkNum(t.pause)/60):(nkNum(b.pause_min)/60),stunden:stunden,erfasstVon:b.mitarbeiter_name||''});
+    });
+  });
+  if(!lohn.length){toast('Keine verbuchbaren Zeilen (LV-Nr oder Personalnummer fehlt)','err');return;}
+  var xml='<?xml version="1.0" encoding="UTF-8"?>\n<DFNKImport>\n';
+  lohn.forEach(function(e){xml+=nkLohn(e);});
+  xml+='</DFNKImport>\n';
+  dlFile('KLEI_NK-Import_'+new Date().toISOString().split('T')[0]+'.xml',xml,'application/xml;charset=utf-8');
+  toast(lohn.length+' Lohnbuchungen exportiert'+(uebersprungen?' ('+uebersprungen+' ohne LV/Pers-Nr uebersprungen)':''),'ok');
 }
 
 async function expDFCSVAdmin(){
@@ -2515,7 +2576,7 @@ async function saveAndSendWS(){
     datum:document.getElementById('ws-datum').value,projekt_id:projektId||null,projekt_nr:projekt?.nr||'',
     rolle:'ws',wetter:document.getElementById('ws-wetter').value,taetigkeiten:getWSTaetigkeiten(),
     von:document.getElementById('ws-von').value,bis:document.getElementById('ws-bis').value,
-    pause_min:parseInt(document.getElementById('ws-pause')?.value)||30,
+    pause_min:parseInt(document.getElementById('ws-pause')?.value)||60,
     fahrzeit_min:0,fahrt_status:'fahrer',netto_arbeit_h:nettoVal,netto_gesamt_h:nettoVal,
     taetigkeit_text:document.getElementById('ws-taetigkeit').value,
     besonder:document.getElementById('ws-maengel').value,
@@ -2556,7 +2617,7 @@ async function saveAndSendAR(){
     datum:document.getElementById('a-datum').value,projekt_id:projektId||null,projekt_nr:projekt?.nr||'',
     rolle:'ar',wetter:document.getElementById('a-wetter').value,taetigkeiten:getARTaetigkeiten(),
     von:document.getElementById('a-von').value,bis:document.getElementById('a-bis').value,
-    pause_min:parseInt(document.getElementById('a-pause')?.value)||30,
+    pause_min:parseInt(document.getElementById('a-pause')?.value)||60,
     fahrzeit_min:fzMin,fahrt_status:curFahrtStatus,
     netto_arbeit_h:parseFloat((document.getElementById('a-netto-work')?.value||'0').replace(',','.'))||0,
     netto_gesamt_h:parseFloat((document.getElementById('a-netto')?.value||'0').replace(',','.'))||0,
@@ -3293,7 +3354,7 @@ function onZeitNameChange(sel){
 // Aktuell im VA-Hauptprojekt gewaehlte Kategorie
 function currentVAKat(){return document.getElementById('v-kat')?.value||'bau';}
 function taetigkeitenTags(sel,liste){const list=liste||TAETIGKEITEN;return list.map(t=>'<div class="tg'+((sel||[]).includes(t)?' a':'')+'" ontouchstart="event.preventDefault();togTg(this)" onclick="togTg(this)">'+t+'</div>').join('');}
-function pausenSelect(val,cls){return'<select class="'+cls+'" style="width:72px" onchange="calcZR(this)">'+PAUSEN.map(p=>'<option value="'+p+'" '+(parseInt(val||30)===p?'selected':'')+'>'+p+'min</option>').join('')+'</select>';}
+function pausenSelect(val,cls){return'<select class="'+cls+'" style="width:72px" onchange="calcZR(this)">'+PAUSEN.map(p=>'<option value="'+p+'" '+(parseInt(val||60)===p?'selected':'')+'>'+p+'min</option>').join('')+'</select>';}
 function togTg(el){el.classList.toggle('a');}
 function selW(el,val){document.querySelectorAll('.wc').forEach(c=>c.classList.remove('s'));el.classList.add('s');curWeather=val;}
 function setFahrt(btn){document.querySelectorAll('.fahrt-btn').forEach(b=>b.classList.remove('fahrt-active'));btn.classList.add('fahrt-active');curFahrtStatus=btn.dataset.val;calcAR();}
@@ -3413,9 +3474,9 @@ function buildWS(){
     '<select id="ws-fahrzeug" style="width:100%"><option value="">- Fahrzeug waehlen -</option>'+
     FAHRZEUGE.map(fz=>'<option value="'+fz.id+'">'+fz.kennzeichen+' - '+fz.typ+'</option>').join('')+'</select></div>'+
     '<div class="qsec" style="border-color:rgba(139,92,246,.2)"><div class="qsec-t" style="color:var(--ws)">Arbeitszeiten</div>'+
-    '<div class="row"><div class="fg w25"><label>Beginn</label><input type="time" id="ws-von" value="07:00" oninput="calcWS()"></div>'+
-    '<div class="fg w25"><label>Ende</label><input type="time" id="ws-bis" value="16:00" oninput="calcWS()"></div>'+
-    '<div class="fg w25"><label>Pause</label><select id="ws-pause" onchange="calcWS()">'+PAUSEN.map(p=>'<option value="'+p+'" '+(p===30?'selected':'')+'>'+p+' min</option>').join('')+'</select></div>'+
+    '<div class="row"><div class="fg w25"><label>Beginn</label><input type="time" id="ws-von" value="06:30" oninput="calcWS()"></div>'+
+    '<div class="fg w25"><label>Ende</label><input type="time" id="ws-bis" value="16:30" oninput="calcWS()"></div>'+
+    '<div class="fg w25"><label>Pause</label><select id="ws-pause" onchange="calcWS()">'+PAUSEN.map(p=>'<option value="'+p+'" '+(p===60?'selected':'')+'>'+p+' min</option>').join('')+'</select></div>'+
     '<div class="fg w25"><label>Netto</label><input type="text" id="ws-netto" readonly style="color:var(--ws);font-weight:700;font-family:\'IBM Plex Mono\',monospace;font-size:18px"></div></div></div>'+
     '<div class="qsec" style="border-color:rgba(139,92,246,.2)"><div class="qsec-t" style="color:var(--ws)">Details</div>'+
     '<textarea id="ws-taetigkeit" placeholder="Beschreibung der Arbeiten..."></textarea>'+mkMic('ws-taetigkeit','Arbeiten')+
@@ -3427,7 +3488,7 @@ function buildWS(){
 function initWSForm(){const nEl=document.getElementById('ws-name');if(nEl)nEl.value=currentUser.name;const dEl=document.getElementById('ws-datum');if(dEl)dEl.value=todayStr();calcWS();}
 function onWSKatChange(){const kat=document.getElementById('ws-kat')?.value||'bau';const sel=document.getElementById('ws-projekt');if(sel)sel.innerHTML=projektOptsByKat(kat,'');}
 function calcWS(){const v=document.getElementById('ws-von')?.value,b=document.getElementById('ws-bis')?.value,p=parseFloat(document.getElementById('ws-pause')?.value)||0;if(v&&b){const[vh,vm]=v.split(':').map(Number),[bh,bm]=b.split(':').map(Number);let wm=(bh*60+bm)-(vh*60+vm)-p;if(wm<0)wm+=1440;const el=document.getElementById('ws-netto');if(el)el.value=(wm/60).toFixed(2).replace('.',',');}}
-function clearWSForm(skipConfirm){if(!skipConfirm&&!confirm('Neuen Bericht beginnen? Nicht gespeicherte Eingaben gehen verloren.'))return;currentId=null;stopVoice();const dEl=document.getElementById('ws-datum');if(dEl)dEl.value=todayStr();['ws-taetigkeit','ws-maengel'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const netto=document.getElementById('ws-netto');if(netto)netto.value='';const fzSel=document.getElementById('ws-fahrzeug');if(fzSel)fzSel.value='';const st=document.getElementById('ws-send-status');if(st){st.className='send-status';st.textContent='';}document.querySelectorAll('#ws-taetigkeiten-tags .tg').forEach(t=>t.classList.remove('a'));document.getElementById('ws-von').value='07:00';document.getElementById('ws-bis').value='16:00';document.getElementById('ws-pause').value='30';calcWS();toast('Neuer Werkstatt-Bericht','ok');}
+function clearWSForm(skipConfirm){if(!skipConfirm&&!confirm('Neuen Bericht beginnen? Nicht gespeicherte Eingaben gehen verloren.'))return;currentId=null;stopVoice();const dEl=document.getElementById('ws-datum');if(dEl)dEl.value=todayStr();['ws-taetigkeit','ws-maengel'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const netto=document.getElementById('ws-netto');if(netto)netto.value='';const fzSel=document.getElementById('ws-fahrzeug');if(fzSel)fzSel.value='';const st=document.getElementById('ws-send-status');if(st){st.className='send-status';st.textContent='';}document.querySelectorAll('#ws-taetigkeiten-tags .tg').forEach(t=>t.classList.remove('a'));document.getElementById('ws-von').value='06:30';document.getElementById('ws-bis').value='16:30';document.getElementById('ws-pause').value='60';calcWS();toast('Neuer Werkstatt-Bericht','ok');}
 
 function buildFZListe(){
   const el=document.getElementById('fzliste-content');if(!el)return;
@@ -3462,9 +3523,9 @@ function buildAR(){
     '<div class="qsec"><div class="qsec-t">Taetigkeiten</div><div class="tags" id="ar-taetigkeiten-tags">'+taetigkeitenTags([])+'</div></div>'+
     '<div class="qsec"><div class="qsec-t">Arbeitszeiten</div>'+
     '<div class="row">'+
-    '<div class="fg w25"><label>Beginn</label><input type="time" id="a-von" value="07:00" oninput="calcAR()"></div>'+
-    '<div class="fg w25"><label>Ende</label><input type="time" id="a-bis" value="16:00" oninput="calcAR()"></div>'+
-    '<div class="fg w25"><label>Pause</label><select id="a-pause" onchange="calcAR()">'+PAUSEN.map(p=>'<option value="'+p+'" '+(p===30?'selected':'')+'>'+p+' min</option>').join('')+'</select></div>'+
+    '<div class="fg w25"><label>Beginn</label><input type="time" id="a-von" value="06:30" oninput="calcAR()"></div>'+
+    '<div class="fg w25"><label>Ende</label><input type="time" id="a-bis" value="16:30" oninput="calcAR()"></div>'+
+    '<div class="fg w25"><label>Pause</label><select id="a-pause" onchange="calcAR()">'+PAUSEN.map(p=>'<option value="'+p+'" '+(p===60?'selected':'')+'>'+p+' min</option>').join('')+'</select></div>'+
     '<div class="fg w25"><label>Netto Arbeit</label><input type="text" id="a-netto-work" readonly style="color:var(--gl);font-weight:700;font-family:\'IBM Plex Mono\',monospace"></div>'+
     '</div><div class="row">'+
     '<div class="fg w50"><label>Fahrzeit (aus Projekt)</label><input type="text" id="a-fahrzeit-anzeige" readonly style="color:var(--earth);font-family:\'IBM Plex Mono\',monospace;font-size:11px"></div>'+
@@ -3517,7 +3578,7 @@ function calcAR(){
     const mEl=document.getElementById('a-h-monat');if(mEl)mEl.textContent=hM.toFixed(1)+'h';
   }
 }
-function clearARForm(skipConfirm){if(!skipConfirm&&!confirm('Neuen Bericht beginnen? Nicht gespeicherte Eingaben gehen verloren.'))return;currentId=null;stopVoice();document.getElementById('a-datum').value=todayStr();document.getElementById('a-projekt').value='';document.getElementById('a-von').value='07:00';document.getElementById('a-bis').value='16:00';document.getElementById('a-pause').value='30';['a-netto-work','a-netto','a-taetigkeit','a-besonder'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const fa=document.getElementById('a-fahrzeit-anzeige');if(fa)fa.value='0 min';const fi=document.getElementById('fahrzeit-info');if(fi)fi.textContent='';const st=document.getElementById('ar-send-status');if(st){st.className='send-status';st.textContent='';}curFahrtStatus='fahrer';document.querySelectorAll('.fahrt-btn').forEach(b=>{b.classList.remove('fahrt-active');if(b.dataset.val==='fahrer')b.classList.add('fahrt-active');});document.querySelectorAll('#ar-taetigkeiten-tags .tg').forEach(t=>t.classList.remove('a'));toast('Neuer Bericht','ok');}
+function clearARForm(skipConfirm){if(!skipConfirm&&!confirm('Neuen Bericht beginnen? Nicht gespeicherte Eingaben gehen verloren.'))return;currentId=null;stopVoice();document.getElementById('a-datum').value=todayStr();document.getElementById('a-projekt').value='';document.getElementById('a-von').value='06:30';document.getElementById('a-bis').value='16:30';document.getElementById('a-pause').value='60';['a-netto-work','a-netto','a-taetigkeit','a-besonder'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const fa=document.getElementById('a-fahrzeit-anzeige');if(fa)fa.value='0 min';const fi=document.getElementById('fahrzeit-info');if(fi)fi.textContent='';const st=document.getElementById('ar-send-status');if(st){st.className='send-status';st.textContent='';}curFahrtStatus='fahrer';document.querySelectorAll('.fahrt-btn').forEach(b=>{b.classList.remove('fahrt-active');if(b.dataset.val==='fahrer')b.classList.add('fahrt-active');});document.querySelectorAll('#ar-taetigkeiten-tags .tg').forEach(t=>t.classList.remove('a'));toast('Neuer Bericht','ok');}
 
 // ══════ VA FORMS ══════
 function buildVABericht(){
@@ -3681,8 +3742,8 @@ function addZeitRow(data={}){
     '<td><input class="projcell-filter" type="text" placeholder="Suchen..." style="display:block;width:110px;font-size:9px;padding:3px 5px;margin-bottom:2px" oninput="filterRowMA(this)">'+
     '<select class="zeit-name" style="font-size:10px;min-width:120px" onchange="onZeitNameChange(this)">'+maRowOpts(data.name||'')+'</select></td>'+
     '<td><select class="zeit-qual" style="font-size:10px">'+['VA','Facharbeiter','Helfer','Azubi','Sub'].map(q=>'<option'+(data.qual===q?' selected':'')+'>'+q+'</option>').join('')+'</select></td>'+
-    '<td><input class="zeit-von" type="time" value="'+(data.von||'07:00')+'" style="width:76px" oninput="calcZR(this)"></td>'+
-    '<td><input class="zeit-bis" type="time" value="'+(data.bis||'16:00')+'" style="width:76px" oninput="calcZR(this)"></td>'+
+    '<td><input class="zeit-von" type="time" value="'+(data.von||'06:30')+'" style="width:76px" oninput="calcZR(this)"></td>'+
+    '<td><input class="zeit-bis" type="time" value="'+(data.bis||'16:30')+'" style="width:76px" oninput="calcZR(this)"></td>'+
     '<td>'+pausenSelect(data.pause||30,'zeit-pause')+'</td>'+
     '<td><input class="zeit-netto" type="text" readonly value="'+(data.nettoArbeit||'')+'" style="width:52px;color:var(--gl);font-family:\'IBM Plex Mono\',monospace;font-weight:600"></td>'+
     '<td><select class="fahrt-sel" style="font-size:10px" onchange="calcZR(this)">'+
@@ -3719,7 +3780,7 @@ function calcZR(inp){
   updZeitTotal();
 }
 function updZeitTotal(){let t=0;document.querySelectorAll('.zeit-gesamt').forEach(e=>t+=parseFloat(e.value.replace(',','.'))||0);const el=document.getElementById('zeit-total');if(el)el.textContent=t.toFixed(2).replace('.',',')+'h gesamt';updateSplitInfo();updateMAOffen();}
-function getZeitRows(){return[...document.querySelectorAll('#zeit-body tr')].map(tr=>({name:tr.querySelector('.zeit-name')?.value||'',qual:tr.querySelector('.zeit-qual')?.value||'',von:tr.querySelector('.zeit-von')?.value||'',bis:tr.querySelector('.zeit-bis')?.value||'',pause:tr.querySelector('.zeit-pause')?.value||'30',nettoArbeit:tr.querySelector('.zeit-netto')?.value||'',fahrt:tr.querySelector('.fahrt-sel')?.value||'fahrer',fahrzeitMin:tr.querySelector('.zeit-fahrzeit')?.value||'0',fahrtAnteil:tr.querySelector('.zeit-anteil')?.value||'',gesamt:tr.querySelector('.zeit-gesamt')?.value||'',projektNr:PROJEKTE.find(p=>p.id===tr.querySelector('.row-pr')?.value)?.nr||'',projektId:tr.querySelector('.row-pr')?.value||'',tae:tr.querySelector('.row-tae')?.value||''})).filter(r=>r.name);}
+function getZeitRows(){return[...document.querySelectorAll('#zeit-body tr')].map(tr=>({name:tr.querySelector('.zeit-name')?.value||'',qual:tr.querySelector('.zeit-qual')?.value||'',von:tr.querySelector('.zeit-von')?.value||'',bis:tr.querySelector('.zeit-bis')?.value||'',pause:tr.querySelector('.zeit-pause')?.value||'60',nettoArbeit:tr.querySelector('.zeit-netto')?.value||'',fahrt:tr.querySelector('.fahrt-sel')?.value||'fahrer',fahrzeitMin:tr.querySelector('.zeit-fahrzeit')?.value||'0',fahrtAnteil:tr.querySelector('.zeit-anteil')?.value||'',gesamt:tr.querySelector('.zeit-gesamt')?.value||'',projektNr:PROJEKTE.find(p=>p.id===tr.querySelector('.row-pr')?.value)?.nr||'',projektId:tr.querySelector('.row-pr')?.value||'',tae:tr.querySelector('.row-tae')?.value||''})).filter(r=>r.name);}
 function addMachRow(data={}){const tbody=document.getElementById('mach-body');if(!tbody)return;const tr=document.createElement('tr');const rowKat=data.projektId?getProjektKat(data.projektId):currentVAKat();const prOpts=rowProjektOpts(rowKat,data.projektId||'');tr.innerHTML='<td><select class="geraet-sel" style="font-size:10px;min-width:200px"><option value="">- Geraet -</option>'+GERAETE.map(g=>'<option value="'+g.nr+'" '+(data.geraetNr===g.nr?'selected':'')+'>'+g.nr+' - '+g.bez+'</option>').join('')+'</select></td><td><input type="text" class="mach-fzn" value="'+(data.fahrzeugnr||'')+'" placeholder="Kfz/Nr." style="width:80px"></td><td><input type="number" class="mach-std" value="'+(data.netto||'')+'" placeholder="Std." min="0" step="0.5" style="width:70px;color:var(--gl);font-family:\'IBM Plex Mono\',monospace;font-weight:700"></td><td><select class="row-pr" data-kat="'+rowKat+'" style="font-size:9px;min-width:90px">'+prOpts+'</select></td><td><button class="delbtn" ontouchstart="this.closest(\'tr\').remove()" onclick="this.closest(\'tr\').remove()">&#x2715;</button></td>';tbody.appendChild(tr);}
 function getMachRows(){return[...document.querySelectorAll('#mach-body tr')].map(tr=>{const geraetNr=tr.querySelector('.geraet-sel')?.value||'';const geraet=GERAETE.find(g=>g.nr===geraetNr);return{geraetNr,geraetBez:geraet?.bez||'',fahrzeugnr:tr.querySelector('.mach-fzn')?.value||'',netto:tr.querySelector('.mach-std')?.value||'',projektId:tr.querySelector('.row-pr')?.value||''};}).filter(r=>r.geraetNr);}
 function addStep(data={}){stepIdx++;const i=stepIdx;const maRows=getZeitRowsSimple();let maHtml=maRows.length>0?'<div class="ma-zuweisung"><div class="ma-zuw-title">Mitarbeiter zuweisen</div>'+maRows.map(ma=>{const checked=(data.mitarbeiter||[]).some(m=>m.name===ma.name);const std=(data.mitarbeiter||[]).find(m=>m.name===ma.name)?.stunden||'';return'<div class="ma-check-row"><input type="checkbox" class="ma-cb" data-name="'+ma.name+'" '+(checked?'checked':'')+' onchange="updateStepMA('+i+')"><span class="ma-name-lbl">'+ma.name+'</span><span class="ma-budget" data-name="'+ma.name+'"></span><input type="number" class="ma-h" data-name="'+ma.name+'" value="'+std+'" placeholder="Std." min="0" step="0.5" style="opacity:'+(checked?'1':'0.4')+'" oninput="updateStepMA('+i+')">';}).join('')+'</div>':'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-top:6px" data-no-ma="1">Erst Mitarbeiter im Tab Zeiten eintragen</div>';
