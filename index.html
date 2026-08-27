@@ -447,6 +447,7 @@ select.zeit-name.zn-bad{border:2px solid var(--r)!important;background:var(--rg)
   <div class="menu-wrap">
     <div class="menu-title">Bereich auswaehlen</div>
     <div id="menu-tiles" style="width:100%;max-width:460px"></div>
+    <div id="menu-master" style="width:100%;max-width:460px"></div>
   </div>
 </div>
 
@@ -848,6 +849,7 @@ async function doLogin(){
     const{data,error}=await sb.from('mitarbeiter').select('*').eq('mitarbeiter_nr',nr).eq('passwort_hash',pw).eq('aktiv',true).single();
     if(error||!data){errEl.textContent='Falsche Mitarbeiternummer oder Passwort';btn.innerHTML='Anmelden';btn.disabled=false;return;}
     currentUser=data;
+    masterPruefen(data);
     unterschriftData=data.unterschrift_data||null;
     document.getElementById('login-screen').style.display='none';
     await loadProjekte();
@@ -864,6 +866,7 @@ document.getElementById('login-nr').addEventListener('keydown',e=>{if(e.key==='E
 function doLogout(){
   stopVAAutoSave();
   currentUser=null;reports=[];currentId=null;currentRole=null;unterschriftData=null;
+  istMasterUser=false;masterEchteRolle=null;
   laufTest=null;tEdit=null;matEditId=null;bhEditId=null;bhArbeit=null;AUSB_MAT=[];AUSB_TESTS=[];AUSB_ABG=[];AUSB_BH=[];
   ['admin-screen','pl-screen','menu-screen','ausb-screen','br-screen'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById('login-screen').style.display='flex';
@@ -960,9 +963,11 @@ function openAdmin(){
   const nurBuchhaltung=(currentUser.rolle==='verwaltung');
   const badge=document.querySelector('#admin-screen .admin-badge');
   if(badge)badge.textContent=nurBuchhaltung?'Buchhaltung':'Admin';
-  ['ma','proj','fz','email','ber','abg','ausw','pfl','cock','kalk','exp'].forEach(t=>{
+  ['ma','proj','fz','email','ber','ausw','pfl','cock','kalk','exp'].forEach(t=>{
     const el=document.getElementById('atab-'+t);if(el)el.style.display=nurBuchhaltung?'none':'';
   });
+  // Abgabe-Uebersicht sieht auch die Buchhaltung: Pruefliste + Sammelfreigabe.
+  const abgTab=document.getElementById('atab-abg');if(abgTab)abgTab.style.display='';
   showAdminTab('frei');
 }
 function showAdminTab(name){
@@ -1086,8 +1091,17 @@ async function freigabeAnsehen(id){
 // Finale Buchhaltungs-Freigabe: zentrale Unterschrift speichern, neues PDF erzeugen + senden
 async function freigabeErteilen(id){
   if(!unterschriftData){toast('Bitte zuerst Ihre Unterschrift im Profil zeichnen','err');openProfil();return;}
-  if(!confirm('Diesen Bericht final fuer die Buchhaltung freigeben?'))return;
-  const{data}=await sb.from('berichte').select('*').eq('id',id).single();if(!data)return;
+  const{data}=await sb.from('berichte').select('*').eq('id',id).single();
+  if(!data){toast('Bericht nicht gefunden','err');return;}
+  // Arbeitszeitgesetz-Pruefung: Hinweis im Bestaetigungsdialog, blockiert nicht.
+  let azTxt='';
+  try{
+    azTxt=azConfirmText(await azPruefeBericht(data),data.datum);
+  }catch(azErr){
+    console.error('Arbeitszeitpruefung fehlgeschlagen:',azErr);
+    azTxt='\n\nHinweis: Die Arbeitszeitpruefung konnte nicht ausgefuehrt werden ('+(azErr.message||String(azErr))+').';
+  }
+  if(!confirm('Diesen Bericht final fuer die Buchhaltung freigeben?'+azTxt))return;
   const upd={bh_freigegeben:true,bh_freigegeben_von:currentUser.name,bh_freigegeben_am:new Date().toISOString()};
   // Unterschrift fuers Bauleiter-Feld: hat schon jemand (Bauleiter) gezeichnet -> bleibt.
   // Sonst setzt der Freigebende (Buchhaltung/Admin) seine Unterschrift dort ein.
@@ -1522,7 +1536,7 @@ async function ladeAbgabe(){
     // Berichte des Monats in 1000er-Bloecken laden (Pflicht-Konvention)
     let alle=[],start=0;
     while(true){
-      const r=await sb.from('berichte').select('id,datum,rolle,mitarbeiter_id,mitarbeiter_name,zeit_rows,von,bis,pause_min,netto_arbeit_h,netto_gesamt_h,projekt_id,projekt_nr').gte('datum',von).lte('datum',bis).order('datum',{ascending:true}).order('id',{ascending:true}).range(start,start+999);
+      const r=await sb.from('berichte').select('id,datum,rolle,mitarbeiter_id,mitarbeiter_name,zeit_rows,von,bis,pause_min,netto_arbeit_h,netto_gesamt_h,projekt_id,projekt_nr,bh_freigegeben,abgenommen').gte('datum',von).lte('datum',bis).order('datum',{ascending:true}).order('id',{ascending:true}).range(start,start+999);
       if(r.error)throw r.error;
       const d=r.data||[];
       alle=alle.concat(d);
@@ -1705,7 +1719,20 @@ function abgAggregieren(alle){
     });
     matrix[p.id]={tage:tage,sumOrig:Math.round(sumO*100)/100,sumGew:Math.round(sumG*100)/100,nAuto:nAuto,nKonflikt:nKonf};
   });
-  return {personen:personen,matrix:matrix,unbekannt:ges.unbekannt};
+  // Berichte je VERFASSER - Grundlage der Sammelfreigabe. Wer nur in fremden
+  // Berichten auftaucht, hat nichts freizugeben; seine Zeile ist reine Kontrolle.
+  const verfasser={};
+  (alle||[]).forEach(function(b){
+    let pid=b.mitarbeiter_id;
+    if(!pid||!MALISTE.some(function(m){return m.id===pid;})){
+      const h=_dfFindMA(b.mitarbeiter_name||'');pid=h?h.id:null;
+    }
+    if(!pid)return;
+    if(!verfasser[pid])verfasser[pid]={gesamt:0,offen:0,offenIds:[]};
+    verfasser[pid].gesamt++;
+    if(!b.bh_freigegeben){verfasser[pid].offen++;verfasser[pid].offenIds.push(b.id);}
+  });
+  return {personen:personen,matrix:matrix,unbekannt:ges.unbekannt,verfasser:verfasser};
 }
 
 function abgRender(cont,daten,j,mi,tage){
@@ -1716,8 +1743,8 @@ function abgRender(cont,daten,j,mi,tage){
     const wd=new Date(j,mi-1,t).getDay();
     head+='<th class="'+((wd===0||wd===6)?'abg-we':'')+'">'+t+'</th>';
   }
-  head+='<th>Tage</th><th>Std. erfasst</th><th>Std. gewertet</th></tr>';
-  let gAuto=0,gKonf=0;const konfListe=[];
+  head+='<th>Tage</th><th>Std. erfasst</th><th>Std. gewertet</th><th>Freigabe</th></tr>';
+  let gAuto=0,gKonf=0;const pruefListe=[];
   const zeilen=personen.map(function(p){
     const m=matrix[p.id]||{tage:{},sumOrig:0,sumGew:0,nAuto:0,nKonflikt:0};
     gAuto+=m.nAuto;gKonf+=m.nKonflikt;
@@ -1739,8 +1766,18 @@ function abgRender(cont,daten,j,mi,tage){
           sym='<span class="abg-cell-va"></span>';
         }
         let dot='';
-        if(tg.kons.status==='auto')dot='<span class="abg-dot abg-dot-a"></span>';
-        if(tg.kons.status==='konflikt'){dot='<span class="abg-dot abg-dot-k"></span>';konfListe.push({pid:p.id,name:p.name,tag:t});}
+        if(tg.kons.status==='auto'){
+          dot='<span class="abg-dot abg-dot-a"></span>';
+          pruefListe.push({pid:p.id,name:p.name,tag:t,art:'auto',
+            diff:Math.round((tg.kons.sumOrig-tg.kons.sumGew)*100)/100,
+            orig:tg.kons.sumOrig,gew:tg.kons.sumGew,txt:abgUeberlagerungsText(tg.kons)});
+        }
+        if(tg.kons.status==='konflikt'){
+          dot='<span class="abg-dot abg-dot-k"></span>';
+          pruefListe.push({pid:p.id,name:p.name,tag:t,art:'konflikt',
+            diff:Math.round((tg.kons.sumOrig-tg.kons.sumGew)*100)/100,
+            orig:tg.kons.sumOrig,gew:tg.kons.sumGew,txt:'gleichrangige Ueberschneidung - nicht automatisch loesbar'});
+        }
         inner='<span class="abg-cw">'+sym+dot+'</span>';
         click=' class="abg-click'+(we?' abg-we':'')+'" ontouchstart="abgZeigeTag(\''+_dfEsc(p.id)+'\','+t+')" onclick="abgZeigeTag(\''+_dfEsc(p.id)+'\','+t+')"';
       }else{
@@ -1750,23 +1787,42 @@ function abgRender(cont,daten,j,mi,tage){
     }
     const inaktiv=p.aktiv===false?' <span style="color:var(--m);font-size:9px">(inaktiv)</span>':'';
     const diff=Math.abs(m.sumOrig-m.sumGew)>0.001;
+    const vf=(daten.verfasser||{})[p.id]||{gesamt:0,offen:0,offenIds:[]};
+    let freiZelle;
+    if(!vf.gesamt)freiZelle='<span style="color:var(--m);font-size:9px">keine eigenen</span>';
+    else if(!vf.offen)freiZelle='<span style="color:var(--g);font-size:9px">'+vf.gesamt+' frei &#x2713;</span>';
+    else if(abgDarfFreigeben())freiZelle='<button class="btn btn-p" style="font-size:9px;padding:3px 7px;white-space:nowrap" ontouchstart="abgSammelFreigabe(\''+_dfEsc(p.id)+'\')" onclick="abgSammelFreigabe(\''+_dfEsc(p.id)+'\')">'+vf.offen+' freigeben</button>';
+    else freiZelle='<span style="color:var(--o);font-size:9px">'+vf.offen+' offen</span>';
     return '<tr><td class="abg-name" title="'+_dfEsc(p.name)+'">'+_dfEsc(p.name)+inaktiv+'</td>'+tds+
       '<td class="abg-sum">'+sum+'</td>'+
       '<td style="color:var(--m)">'+_auswFmtH(m.sumOrig)+'</td>'+
-      '<td class="abg-sum"'+(diff?' style="color:var(--o)"':'')+'>'+_auswFmtH(m.sumGew)+'</td></tr>';
+      '<td class="abg-sum"'+(diff?' style="color:var(--o)"':'')+'>'+_auswFmtH(m.sumGew)+'</td>'+
+      '<td style="white-space:nowrap">'+freiZelle+'</td></tr>';
   }).join('');
   let html='<div class="abg-wrap"><table class="abg-table"><thead>'+head+'</thead><tbody>'+zeilen+'</tbody></table></div>';
   html+='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:var(--m);margin-top:10px">'+
     gAuto+' Tag'+(gAuto===1?'':'e')+' automatisch abgeglichen &middot; '+
     (gKonf>0?'<span style="color:var(--r);font-weight:700">'+gKonf+' Konflikt'+(gKonf===1?'':'e')+' zu pruefen</span>':'keine Konflikte')+
     ' &middot; Std. erfasst = Summe aller Eingaben, Std. gewertet = nach Abgleich (Doppelungen bereinigt)</div>';
-  if(konfListe.length){
+  if(pruefListe.length){
+    pruefListe.sort(function(a,b){
+      if(a.art!==b.art)return a.art==='konflikt'?-1:1;
+      return Math.abs(b.diff)-Math.abs(a.diff);
+    });
+    const nKonf=pruefListe.filter(function(k){return k.art==='konflikt';}).length;
     html+='<div style="margin-top:10px;padding:10px;border:1px solid rgba(196,72,40,.35);border-radius:8px;background:var(--rg)">'+
-      '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--r);margin-bottom:6px">Zu pruefende Tage</div>'+
-      konfListe.map(function(k){
-        return '<div class="abg-konf-row" ontouchstart="abgZeigeTag(\''+_dfEsc(k.pid)+'\','+k.tag+')" onclick="abgZeigeTag(\''+_dfEsc(k.pid)+'\','+k.tag+')">'+
+      '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--r);margin-bottom:4px">Pruefliste - '+pruefListe.length+' Tag'+(pruefListe.length===1?'':'e')+' mit Abweichung</div>'+
+      '<div style="font-size:10px;color:var(--m);margin-bottom:8px;line-height:1.5">Rot = gleichrangiger Konflikt, muss angesehen werden. Orange = Eigenbericht wurde von einem Vorarbeiterbericht ueberlagert, automatisch geloest. Sortiert nach Groesse der Abweichung. Zeile antippen oeffnet den Tag.'+
+      (nKonf?' <span style="color:var(--r)">'+nKonf+' Konflikt'+(nKonf===1?'':'e')+' offen.</span>':'')+'</div>'+
+      pruefListe.map(function(k){
+        const farbe=k.art==='konflikt'?'var(--r)':'var(--o)';
+        return '<div class="abg-konf-row" style="display:block" ontouchstart="abgZeigeTag(\''+_dfEsc(k.pid)+'\','+k.tag+')" onclick="abgZeigeTag(\''+_dfEsc(k.pid)+'\','+k.tag+')">'+
+          '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">'+
           '<span style="font-size:12px;color:var(--c);font-weight:600">'+_dfEsc(k.name)+'</span>'+
-          '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:var(--m)">'+String(k.tag).padStart(2,'0')+'.'+String(mi).padStart(2,'0')+'.'+j+' &#x279A;</span></div>';
+          '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:'+farbe+'">'+
+          _auswFmtH(k.orig)+'h &#x2192; '+_auswFmtH(k.gew)+'h'+(Math.abs(k.diff)>0.001?' (&#x2212;'+_auswFmtH(Math.abs(k.diff))+'h)':'')+
+          ' &middot; '+String(k.tag).padStart(2,'0')+'.'+String(mi).padStart(2,'0')+'. &#x279A;</span></div>'+
+          '<div style="font-size:10px;color:var(--m);line-height:1.4">'+_dfEsc(k.txt)+'</div></div>';
       }).join('')+'</div>';
   }
   html+='<div id="abg-detail"></div>';
@@ -1810,13 +1866,381 @@ function abgZeigeTag(pid,tag){
       '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:var(--t);margin:2px 0">'+fenster+' &middot; erfasst: '+_auswFmtH(e.stunden)+'h &middot; '+wer+'</div>'+
       '<div style="font-size:11px;margin-top:2px">'+bewertung+'</div></div>';
   }).join('');
+  // Arbeitszeitgesetz-Pruefung fuer genau diesen Tag (reine Anzeige, aendert nichts)
+  let azHtml='';
+  try{
+    const azMap=azKonsMapMatrix((_abgDaten.matrix[pid]||{}).tage||{},_abgJ,_abgMi);
+    const azDatum=_abgJ+'-'+String(_abgMi).padStart(2,'0')+'-'+String(tag).padStart(2,'0');
+    azHtml=azBefundHTML(azPruefeTag(kons,azKontext(azMap,azDatum,azBekanntMonat(_abgJ,_abgMi))));
+  }catch(azErr){
+    console.error('Arbeitszeitpruefung fehlgeschlagen:',azErr);
+    azHtml='<div style="margin-top:10px;padding:8px 10px;border:1px solid var(--r);border-radius:8px;font-size:11px;color:var(--r)">Arbeitszeitpruefung fehlgeschlagen: '+_dfEsc(azErr.message||String(azErr))+'</div>';
+  }
   box.innerHTML='<div class="a-sec" style="margin-top:14px;border-color:var(--sky)">'+
-    '<div class="a-sec-title">Zeitabgleich: '+_dfEsc(p.name)+' - '+datumTxt+' &middot; '+stTxt+'</div>'+rows+
+    '<div class="a-sec-title">Zeitabgleich: '+_dfEsc(p.name)+' - '+datumTxt+' &middot; '+stTxt+'</div>'+rows+azHtml+
     '<div style="display:flex;gap:16px;margin-top:10px;font-family:\'IBM Plex Mono\',monospace;font-size:11px">'+
     '<span style="color:var(--m)">erfasst gesamt: '+_auswFmtH(kons.sumOrig)+'h</span>'+
     '<span style="color:var(--gl);font-weight:700">gewertet: '+_auswFmtH(kons.sumGew)+'h</span></div>'+
     '<button class="btn" style="margin-top:10px" ontouchstart="document.getElementById(\'abg-detail\').innerHTML=\'\'" onclick="document.getElementById(\'abg-detail\').innerHTML=\'\'">Schliessen</button></div>';
   box.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// ══════ SAMMELFREIGABE JE PERSON UND MONAT (nur Status, keine Mails/PDFs) ══════
+function abgDarfFreigeben(){
+  return !!(currentUser&&(currentUser.rolle==='admin'||currentUser.rolle==='verwaltung'));
+}
+
+// Kurztext fuer die Pruefliste: wer wurde von wem ueberlagert.
+function abgUeberlagerungsText(kons){
+  const teile=[];
+  const eintraege=(kons&&kons.eintraege)?kons.eintraege:[];
+  eintraege.forEach(function(e){
+    if(e.zustand!=='teil'&&e.zustand!=='ersetzt')return;
+    const wer=(e.ueberlagertVon&&e.ueberlagertVon.length)?e.ueberlagertVon.join(' + '):'einem Vorarbeiterbericht';
+    teile.push((e.selbst?'Eigenbericht':'Eintrag von '+e.erfasser)+' '+_auswFmtH(e.stunden)+'h '+
+      (e.zustand==='ersetzt'?'faellt ganz weg':'gekuerzt auf '+_auswFmtH(e.gewertet)+'h')+
+      ' - ueberlagert durch '+wer);
+  });
+  return teile.length?teile.join('; '):'Abweichung zwischen erfassten und gewerteten Zeiten';
+}
+
+// Freigegeben werden die Berichte, die diese Person GESCHRIEBEN hat.
+// Es werden ausschliesslich die Freigabe-Kennzeichen gesetzt - kein Mailversand,
+// keine neue PDF-Ablage. Das unterschriebene PDF entsteht bei Bedarf im Freigabe-Tab.
+async function abgSammelFreigabe(pid){
+  if(!abgDarfFreigeben()){toast('Keine Berechtigung zur Freigabe','err');return;}
+  if(!unterschriftData){toast('Bitte zuerst Ihre Unterschrift im Profil zeichnen','err');openProfil();return;}
+  if(!_abgDaten){toast('Uebersicht ist noch nicht geladen','err');return;}
+  const p=_abgDaten.personen.find(function(x){return x.id===pid;});
+  const vf=(_abgDaten.verfasser||{})[pid];
+  if(!p||!vf||!vf.offen){toast('Keine offenen eigenen Berichte in diesem Monat','info');return;}
+  const m=_abgDaten.matrix[pid]||{tage:{}};
+  const tage=m.tage||{};
+  let nKonf=0,nKrit=0,azFehler='';
+  try{
+    const azMap=azKonsMapMatrix(tage,_abgJ,_abgMi);
+    const bekannt=azBekanntMonat(_abgJ,_abgMi);
+    Object.keys(tage).forEach(function(tk){
+      const tg=tage[tk];
+      if(!tg||!tg.kons)return;
+      if(tg.kons.status==='konflikt')nKonf++;
+      const d=_abgJ+'-'+String(_abgMi).padStart(2,'0')+'-'+String(parseInt(tk,10)).padStart(2,'0');
+      if(azPruefeTag(tg.kons,azKontext(azMap,d,bekannt)).stufe==='krit')nKrit++;
+    });
+  }catch(azErr){
+    console.error('Arbeitszeitpruefung fehlgeschlagen:',azErr);
+    azFehler='\n\nHinweis: Die Arbeitszeitpruefung konnte nicht ausgefuehrt werden ('+(azErr.message||String(azErr))+').';
+  }
+  let txt=vf.offen+' Bericht'+(vf.offen===1?'':'e')+' von '+p.name+' fuer '+abgMonatLabel(_abgMonat)+' final freigeben?';
+  if(nKonf)txt+='\n\nAchtung: '+nKonf+' Tag'+(nKonf===1?'':'e')+' mit ungeklaertem Zeitkonflikt in dieser Zeile.';
+  if(nKrit)txt+='\n'+nKrit+' Tag'+(nKrit===1?'':'e')+' mit kritischem Arbeitszeit-Hinweis.';
+  txt+=azFehler;
+  txt+='\n\nEs werden nur die Freigabe-Kennzeichen gesetzt. Keine Mails, keine neue PDF-Ablage - das unterschriebene PDF laesst sich jederzeit im Freigabe-Tab erzeugen.';
+  if(!confirm(txt))return;
+  try{
+    const ids=vf.offenIds.slice();
+    // Vorhandene Bauleiter-Unterschrift ermitteln, damit sie nicht ueberschrieben wird
+    let vorhanden=[];
+    for(let i=0;i<ids.length;i+=200){
+      const r=await sb.from('berichte').select('id,abgenommen_sig,abgenommen_von').in('id',ids.slice(i,i+200));
+      if(r.error)throw r.error;
+      vorhanden=vorhanden.concat(r.data||[]);
+    }
+    const basis={bh_freigegeben:true,bh_freigegeben_von:currentUser.name,bh_freigegeben_am:new Date().toISOString()};
+    const mitSig=[],ohneSigMitVon=[],ohneSigOhneVon=[];
+    vorhanden.forEach(function(b){
+      if(b.abgenommen_sig)mitSig.push(b.id);
+      else if(b.abgenommen_von)ohneSigMitVon.push(b.id);
+      else ohneSigOhneVon.push(b.id);
+    });
+    for(let k=0;k<3;k++){
+      const liste=(k===0)?mitSig:((k===1)?ohneSigMitVon:ohneSigOhneVon);
+      const daten=(k===0)?basis:((k===1)
+        ?Object.assign({},basis,{abgenommen_sig:unterschriftData})
+        :Object.assign({},basis,{abgenommen_sig:unterschriftData,abgenommen_von:currentUser.name}));
+      for(let i=0;i<liste.length;i+=200){
+        const teil=liste.slice(i,i+200);
+        if(!teil.length)continue;
+        const r=await sb.from('berichte').update(daten).in('id',teil);
+        if(r.error)throw r.error;
+      }
+    }
+    toast(vorhanden.length+' Bericht'+(vorhanden.length===1?'':'e')+' freigegeben','ok');
+    ladeAbgabe();
+  }catch(e){
+    console.error('Sammelfreigabe fehlgeschlagen:',e);
+    toast('Sammelfreigabe fehlgeschlagen: '+(e.message||String(e)),'err');
+  }
+}
+
+// ══════ ARBZG-PRUEFUNG (reine Funktionen, testbar) ══════
+// Prueft je Person und Tag gegen das Arbeitszeitgesetz. Grundlage sind die
+// GEWERTETEN Zeitfenster aus abgKonsolidiereTag (Feld rest), damit eine
+// Doppelerfassung keinen Fehlalarm ausloest. Reine Lese-Logik, kein Schreiben.
+
+function azStd(min){return (Math.round(min/60*100)/100).toFixed(2).replace('.',',');}
+
+function azDatumPlus(d,delta){
+  const p=String(d==null?'':d).split('-');
+  if(p.length!==3)return '';
+  const dt=new Date(Date.UTC(parseInt(p[0],10),parseInt(p[1],10)-1,parseInt(p[2],10)));
+  if(isNaN(dt.getTime()))return '';
+  dt.setUTCDate(dt.getUTCDate()+delta);
+  return dt.toISOString().slice(0,10);
+}
+function azWochentag(d){
+  const p=String(d==null?'':d).split('-');
+  if(p.length!==3)return -1;
+  const dt=new Date(Date.UTC(parseInt(p[0],10),parseInt(p[1],10)-1,parseInt(p[2],10)));
+  return isNaN(dt.getTime())?-1:dt.getUTCDay();
+}
+
+// Zeitfenster zusammenfassen -> ueberschneidungsfrei und sortiert.
+// Noetig, damit eine Person nicht doppelt zaehlt, wenn sie am selben Tag
+// parallel auf zwei Baustellen erfasst wurde.
+function azUnion(fenster){
+  const f=(fenster||[]).filter(function(r){return r&&r[1]>r[0];})
+    .map(function(r){return [r[0],r[1]];})
+    .sort(function(a,b){return a[0]-b[0];});
+  const out=[];
+  f.forEach(function(r){
+    const last=out.length?out[out.length-1]:null;
+    if(last&&r[0]<=last[1]){if(r[1]>last[1])last[1]=r[1];}
+    else out.push([r[0],r[1]]);
+  });
+  return out;
+}
+
+// Kennzahlen eines Tages aus dem Ergebnis von abgKonsolidiereTag.
+// Pausen werden bei anteilig gekuerzten Eintraegen ebenfalls anteilig gerechnet.
+function azTagWerte(kons){
+  const fen=[];let pause=0,ohneFenster=0,nullStd=0;
+  const eintraege=(kons&&kons.eintraege)?kons.eintraege:[];
+  eintraege.forEach(function(e){
+    if(!e.stunden)nullStd++;
+    if(e.rest&&e.rest.length){
+      e.rest.forEach(function(r){fen.push([r[0],r[1]]);});
+      const voll=(e._s!=null&&e._e!=null)?(e._e-e._s):0;
+      const restMin=e.rest.reduce(function(s,r){return s+(r[1]-r[0]);},0);
+      const p=parseInt(e.pause,10)||0;
+      pause+=(voll>0&&restMin<voll)?Math.round(p*restMin/voll):p;
+    }else if(e.von==null||e.bis==null){
+      ohneFenster++;
+    }
+  });
+  const u=azUnion(fen);
+  const min=u.reduce(function(s,r){return s+(r[1]-r[0]);},0);
+  return {anwesend:min,pause:pause,netto:Math.max(0,min-pause),
+    ersteVon:u.length?u[0][0]:null,letzteBis:u.length?u[u.length-1][1]:null,
+    ohneFenster:ohneFenster,nullStd:nullStd,fenster:u};
+}
+
+// §4 ArbZG: Pflichtpause nach Arbeitszeit (Arbeitszeit = ohne Pausen).
+function azPflichtPause(nettoMin){
+  if(nettoMin>540)return 45;
+  if(nettoMin>360)return 30;
+  return 0;
+}
+
+function azHoechsteStufe(b){
+  let s=null;
+  (b||[]).forEach(function(x){
+    if(x.stufe==='krit')s='krit';
+    else if(x.stufe==='warn'&&s!=='krit')s='warn';
+    else if(x.stufe==='info'&&s==null)s='info';
+  });
+  return s;
+}
+
+// Kontext eines Tages: Vortag (fuer die Ruhezeit) und Wochensumme,
+// aus einer nach Datum geschluesselten Kons-Map EINER Person.
+// bekannt = alle geladenen Datumswerte. Fehlt ein Tag der Woche darin, wird
+// die Wochenpruefung bewusst weggelassen statt falsch gerechnet.
+function azKontext(konsMap,datum,bekannt){
+  const map=konsMap||{};
+  const out={vortagBis:null,wochenNetto:null,wochentag:azWochentag(datum)};
+  const vt=map[azDatumPlus(datum,-1)];
+  if(vt){const w=azTagWerte(vt);if(w.letzteBis!=null)out.vortagBis=w.letzteBis;}
+  const wd=out.wochentag;
+  if(wd<0)return out;
+  const off=(wd===0)?6:(wd-1);
+  let sum=0,vollstaendig=true;
+  for(let i=0;i<7;i++){
+    const d=azDatumPlus(datum,i-off);
+    if(bekannt&&!bekannt[d]){vollstaendig=false;break;}
+    if(map[d])sum+=azTagWerte(map[d]).netto;
+  }
+  if(vollstaendig)out.wochenNetto=sum;
+  return out;
+}
+
+// Kernpruefung. Liefert Kennzahlen + Befundliste (stufe: krit / warn / info).
+function azPruefeTag(kons,opts){
+  const o=opts||{};
+  const w=azTagWerte(kons);
+  const b=[];
+  const soll=azPflichtPause(w.netto);
+  if(soll>0&&w.pause<soll){
+    b.push({stufe:(w.pause<=0)?'krit':'warn',regel:'§4 ArbZG',
+      text:'Pause zu kurz: '+w.pause+' min erfasst, '+soll+' min noetig bei '+azStd(w.netto)+' h Arbeitszeit.'});
+  }
+  if(w.netto>600){
+    b.push({stufe:'krit',regel:'§3 ArbZG',
+      text:'Arbeitszeit '+azStd(w.netto)+' h - ueber der Hoechstgrenze von 10 h.'});
+  }else if(w.netto>480){
+    b.push({stufe:'info',regel:'§3/§16 ArbZG',
+      text:'Arbeitszeit '+azStd(w.netto)+' h - ueber 8 h nur mit Ausgleich zulaessig und gesondert aufzuzeichnen.'});
+  }
+  if(o.vortagBis!=null&&w.ersteVon!=null){
+    const ruhe=(1440+w.ersteVon)-o.vortagBis;
+    if(ruhe>=0&&ruhe<660){
+      b.push({stufe:(ruhe<600)?'krit':'warn',regel:'§5 ArbZG',
+        text:'Ruhezeit nur '+azStd(ruhe)+' h seit dem Vortag ('+abgMinZeit(o.vortagBis)+' bis '+abgMinZeit(w.ersteVon)+') - noetig sind 11 h.'});
+    }
+  }
+  if(o.wochenNetto!=null&&o.wochenNetto>2880){
+    b.push({stufe:'warn',regel:'§3 ArbZG',
+      text:'Kalenderwoche '+azStd(o.wochenNetto)+' h - ueber dem Richtwert von 48 h.'});
+  }
+  if(o.wochentag===0&&w.anwesend>0){
+    b.push({stufe:'info',regel:'§9 ArbZG',text:'Sonntagsarbeit - nur in Ausnahmefaellen zulaessig.'});
+  }
+  if(w.ohneFenster>0){
+    b.push({stufe:'info',regel:'Plausibilitaet',
+      text:w.ohneFenster+' Zeile(n) ohne Von/Bis - die Arbeitszeitpruefung ist fuer diesen Tag unvollstaendig.'});
+  }
+  if(w.nullStd>0){
+    b.push({stufe:'info',regel:'Plausibilitaet',text:w.nullStd+' Zeile(n) mit 0,00 h erfasst.'});
+  }
+  if(w.letzteBis!=null&&w.letzteBis>1440){
+    b.push({stufe:'info',regel:'Plausibilitaet',
+      text:'Arbeitszeit reicht ueber Mitternacht (Ende '+abgMinZeit(w.letzteBis)+').'});
+  }
+  return {werte:w,befunde:b,stufe:azHoechsteStufe(b)};
+}
+
+// --- Anbindung an die Monatsmatrix (Abgabe-Tagesansicht) ---
+function azKonsMapMatrix(tage,j,mi){
+  const out={};
+  const t=tage||{};
+  Object.keys(t).forEach(function(k){
+    if(!t[k]||!t[k].kons)return;
+    out[j+'-'+String(mi).padStart(2,'0')+'-'+String(parseInt(k,10)).padStart(2,'0')]=t[k].kons;
+  });
+  return out;
+}
+function azBekanntMonat(j,mi){
+  const out={};const n=new Date(j,mi,0).getDate();
+  for(let t=1;t<=n;t++)out[j+'-'+String(mi).padStart(2,'0')+'-'+String(t).padStart(2,'0')]=true;
+  return out;
+}
+function azBefundHTML(az){
+  if(!az)return '';
+  if(!az.befunde.length){
+    return '<div style="margin-top:10px;padding:8px 10px;border:1px solid var(--b);border-radius:8px;font-size:11px;color:var(--g)">'+
+      'Arbeitszeitgesetz: keine Auffaelligkeiten &middot; '+azStd(az.werte.netto)+' h Arbeitszeit, '+az.werte.pause+' min Pause</div>';
+  }
+  const farbe=(az.stufe==='krit')?'var(--r)':((az.stufe==='warn')?'var(--o)':'var(--m)');
+  return '<div style="margin-top:10px;padding:10px;border:1px solid '+farbe+';border-radius:8px">'+
+    '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:'+farbe+';margin-bottom:6px">Arbeitszeitgesetz &middot; '+az.befunde.length+' Hinweis'+(az.befunde.length===1?'':'e')+'</div>'+
+    az.befunde.map(function(f){
+      const c=(f.stufe==='krit')?'var(--r)':((f.stufe==='warn')?'var(--o)':'var(--m)');
+      return '<div style="font-size:11px;color:'+c+';padding:3px 0;line-height:1.5">'+
+        '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px">'+_dfEsc(f.regel)+'</span> '+_dfEsc(f.text)+'</div>';
+    }).join('')+
+    '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-top:6px">Gerechnet auf den gewerteten Zeiten: '+
+    azStd(az.werte.anwesend)+' h anwesend &middot; '+az.werte.pause+' min Pause &middot; '+azStd(az.werte.netto)+' h Arbeitszeit</div>'+
+    '</div>';
+}
+
+// --- Anbindung an die Buchhaltungs-Freigabe (Nachfrage vor dem Freigeben) ---
+// Prueft alle Personen, deren Zeiten in diesem Bericht stehen. Laedt dafuer
+// +/- 7 Tage, damit Ruhezeit und Wochensumme ueber Monatsgrenzen stimmen.
+async function azPruefeBericht(b){
+  if(!MALISTE||!MALISTE.length)await loadMitarbeiterListe();
+  const datum=b&&b.datum;
+  if(!datum)return [];
+  const von=azDatumPlus(datum,-7),bis=azDatumPlus(datum,7);
+  let alle=[],start=0;
+  while(true){
+    const r=await sb.from('berichte')
+      .select('id,datum,rolle,mitarbeiter_id,mitarbeiter_name,zeit_rows,von,bis,pause_min,netto_arbeit_h,netto_gesamt_h,projekt_id,projekt_nr')
+      .gte('datum',von).lte('datum',bis)
+      .order('datum',{ascending:true}).order('id',{ascending:true})
+      .range(start,start+999);
+    if(r.error)throw r.error;
+    const d=r.data||[];
+    alle=alle.concat(d);
+    if(d.length<1000)break;
+    start+=1000;
+  }
+  const bekannt={};
+  for(let i=-7;i<=7;i++)bekannt[azDatumPlus(datum,i)]=true;
+  const proTag={};
+  alle.forEach(function(r){if(r.datum){if(!proTag[r.datum])proTag[r.datum]=[];proTag[r.datum].push(r);}});
+  const konsProPerson={};
+  Object.keys(proTag).forEach(function(d){
+    const g=abgSammleEintraege(proTag[d]);
+    Object.keys(g.map).forEach(function(pid){
+      const tKeys=Object.keys(g.map[pid]);
+      if(!tKeys.length)return;
+      if(!konsProPerson[pid])konsProPerson[pid]={};
+      konsProPerson[pid][d]=abgKonsolidiereTag(g.map[pid][tKeys[0]]);
+    });
+  });
+  const ziel={};
+  if(b.rolle==='va'&&Array.isArray(b.zeit_rows)&&b.zeit_rows.length){
+    b.zeit_rows.forEach(function(z){
+      if(!z||!z.name)return;
+      const hit=_dfFindMA(z.name);
+      if(hit)ziel[hit.id]=hit.name;
+    });
+  }
+  if(!Object.keys(ziel).length){
+    let pid=b.mitarbeiter_id;
+    if(!pid||!MALISTE.some(function(m){return m.id===pid;})){
+      const h=_dfFindMA(b.mitarbeiter_name||'');pid=h?h.id:null;
+    }
+    if(pid){
+      const h=MALISTE.find(function(m){return m.id===pid;});
+      ziel[pid]=h?h.name:(b.mitarbeiter_name||'?');
+    }
+  }
+  const out=[];
+  Object.keys(ziel).forEach(function(pid){
+    const map=konsProPerson[pid]||{};
+    const kons=map[datum];
+    if(!kons)return;
+    const az=azPruefeTag(kons,azKontext(map,datum,bekannt));
+    if(az.befunde.length)out.push({name:ziel[pid],az:az});
+  });
+  return out;
+}
+
+// Text fuer den Bestaetigungsdialog. Leer = keine Auffaelligkeit.
+function azConfirmText(liste,datum){
+  // Im Freigabe-Dialog nur echte Befunde (krit/warn). Reine Hinweise (info,
+  // z.B. der uebliche 8-Stunden-Tag) bleiben der Abgabe-Tagesansicht vorbehalten,
+  // sonst wird der Dialog zur Klickstrecke.
+  const l=[];
+  (liste||[]).forEach(function(p){
+    const rel=p.az.befunde.filter(function(f){return f.stufe!=='info';});
+    if(rel.length)l.push({name:p.name,befunde:rel});
+  });
+  if(!l.length)return '';
+  const ges=l.reduce(function(s,p){return s+p.befunde.length;},0);
+  let t='\n\nArbeitszeit-Hinweise zum '+fmtD(datum)+':';
+  let n=0;
+  l.forEach(function(p){
+    p.befunde.forEach(function(f){
+      if(n>=8)return;
+      t+='\n- '+p.name+': '+f.text+' ('+f.regel+')';
+      n++;
+    });
+  });
+  if(ges>n)t+='\n- ... und '+(ges-n)+' weitere';
+  t+='\n\nDie Hinweise dienen dem Arbeitsschutz und blockieren die Freigabe nicht.\nTrotzdem freigeben?';
+  return t;
 }
 
 async function renderAdminExp(){
@@ -4410,12 +4834,73 @@ function showTab(name){
 // Freigaben pro Account in mitarbeiter.module (JSONB-Array),
 // z.B. ["tagesberichte","ausbildung"]. NULL = Standard nach Rolle.
 // ════════════════════════════════════════════════════════════
+// ══════ VOLLZUGRIFF (ein Zugang, per Personalnummer freigeschaltet) ══════
+// Schaltet fuer genau eine Personalnummer alle Module frei und erlaubt es,
+// die Ansicht (Rolle) innerhalb der Sitzung zu wechseln. Die Stammdaten werden
+// dabei NICHT veraendert. Das ist Bedienkomfort, keine Sicherheitsgrenze -
+// echte Trennung kommt erst mit RLS und Passwort-Hashing.
+const MASTER_NR=117;
+let istMasterUser=false;
+let masterEchteRolle=null;
+const MASTER_ROLLEN=[
+  {key:'admin',name:'Admin'},
+  {key:'verwaltung',name:'Buchhaltung'},
+  {key:'projektleiter',name:'Projektleiter'},
+  {key:'vorarbeiter',name:'Vorarbeiter'},
+  {key:'arbeiter',name:'Arbeiter'},
+  {key:'werkstatt',name:'Werkstatt'}
+];
+// Vergleich rein numerisch, damit 117, 0117 und 00117 gleich behandelt werden.
+function masterNrGleich(nr){
+  const n=parseInt(String(nr==null?'':nr).replace(/[^0-9]/g,''),10);
+  return !isNaN(n)&&n===MASTER_NR;
+}
+function masterPruefen(u){
+  istMasterUser=!!(u&&masterNrGleich(u.mitarbeiter_nr)&&u.rolle==='admin');
+  masterEchteRolle=u?u.rolle:null;
+  return istMasterUser;
+}
+async function masterSetzeRolle(r){
+  if(!istMasterUser){toast('Dieser Zugang hat keinen Vollzugriff','err');return;}
+  if(!MASTER_ROLLEN.some(function(x){return x.key===r;})){toast('Unbekannte Ansicht: '+r,'err');return;}
+  try{
+    stopVAAutoSave();
+    currentUser.rolle=r;
+    ['admin-screen','pl-screen','ausb-screen','br-screen','menu-screen'].forEach(function(id){
+      const el=document.getElementById(id);if(el)el.style.display='none';
+    });
+    await openModul('tagesberichte');
+  }catch(e){
+    console.error('Ansichtswechsel fehlgeschlagen:',e);
+    toast('Ansichtswechsel fehlgeschlagen: '+(e.message||String(e)),'err');
+    openMenu();
+  }
+}
+function masterPanelHTML(){
+  const akt=currentUser?currentUser.rolle:'';
+  return '<div style="margin-top:18px;padding:12px;border:1px solid var(--b);border-radius:var(--rad)">'+
+    '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--m);margin-bottom:8px">Ansicht wechseln &middot; Vollzugriff #'+MASTER_NR+'</div>'+
+    '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
+    MASTER_ROLLEN.map(function(r){
+      const an=(r.key===akt);
+      return '<button class="btn'+(an?' btn-sky':'')+'" style="font-size:11px;padding:5px 10px" ontouchstart="masterSetzeRolle(\''+r.key+'\')" onclick="masterSetzeRolle(\''+r.key+'\')">'+
+        r.name+(an?' &#x2713;':'')+'</button>';
+    }).join('')+'</div>'+
+    '<div style="font-size:10px;color:var(--m);margin-top:8px;line-height:1.5">'+
+    'Gilt nur fuer diese Sitzung, in den Stammdaten bleibst du '+_dfEsc(masterEchteRolle||'--')+'. '+
+    'Was du in einer Ansicht schreibst oder freigibst, sind echte Datensaetze unter deinem Namen. '+
+    'Die Azubi-Sicht der Ausbildung erscheint, sobald Vorarbeiter, Arbeiter oder Werkstatt aktiv ist.</div>'+
+    '</div>';
+}
+
 const MODULE_DEFS=[
   {key:'tagesberichte',name:'Tagesberichte',sub:'Zeiterfassung, Berichte, Freigaben'},
   {key:'ausbildung',name:'Ausbildung',sub:'Lernen, Tests, Ergebnisse'},
   {key:'baurechner',name:'Baurechner',sub:'Kalkulation Sportplatzbau'}
 ];
 function userModule(u){
+  // Vollzugriff sieht alle Module - auch nachdem die Ansicht gewechselt wurde
+  if(istMasterUser&&u&&masterNrGleich(u.mitarbeiter_nr))return MODULE_DEFS.map(function(d){return d.key;});
   let m=u?u.module:null;
   if(typeof m==='string'){try{m=JSON.parse(m);}catch(e){m=null;}}
   if(Array.isArray(m)&&m.length){
@@ -4450,6 +4935,8 @@ function openMenu(){
       '<div class="menu-tile-name">'+d.name+'</div><div class="menu-tile-sub">'+d.sub+'</div></div>';
   });
   document.getElementById('menu-tiles').innerHTML=html;
+  const mm=document.getElementById('menu-master');
+  if(mm)mm.innerHTML=istMasterUser?masterPanelHTML():'';
   document.getElementById('menu-screen').style.display='flex';
 }
 async function openModul(k){
