@@ -13,6 +13,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0e1209;--s1:#141a0d;--s2:#1a2210;--s3:#202a14;--b:#2c3a1c;--g:#72b832;--gd:#4d8520;--gg:rgba(114,184,50,.1);--gl:#9ed45a;--earth:#9a6c1a;--earthg:rgba(154,108,26,.12);--sky:#3d8fa8;--skyg:rgba(61,143,168,.1);--r:#c44828;--rg:rgba(196,72,40,.1);--o:#d4782a;--c:#dce8c4;--m:#6a8848;--t:#b8cc98;--rad:4px;--ws:#9aa88f;--wsg:rgba(154,168,143,.12);}
 body.theme-light{--bg:#eef0ea;--s1:#ffffff;--s2:#ffffff;--s3:#f0f2ec;--b:#c2ccb0;--g:#4d8520;--gd:#3a6818;--gg:rgba(77,133,32,.14);--gl:#2f5614;--earth:#7a5212;--earthg:rgba(122,82,18,.12);--sky:#256075;--skyg:rgba(37,96,117,.1);--r:#a8331a;--rg:rgba(168,51,26,.1);--o:#b25e18;--c:#0d1207;--m:#5a6748;--t:#161e0c;--ws:#4a5a3d;--wsg:rgba(74,90,61,.12);}
@@ -356,6 +357,129 @@ select.zeit-name.zn-bad{border:2px solid var(--r)!important;background:var(--rg)
 .abg-click{cursor:pointer;}
 .abg-click:active{background:var(--skyg);}
 .abg-konf-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 4px;border-bottom:1px solid rgba(196,72,40,.15);cursor:pointer;flex-wrap:wrap;}
+
+/* ================================================================
+   WERKSTATT-REDESIGN (wsd) - aktiv nur bei Rolle Werkstatt
+   Vorlage: "Tagesbericht Redesign" (Variante 1b mit Verbesserungen)
+   Alle Regeln sind unter body.wsd gescopet - andere Rollen bleiben
+   vollstaendig unveraendert. Hell = Mockup-Palette, Dunkel = Pendant.
+   ================================================================ */
+.wsd-only{display:none;}
+body.wsd{
+  --zA:#3d7a2e;--zA2:#4c9639;
+  --zBg:#11160d;--zCard:#191f12;--zLine:#2a341f;--zLine2:#333f26;
+  --zTxt:#e4ead9;--zMut:#a9b59c;--zMut2:#87947b;
+  --zField:#12180c;--zRead:#161d10;--zSelBg:#1d2913;
+  --zSoftG:rgba(114,184,50,.14);--zSoftGB:rgba(114,184,50,.38);--zNetto:#9ed45a;
+  --zChip:#cdd8c1;--zSide:#161c10;--zILine:#242e1a;--zPh:#6e7c63;--zSecT:#8fca5f;
+  --zFoot:rgba(17,22,13,.92);--zHead:#16240f;--zHeadTx:#cfe0c8;--zHeadSub:#a8c49e;
+  --zBtnSh:rgba(0,0,0,.4);
+}
+body.wsd.theme-light{
+  --zBg:#f4f5f2;--zCard:#ffffff;--zLine:#e2e6dd;--zLine2:#dde2d7;
+  --zTxt:#1c2419;--zMut:#5c6656;--zMut2:#7c8676;
+  --zField:#ffffff;--zRead:#f8f9f6;--zSelBg:#f2f8ee;
+  --zSoftG:#e9f2e4;--zSoftGB:#cfe0c8;--zNetto:#2c5a20;
+  --zChip:#3c4636;--zSide:#ffffff;--zILine:#eef1ea;--zPh:#9aa495;--zSecT:#3d7a2e;
+  --zFoot:rgba(244,245,242,.92);--zHead:#1e3317;--zHeadTx:#cfe0c8;--zHeadSub:#a8c49e;
+  --zBtnSh:rgba(61,122,46,.35);
+}
+body.wsd{display:flex;flex-direction:column;background:var(--zBg);font-family:'Public Sans','IBM Plex Sans',sans-serif;}
+/* Kopfleiste */
+body.wsd header{flex:none;height:auto;min-height:58px;background:var(--zHead);border-bottom:none;padding:9px 16px;gap:12px;flex-wrap:wrap;row-gap:6px;}
+body.wsd .h-logo{height:38px;background:#fff;border-radius:7px;padding:3px 5px;}
+body.wsd .wsd-htitle{display:flex;flex-direction:column;gap:1px;}
+body.wsd .wsd-ht1{font-weight:700;font-size:15px;letter-spacing:.2px;color:#fff;}
+body.wsd .wsd-ht2{font-size:11.5px;color:var(--zHeadSub);}
+body.wsd #wsd-tabslot{display:flex;gap:4px;margin-left:16px;flex-wrap:wrap;}
+body.wsd .role-badge,body.wsd .h-user,body.wsd .h-divider,body.wsd .sb-date{display:none;}
+body.wsd .wsd-hdate{display:inline;font-size:12.5px;color:var(--zHeadTx);margin-right:2px;white-space:nowrap;}
+body.wsd .wsd-avatar{display:flex;width:32px;height:32px;border-radius:50%;background:var(--zA2);color:#fff;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none;}
+body.wsd header .hbtn,body.wsd header .theme-btn{background:none;border:1px solid rgba(255,255,255,.22);border-radius:8px;color:var(--zHeadTx);font-family:'Public Sans',sans-serif;font-size:11.5px;font-weight:600;padding:6px 11px;}
+/* Tabs als Pills in der Kopfleiste */
+body.wsd .tabs{background:transparent;border-bottom:none;padding:0;overflow-x:visible;display:flex;gap:4px;}
+body.wsd .tab{padding:8px 14px;border-bottom:none;border-radius:8px;font-size:13.5px;font-weight:600;color:var(--zHeadTx);font-family:'Public Sans',sans-serif;}
+body.wsd .tab.act,body.wsd .tab.act.ws-tab{background:var(--zA2);color:#fff;border-bottom:none;}
+body.wsd .tab:not(.act):hover{background:rgba(255,255,255,.14);}
+/* Grundraster */
+body.wsd .app{flex:1;height:auto;min-height:0;grid-template-columns:284px 1fr;}
+body.wsd aside{background:var(--zSide);border-right:1px solid var(--zLine);}
+body.wsd .sb-head{display:flex;flex-direction:column;gap:10px;padding:14px 12px 12px;border-bottom:1px solid var(--zILine);}
+body.wsd .btn-new,body.wsd .btn-new.ws{background:var(--zA);color:#fff;border-radius:10px;padding:12px;font-family:'Public Sans',sans-serif;font-weight:700;font-size:14px;box-shadow:0 1px 2px rgba(30,51,23,.25);}
+body.wsd .btn-new:active{transform:translateY(1px);}
+body.wsd #wsd-sb-such{display:block;padding:9px 12px;border:1px solid var(--zLine2);border-radius:8px;font-size:13px;background:var(--zField);color:var(--zTxt);font-family:'Public Sans',sans-serif;}
+body.wsd #wsd-sb-such::placeholder{color:var(--zPh);}
+/* Berichtsliste */
+body.wsd .sb-list{padding:10px;}
+body.wsd .ri{padding:11px 12px;border-radius:10px;border:1px solid var(--zILine);background:var(--zCard);margin-bottom:6px;}
+body.wsd .ri.act{border:1.5px solid var(--zA2);background:var(--zSelBg);padding:10.5px 11.5px;}
+body.wsd .wsd-ri-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+body.wsd .wsd-ri-top .ri-n{font-size:13.5px;font-weight:700;color:var(--zTxt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+body.wsd .wsd-ri-top .ri-d{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--zMut2);margin-bottom:0;flex:none;}
+body.wsd .ri .ri-tags{margin-top:6px;gap:6px;align-items:center;}
+body.wsd .ri .tag-s{font-family:'Public Sans',sans-serif;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;}
+body.wsd .sb-list .tag-e{background:#e4ecf7;color:#2b5aa0;}
+body.wsd .sb-list .tag-g{background:#f4ead9;color:#8a6420;}
+body.wsd .sb-list .tag-ws{background:#e6eadf;color:#55604c;}
+body.wsd:not(.theme-light) .sb-list .tag-e{background:rgba(90,140,220,.18);color:#a9c2ea;}
+body.wsd:not(.theme-light) .sb-list .tag-g{background:rgba(200,150,60,.18);color:#dcb878;}
+body.wsd:not(.theme-light) .sb-list .tag-ws{background:rgba(154,168,143,.18);color:#b9c4ad;}
+body.wsd .wsd-ri-h{font-size:11.5px;color:var(--zMut);font-weight:600;}
+body.wsd .wsd-fsp{flex:1;}
+body.wsd .wsd-tag-drive{background:var(--zSoftG);color:var(--zSecT);}
+body.wsd .wsd-ri-ok{font-size:11px;color:var(--zSecT);font-weight:800;}
+/* Inhalt */
+body.wsd .content{padding:26px 30px 30px;background:var(--zBg);}
+body.wsd .panel{max-width:960px;margin:0 auto;}
+body.wsd .wsd-page{max-width:920px;margin:0 auto;display:flex;flex-direction:column;gap:18px;}
+body.wsd .wsd-titlerow{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;}
+body.wsd .wsd-h1{margin:0;font-size:22px;font-weight:800;letter-spacing:-.2px;color:var(--zTxt);font-family:'Public Sans',sans-serif;}
+body.wsd .wsd-lastinfo{font-size:12.5px;color:var(--zMut2);}
+body.wsd .content .qsec{background:var(--zCard);border:1px solid var(--zLine);border-radius:14px;padding:20px 22px;margin-bottom:0;}
+body.wsd .content .qsec-t{font-family:'Public Sans',sans-serif;font-size:12px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--zSecT);margin-bottom:14px;}
+body.wsd .wsd-trow{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;}
+body.wsd .content .wsd-trow .qsec-t{margin-bottom:0;}
+body.wsd .wsd-hint{font-size:12px;color:var(--zPh);}
+body.wsd .wsd-grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;}
+body.wsd .wsd-zeitgrid{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:14px 18px;align-items:end;}
+body.wsd .content .fg{gap:6px;min-width:0;}
+body.wsd .content label{font-family:'Public Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--zMut);}
+body.wsd .content input,body.wsd .content select,body.wsd .content textarea{background:var(--zField);border:1px solid var(--zLine2);border-radius:8px;color:var(--zTxt);font-family:'Public Sans',sans-serif;font-size:14.5px;padding:10px 12px;}
+body.wsd .content input:focus,body.wsd .content select:focus,body.wsd .content textarea:focus{outline:2px solid var(--zA2);outline-offset:-1px;border-color:var(--zLine2);}
+body.wsd .content ::placeholder{color:var(--zPh);}
+body.wsd #ws-name{background:var(--zRead);color:var(--zMut);border-color:var(--zILine);}
+body.wsd #ws-von,body.wsd #ws-bis{font-family:'JetBrains Mono',monospace;font-size:15px;}
+body.wsd .wsd-nettocol{align-items:flex-end;}
+body.wsd .wsd-nettocol label{text-align:right;}
+body.wsd .wsd-nettobox{display:flex;align-items:baseline;gap:5px;padding:8px 14px;border-radius:8px;background:var(--zSoftG);border:1px solid var(--zSoftGB);}
+body.wsd .wsd-nettobox input#ws-netto{background:transparent;border:none;padding:0;width:72px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600;color:var(--zNetto);}
+body.wsd .wsd-nettobox input#ws-netto:focus{outline:none;}
+body.wsd .wsd-nettobox span{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:var(--zNetto);}
+body.wsd .content .tags{gap:8px;}
+body.wsd .content .tg{padding:9px 16px;border-radius:999px;font-family:'Public Sans',sans-serif;font-size:13.5px;font-weight:600;background:var(--zCard);border:1px solid var(--zLine2);color:var(--zChip);}
+body.wsd .content .tg.a{background:var(--zA);border-color:var(--zA);color:#fff;}
+body.wsd .content textarea{min-height:96px;line-height:1.5;resize:vertical;}
+body.wsd .content .mic-btn{background:transparent;border:1px solid var(--zLine2);border-radius:999px;color:var(--zMut);font-family:'Public Sans',sans-serif;font-size:12px;font-weight:600;padding:7px 14px;margin-top:8px;}
+body.wsd .content .mic-btn.on{background:rgba(196,72,40,.12);border-color:#c0492c;color:#c0492c;}
+body.wsd .wsd-gap{margin-top:12px;}
+/* Fussleiste */
+body.wsd .wsd-footer{position:sticky;bottom:0;display:flex;gap:10px;align-items:center;padding:13px 16px;background:var(--zFoot);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--zLine);border-radius:12px;z-index:40;box-shadow:0 -2px 12px rgba(0,0,0,.05);}
+body.wsd .wsd-footer .send-status{margin-top:0;padding:6px 10px;font-family:'Public Sans',sans-serif;font-size:12px;border-radius:8px;}
+body.wsd .wsd-footer .send-status.ok{background:var(--zSoftG);border:1px solid var(--zSoftGB);color:var(--zSecT);}
+body.wsd .wsd-footer .send-status.err{background:rgba(196,72,40,.1);border:1px solid rgba(196,72,40,.35);color:#c0492c;}
+body.wsd:not(.theme-light) .wsd-footer .send-status.err{color:#e08568;}
+body.wsd .wsd-footer .send-status.sending{background:rgba(37,96,117,.1);border:1px solid rgba(37,96,117,.3);color:#256075;}
+body.wsd:not(.theme-light) .wsd-footer .send-status.sending{color:#7db6c9;}
+body.wsd .content .btn{background:var(--zCard);border:1px solid var(--zLine2);border-radius:10px;padding:11px 18px;font-family:'Public Sans',sans-serif;font-size:14px;font-weight:600;color:var(--zChip);}
+body.wsd .content .btn:active{transform:translateY(1px);}
+body.wsd .content .btn-p{background:var(--zA);border:none;color:#fff;font-weight:700;padding:11px 22px;box-shadow:0 2px 6px var(--zBtnSh);}
+/* Uebrige Tabs (Fahrzeuge etc.) im neuen Rahmen */
+body.wsd .content .a-sec{background:var(--zCard);border:1px solid var(--zLine);border-radius:14px;padding:18px 20px;}
+body.wsd .content .a-sec-title{font-family:'Public Sans',sans-serif;font-size:11px;font-weight:800;letter-spacing:1.2px;border-bottom:1px solid var(--zILine);}
+body.wsd .content .et{font-family:'Public Sans',sans-serif;color:var(--zMut2);}
+/* Anpassung schmale Breiten (iPad hochkant) */
+@media(max-width:1020px){body.wsd .app{grid-template-columns:240px 1fr;}body.wsd .content{padding:20px 18px 24px;}}
+@media(max-width:760px){body.wsd .wsd-grid2{grid-template-columns:1fr;}body.wsd .wsd-zeitgrid{grid-template-columns:1fr 1fr;}body.wsd .wsd-nettocol{align-items:flex-start;}body.wsd .wsd-nettocol label{text-align:left;}body.wsd #wsd-tabslot{margin-left:0;order:10;flex-basis:100%;}}
 </style>
 </head>
 <body class="theme-light">
@@ -492,15 +616,19 @@ select.zeit-name.zn-bad{border:2px solid var(--r)!important;background:var(--rg)
 
 <header>
   <img src="https://www.klei-sportplatzbau.de/images/logos/KLEI_LOGO_FARBIG_RGB_72DPI.png" class="h-logo" alt="KLEI" onerror="this.style.display='none'">
+  <div class="wsd-only wsd-htitle"><div class="wsd-ht1">KLEI Tagesberichte</div><div class="wsd-ht2" id="wsd-sub"></div></div>
+  <div class="wsd-only" id="wsd-tabslot"></div>
   <div class="h-divider"></div>
   <span class="role-badge" id="role-badge"></span>
   <span class="h-user" id="h-user-name"></span>
   <div class="h-right">
+    <span class="wsd-only wsd-hdate" id="wsd-hdate"></span>
     <button class="theme-btn" id="theme-btn" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
     <button class="hbtn" id="profil-btn" ontouchstart="openProfil()" onclick="openProfil()">Profil</button>
     <button class="hbtn menu-hbtn" style="display:none" ontouchstart="zumMenue()" onclick="zumMenue()">Menue</button>
     <button class="hbtn va-only" ontouchstart="openMo('mo-df')" onclick="openMo('mo-df')">Dataflor</button>
     <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
+    <div class="wsd-only wsd-avatar" id="wsd-avatar"></div>
   </div>
 </header>
 <div class="app">
@@ -508,6 +636,7 @@ select.zeit-name.zn-bad{border:2px solid var(--r)!important;background:var(--rg)
     <div class="sb-head">
       <div class="sb-date" id="sb-date"></div>
       <button class="btn-new" id="btn-new-bericht" ontouchstart="newReport()" onclick="newReport()">+ Neuer Bericht</button>
+      <input type="text" class="wsd-only" id="wsd-sb-such" placeholder="Berichte durchsuchen..." autocomplete="off" oninput="wsdFilterSB()">
     </div>
     <div class="sb-list" id="sb-list"></div>
   </aside>
@@ -3413,6 +3542,7 @@ async function saveAndSendWS(){
     savedId=ins.id;currentId=savedId;
   }
   await loadReports();renderSB();toast('Gespeichert','ok');
+  const wsdLi=document.getElementById('wsd-lastinfo');if(wsdLi)wsdLi.textContent='Zuletzt gespeichert '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
   const reportForPDF={...d,id:savedId,role:'ws',name:currentUser.name,projektNr:projekt?.nr||'',pause:d.pause_min,fahrzeitMin:0,fahrtStatus:'fahrer',nettoWork:document.getElementById('ws-netto')?.value,netto:document.getElementById('ws-netto')?.value};
   const vers=await sendPDFMail(reportForPDF,'ws-send-status');
   await markiereVersand(savedId,vers);
@@ -4113,11 +4243,21 @@ function renderSB(){
   const el=document.getElementById('sb-list');if(!el)return;
   const sichtbar=reports.filter(r=>r.mitarbeiter_id===currentUser.id);
   if(!sichtbar.length){el.innerHTML='<div style="padding:20px;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m)">Keine Berichte</div>';return;}
+  const wsd=document.body.classList.contains('wsd');
   el.innerHTML=sichtbar.map(r=>{
     const h=parseFloat(r.netto_gesamt_h||r.netto_arbeit_h||0);
     const label=r.rolle==='va'?getProjektLabel(r.projekt_id||''):(r.mitarbeiter_name||'--');
     const tagCls=r.rolle==='va'?'tag-e':r.rolle==='ws'?'tag-ws':'tag-g';
     const tagLbl=r.rolle==='va'?'VA':r.rolle==='ws'?'WS':'AR';
+    if(wsd){
+      return'<div class="ri'+(r.id===currentId?' act':'')+'" data-id="'+r.id+'" ontouchstart="loadReport(\''+r.id+'\')" onclick="loadReport(\''+r.id+'\')">'+
+        '<div class="wsd-ri-top"><span class="ri-n">'+label+'</span><span class="ri-d">'+fmtD(r.datum)+'</span></div>'+
+        '<div class="ri-tags"><span class="tag-s '+tagCls+'">'+tagLbl+'</span>'+
+        '<span class="wsd-ri-h">'+h.toFixed(1).replace('.',',')+' h</span><span class="wsd-fsp"></span>'+
+        (r.pdf_url?'<span class="tag-s wsd-tag-drive">Drive</span>':'')+
+        (r.gesendet?'<span class="wsd-ri-ok" title="PDF gesendet">&#x2713;</span>':'')+
+        '</div></div>';
+    }
     return'<div class="ri'+(r.id===currentId?' act':'')+'" data-id="'+r.id+'" ontouchstart="loadReport(\''+r.id+'\')" onclick="loadReport(\''+r.id+'\')">'+
       '<div class="ri-d">'+fmtD(r.datum)+'</div>'+
       '<div class="ri-n">'+label+'</div>'+
@@ -4128,6 +4268,7 @@ function renderSB(){
       (r.gesendet?'<span class="tag-s" style="background:rgba(61,143,168,.12);color:var(--sky)">&#x2713;</span>':'')+
       '</div></div>';
   }).join('');
+  if(wsd)wsdFilterSB();
 }
 
 function buildUE(){
@@ -4330,9 +4471,45 @@ function hideVoiceBanner(){const bar=document.getElementById('vbar-global');if(b
 function highlightMicBtn(targetId,on){document.querySelectorAll('.mic-btn').forEach(b=>b.classList.remove('on'));if(on){const btn=document.querySelector('[data-mic="'+targetId+'"]');if(btn)btn.classList.add('on');}}
 function mkMic(targetId,label){return'<button class="mic-btn" data-mic="'+targetId+'" ontouchstart="event.preventDefault();startVoice(\''+targetId+'\',\''+label+'\')" onclick="startVoice(\''+targetId+'\',\''+label+'\')">&#127908; '+label+'</button>';}
 
+// ══════ WERKSTATT-REDESIGN (wsd) ══════
+// Aktiviert das neue Werkstatt-Design ueber die Body-Klasse 'wsd'.
+// Gilt NUR fuer die Rolle Werkstatt - alle anderen Ansichten bleiben unveraendert.
+function wsdApply(on,tabsEl){
+  document.body.classList.toggle('wsd',!!on);
+  const slot=document.getElementById('wsd-tabslot');
+  const mainEl=document.querySelector('.app main');
+  const contentEl=document.getElementById('main-content');
+  if(on){
+    if(slot&&tabsEl&&tabsEl.parentNode!==slot)slot.appendChild(tabsEl);
+    const sub=document.getElementById('wsd-sub');
+    if(sub&&typeof currentUser!=='undefined'&&currentUser)sub.textContent='Werkstatt \u00B7 '+(currentUser.name||'')+' #'+(currentUser.mitarbeiter_nr||'');
+    const av=document.getElementById('wsd-avatar');
+    if(av&&typeof currentUser!=='undefined'&&currentUser){
+      const ini=String(currentUser.name||'').split(' ').filter(function(x){return x;}).map(function(x){return x.charAt(0);}).join('').substring(0,2).toUpperCase();
+      av.textContent=ini||'?';
+    }
+    const hd=document.getElementById('wsd-hdate');
+    if(hd)hd.textContent=new Date().toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
+    const such=document.getElementById('wsd-sb-such');
+    if(such)such.value='';
+  }else{
+    if(mainEl&&contentEl&&tabsEl&&tabsEl.parentNode!==mainEl)mainEl.insertBefore(tabsEl,contentEl);
+  }
+}
+// Filtert die Berichtsliste in der Sidebar (nur im Werkstatt-Design aktiv)
+function wsdFilterSB(){
+  const inp=document.getElementById('wsd-sb-such');
+  if(!inp)return;
+  const q=inp.value.trim().toLowerCase();
+  document.querySelectorAll('#sb-list .ri').forEach(function(el){
+    el.style.display=(!q||el.textContent.toLowerCase().indexOf(q)>-1)?'':'none';
+  });
+}
+
 // ══════ BUILD UI ══════
 function buildUI(){
   const tabs=document.getElementById('tabs-row'),content=document.getElementById('main-content');
+  wsdApply(currentRole==='werkstatt',tabs);
   if(currentRole==='werkstatt'){
     tabs.innerHTML=
       '<div class="tab act ws-tab" id="tab-quick" ontouchstart="showTab(\'quick\')" onclick="showTab(\'quick\')">Werkstatt</div>'+
@@ -4376,42 +4553,42 @@ function buildUI(){
 
 // ══════ WERKSTATT ══════
 function buildWS(){
-  return'<div class="qsec"><div class="qsec-t">Einsatz</div>'+
-    '<div class="row">'+
-    '<div class="fg w50"><label>Datum</label><input type="date" id="ws-datum"></div>'+
-    '<div class="fg w50"><label>Name</label><input type="text" id="ws-name" readonly style="background:var(--s3);color:var(--gl)"></div>'+
-    '</div>'+
-    '<div class="row">'+
-    '<div class="fg w50"><label>Bereich</label>'+katSelectHTML('ws-kat','onWSKatChange()','bau')+'</div>'+
-    '<div class="fg w50"><label>Projekt / Einsatzort</label><select id="ws-projekt">'+projektOptsByKat('bau','')+'</select></div>'+
-    '</div>'+
-    '<div class="row">'+
-    '<div class="fg w50"><label>Fahrzeug</label><select id="ws-fahrzeug"><option value="">- kein Fahrzeug -</option>'+
+  return'<div class="wsd-page">'+
+    '<div class="wsd-titlerow"><h1 class="wsd-h1">Tagesbericht</h1><span class="wsd-lastinfo" id="wsd-lastinfo"></span></div>'+
+    '<div class="qsec"><div class="qsec-t">Einsatz</div>'+
+    '<div class="wsd-grid2">'+
+    '<div class="fg"><label>Datum</label><input type="date" id="ws-datum"></div>'+
+    '<div class="fg"><label>Name</label><input type="text" id="ws-name" readonly></div>'+
+    '<div class="fg"><label>Bereich</label>'+katSelectHTML('ws-kat','onWSKatChange()','bau')+'</div>'+
+    '<div class="fg"><label>Projekt / Einsatzort</label><select id="ws-projekt">'+projektOptsByKat('bau','')+'</select></div>'+
+    '<div class="fg"><label>Fahrzeug</label><select id="ws-fahrzeug"><option value="">- kein Fahrzeug -</option>'+
     FAHRZEUGE.map(fz=>'<option value="'+fz.id+'">'+fz.kennzeichen+' - '+fz.typ+'</option>').join('')+'</select></div>'+
-    '<div class="fg w50"><label>Wetter</label><select id="ws-wetter"><option>Sonnig</option><option>Bewoelkt</option><option>Regen</option><option>Frost</option></select></div>'+
+    '<div class="fg"><label>Wetter</label><select id="ws-wetter"><option>Sonnig</option><option>Bewoelkt</option><option>Regen</option><option>Frost</option></select></div>'+
     '</div></div>'+
     '<div class="qsec"><div class="qsec-t">Arbeitszeiten</div>'+
-    '<div class="row">'+
-    '<div class="fg w33"><label>Beginn</label><input type="time" id="ws-von" value="06:30" oninput="calcWS()"></div>'+
-    '<div class="fg w33"><label>Ende</label><input type="time" id="ws-bis" value="16:30" oninput="calcWS()"></div>'+
-    '<div class="fg w33"><label>Pause</label><select id="ws-pause" onchange="calcWS()">'+PAUSEN.map(p=>'<option value="'+p+'" '+(p===60?'selected':'')+'>'+p+' min</option>').join('')+'</select></div>'+
-    '</div>'+
-    '<div class="fg" style="margin-top:4px"><label>Netto gesamt</label><input type="text" id="ws-netto" readonly style="color:var(--gl);font-weight:700;font-family:\'IBM Plex Mono\',monospace;font-size:18px"></div></div>'+
-    '<div class="qsec"><div class="qsec-t">Taetigkeiten</div>'+
+    '<div class="wsd-zeitgrid">'+
+    '<div class="fg"><label>Beginn</label><input type="time" id="ws-von" value="06:30" oninput="calcWS()"></div>'+
+    '<div class="fg"><label>Ende</label><input type="time" id="ws-bis" value="16:30" oninput="calcWS()"></div>'+
+    '<div class="fg"><label>Pause</label><select id="ws-pause" onchange="calcWS()">'+PAUSEN.map(p=>'<option value="'+p+'" '+(p===60?'selected':'')+'>'+p+' min</option>').join('')+'</select></div>'+
+    '<div class="fg wsd-nettocol"><label>Netto gesamt</label><div class="wsd-nettobox"><input type="text" id="ws-netto" readonly><span>h</span></div></div>'+
+    '</div></div>'+
+    '<div class="qsec"><div class="wsd-trow"><div class="qsec-t">Taetigkeiten</div><span class="wsd-hint">Mehrfachauswahl</span></div>'+
     '<div class="tags" id="ws-taetigkeiten-tags">'+taetigkeitenTags([],TAETIGKEITEN_WS)+'</div></div>'+
     '<div class="qsec"><div class="qsec-t">Details</div>'+
-    '<label>Beschreibung der Arbeiten</label>'+
-    '<textarea id="ws-taetigkeit" placeholder="Was wurde gemacht?" style="margin-top:4px"></textarea>'+mkMic('ws-taetigkeit','Arbeiten')+
-    '<div style="margin-top:10px"><label>Festgestellte Maengel</label>'+
-    '<input type="text" id="ws-maengel" placeholder="Optional" style="margin-top:4px">'+mkMic('ws-maengel','Maengel')+'</div></div>'+
-    '<div class="send-status" id="ws-send-status"></div>'+
-    '<div class="arow"><button class="btn btn-p" ontouchstart="saveAndSendWS()" onclick="saveAndSendWS()">Speichern und PDF senden</button>'+
-    '<button class="btn" ontouchstart="clearWSForm()" onclick="clearWSForm()">Neu</button></div>';
+    '<div class="fg"><label>Beschreibung der Arbeiten</label>'+
+    '<textarea id="ws-taetigkeit" placeholder="Was wurde gemacht?"></textarea></div>'+mkMic('ws-taetigkeit','Arbeiten')+
+    '<div class="fg wsd-gap"><label>Festgestellte Maengel</label>'+
+    '<input type="text" id="ws-maengel" placeholder="Optional"></div>'+mkMic('ws-maengel','Maengel')+
+    '</div>'+
+    '<div class="wsd-footer"><div class="send-status" id="ws-send-status"></div><span class="wsd-fsp"></span>'+
+    '<button class="btn" ontouchstart="clearWSForm()" onclick="clearWSForm()">Neu</button>'+
+    '<button class="btn btn-p" ontouchstart="saveAndSendWS()" onclick="saveAndSendWS()">Speichern und PDF senden</button></div>'+
+    '</div>';
 }
 function initWSForm(){const nEl=document.getElementById('ws-name');if(nEl)nEl.value=currentUser.name;const dEl=document.getElementById('ws-datum');if(dEl)dEl.value=todayStr();calcWS();}
 function onWSKatChange(){const kat=document.getElementById('ws-kat')?.value||'bau';const sel=document.getElementById('ws-projekt');if(sel)sel.innerHTML=projektOptsByKat(kat,'');}
 function calcWS(){const v=document.getElementById('ws-von')?.value,b=document.getElementById('ws-bis')?.value,p=parseFloat(document.getElementById('ws-pause')?.value)||0;if(v&&b){const[vh,vm]=v.split(':').map(Number),[bh,bm]=b.split(':').map(Number);let wm=(bh*60+bm)-(vh*60+vm)-p;if(wm<0)wm+=1440;const el=document.getElementById('ws-netto');if(el)el.value=(wm/60).toFixed(2).replace('.',',');}}
-function clearWSForm(skipConfirm){if(!skipConfirm&&!confirm('Neuen Bericht beginnen? Nicht gespeicherte Eingaben gehen verloren.'))return;currentId=null;stopVoice();const dEl=document.getElementById('ws-datum');if(dEl)dEl.value=todayStr();['ws-taetigkeit','ws-maengel'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const netto=document.getElementById('ws-netto');if(netto)netto.value='';const fzSel=document.getElementById('ws-fahrzeug');if(fzSel)fzSel.value='';const st=document.getElementById('ws-send-status');if(st){st.className='send-status';st.textContent='';}document.querySelectorAll('#ws-taetigkeiten-tags .tg').forEach(t=>t.classList.remove('a'));document.getElementById('ws-von').value='06:30';document.getElementById('ws-bis').value='16:30';document.getElementById('ws-pause').value='60';calcWS();toast('Neuer Werkstatt-Bericht','ok');}
+function clearWSForm(skipConfirm){if(!skipConfirm&&!confirm('Neuen Bericht beginnen? Nicht gespeicherte Eingaben gehen verloren.'))return;currentId=null;stopVoice();const dEl=document.getElementById('ws-datum');if(dEl)dEl.value=todayStr();['ws-taetigkeit','ws-maengel'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const netto=document.getElementById('ws-netto');if(netto)netto.value='';const fzSel=document.getElementById('ws-fahrzeug');if(fzSel)fzSel.value='';const st=document.getElementById('ws-send-status');if(st){st.className='send-status';st.textContent='';}const wli=document.getElementById('wsd-lastinfo');if(wli)wli.textContent='';document.querySelectorAll('#ws-taetigkeiten-tags .tg').forEach(t=>t.classList.remove('a'));document.getElementById('ws-von').value='06:30';document.getElementById('ws-bis').value='16:30';document.getElementById('ws-pause').value='60';calcWS();toast('Neuer Werkstatt-Bericht','ok');}
 
 function buildFZListe(){
   const el=document.getElementById('fzliste-content');if(!el)return;
