@@ -14,8 +14,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0e1209;--s1:#141a0d;--s2:#1a2210;--s3:#202a14;--b:#2c3a1c;--g:#72b832;--gd:#4d8520;--gg:rgba(114,184,50,.1);--gl:#9ed45a;--earth:#9a6c1a;--earthg:rgba(154,108,26,.12);--sky:#3d8fa8;--skyg:rgba(61,143,168,.1);--r:#c44828;--rg:rgba(196,72,40,.1);--o:#d4782a;--c:#dce8c4;--m:#6a8848;--t:#b8cc98;--rad:4px;--ws:#8b5cf6;--wsg:rgba(139,92,246,.1);}
-body.theme-light{--bg:#eef0ea;--s1:#ffffff;--s2:#ffffff;--s3:#f0f2ec;--b:#c2ccb0;--g:#4d8520;--gd:#3a6818;--gg:rgba(77,133,32,.14);--gl:#2f5614;--earth:#7a5212;--earthg:rgba(122,82,18,.12);--sky:#256075;--skyg:rgba(37,96,117,.1);--r:#a8331a;--rg:rgba(168,51,26,.1);--o:#b25e18;--c:#0d1207;--m:#5a6748;--t:#161e0c;--ws:#5e34a0;--wsg:rgba(94,52,160,.1);}
+:root{--bg:#0e1209;--s1:#141a0d;--s2:#1a2210;--s3:#202a14;--b:#2c3a1c;--g:#72b832;--gd:#4d8520;--gg:rgba(114,184,50,.1);--gl:#9ed45a;--earth:#9a6c1a;--earthg:rgba(154,108,26,.12);--sky:#3d8fa8;--skyg:rgba(61,143,168,.1);--r:#c44828;--rg:rgba(196,72,40,.1);--o:#d4782a;--c:#dce8c4;--m:#6a8848;--t:#b8cc98;--rad:4px;--ws:#9aa88f;--wsg:rgba(154,168,143,.12);}
+body.theme-light{--bg:#eef0ea;--s1:#ffffff;--s2:#ffffff;--s3:#f0f2ec;--b:#c2ccb0;--g:#4d8520;--gd:#3a6818;--gg:rgba(77,133,32,.14);--gl:#2f5614;--earth:#7a5212;--earthg:rgba(122,82,18,.12);--sky:#256075;--skyg:rgba(37,96,117,.1);--r:#a8331a;--rg:rgba(168,51,26,.1);--o:#b25e18;--c:#0d1207;--m:#5a6748;--t:#161e0c;--ws:#4a5a3d;--wsg:rgba(74,90,61,.12);}
 body.theme-light{--b:#c2ccb0;}
 body.theme-light input,body.theme-light textarea,body.theme-light select{background:#ffffff;color:#1f2a0d;}
 body.theme-light .toast{box-shadow:0 6px 20px rgba(0,0,0,.15);}
@@ -153,7 +153,7 @@ header{height:46px;background:var(--s1);border-bottom:1px solid var(--b);display
 .role-badge{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1px;padding:2px 7px;border-radius:20px;}
 .role-badge.arbeiter{background:var(--gg);color:var(--gl);border:1px solid var(--gd);}
 .role-badge.vorarbeiter{background:var(--earthg);color:var(--earth);border:1px solid var(--earth);}
-.role-badge.werkstatt{background:var(--wsg);color:var(--ws);border:1px solid rgba(139,92,246,.4);}
+.role-badge.werkstatt{background:var(--wsg);color:var(--ws);border:1px solid var(--b);}
 .h-user{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--m);}
 .h-right{margin-left:auto;display:flex;gap:5px;align-items:center;}
 .hbtn{background:none;border:1px solid var(--b);border-radius:var(--rad);padding:6px 10px;color:var(--m);font-family:'IBM Plex Mono',monospace;font-size:9px;cursor:pointer;white-space:nowrap;}
@@ -163,7 +163,7 @@ aside{background:var(--s1);border-right:1px solid var(--b);display:flex;flex-dir
 .sb-head{padding:10px;border-bottom:1px solid var(--b);}
 .sb-date{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--m);margin-bottom:6px;}
 .btn-new{width:100%;background:linear-gradient(135deg,var(--gd),var(--g));color:#0e1209;border:none;border-radius:var(--rad);padding:10px;font-family:'IBM Plex Sans',sans-serif;font-weight:700;font-size:13px;cursor:pointer;}
-.btn-new.ws{background:linear-gradient(135deg,#7c3aed,var(--ws));}
+.btn-new.ws{background:linear-gradient(135deg,var(--gd),var(--g));}
 .sb-list{overflow-y:auto;flex:1;padding:6px;}
 .ri{padding:8px 10px;border-radius:var(--rad);cursor:pointer;border:1px solid transparent;margin-bottom:2px;}
 .ri.act{background:var(--gg);border-color:var(--gd);}
@@ -175,12 +175,12 @@ aside{background:var(--s1);border-right:1px solid var(--b);display:flex;flex-dir
 .tag-g{background:rgba(114,184,50,.12);color:var(--g);}
 .tag-e{background:rgba(154,108,26,.15);color:var(--earth);}
 .tag-r{background:rgba(196,72,40,.12);color:var(--r);}
-.tag-ws{background:rgba(139,92,246,.12);color:var(--ws);}
+.tag-ws{background:var(--wsg);color:var(--ws);}
 main{display:flex;flex-direction:column;overflow:hidden;}
 .tabs{display:flex;background:var(--s1);border-bottom:1px solid var(--b);padding:0 12px;overflow-x:auto;}
 .tab{padding:12px 14px;font-size:11px;font-weight:600;color:var(--m);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;}
 .tab.act{color:var(--gl);border-bottom-color:var(--g);}
-.tab.act.ws-tab{color:var(--ws);border-bottom-color:var(--ws);}
+.tab.act.ws-tab{color:var(--gl);border-bottom-color:var(--g);}
 .content{flex:1;overflow-y:auto;padding:12px 14px;padding-bottom:70px;}
 .panel{display:none;}.panel.act{display:block;}
 .vbar{background:rgba(196,72,40,.15);border:1px solid rgba(196,72,40,.4);border-radius:var(--rad);padding:10px 14px;margin-bottom:10px;display:none;align-items:center;gap:10px;position:sticky;top:0;z-index:50;}
@@ -228,7 +228,7 @@ select option{background:var(--s2);}
 .btn-e{background:var(--earthg);border-color:rgba(154,108,26,.4);color:var(--earth);}
 .btn-r{background:var(--rg);border-color:rgba(196,72,40,.3);color:var(--r);}
 .btn-sky{background:var(--skyg);border-color:rgba(61,143,168,.3);color:var(--sky);}
-.btn-ws{background:var(--wsg);border-color:rgba(139,92,246,.3);color:var(--ws);}
+.btn-ws{background:var(--wsg);border-color:var(--b);color:var(--ws);}
 .arow{display:flex;gap:8px;flex-wrap:wrap;padding:10px 14px;border-top:1px solid var(--b);margin-top:12px;position:sticky;bottom:0;background:var(--bg);z-index:40;}
 .fahrt-btn{flex:1;padding:10px 6px;border-radius:var(--rad);background:var(--s3);border:1px solid var(--b);color:var(--m);font-weight:600;font-size:12px;cursor:pointer;text-align:center;line-height:1.4;user-select:none;}
 .fahrt-btn.fahrt-active[data-val="fahrer"]{background:rgba(61,143,168,.15);border-color:var(--sky);color:var(--sky);}
@@ -3702,7 +3702,7 @@ async function generatePDF(report){
   const{jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
   const W=210,M=15,cw=W-M*2;let y=M;
-  const C={dunkel:[30,30,30],grau:[100,100,100],hellgrau:[160,160,160],rahmen:[210,210,210],heller:[245,245,245],gruen:[50,120,20],rot:[180,50,20],orange:[170,100,10],blau:[40,100,160],weiss:[255,255,255],lila:[100,60,180]};
+  const C={dunkel:[30,30,30],grau:[100,100,100],hellgrau:[160,160,160],rahmen:[210,210,210],heller:[245,245,245],gruen:[50,120,20],rot:[180,50,20],orange:[170,100,10],blau:[40,100,160],weiss:[255,255,255],wsgrau:[92,105,80]};
   const clean=(txt)=>String(txt||'').replace(/[\u{1F000}-\u{1FFFF}]/gu,'').replace(/[\u2600-\u27FF]/g,'').replace(/[^\x00-\xFF]/g,'').trim();
   const T=(txt,x,fy,sz,bold,col,align)=>{doc.setFontSize(sz||10);doc.setFont('helvetica',bold?'bold':'normal');doc.setTextColor(...(col||C.dunkel));const t=clean(txt);if(align==='right')doc.text(t,x,fy,{align:'right'});else doc.text(t,x,fy);};
   const W2=(txt,x,fy,maxW,sz,col)=>{doc.setFontSize(sz||10);doc.setFont('helvetica','normal');doc.setTextColor(...(col||C.dunkel));const lines=doc.splitTextToSize(clean(txt),maxW);doc.text(lines,x,fy);return lines.length;};
@@ -3731,7 +3731,7 @@ async function generatePDF(report){
 
   const isWS=report.role==='ws';
   const typ=isWS?'WERKSTATTBERICHT':report.role==='ar'?'ARBEITSZEITNACHWEIS':'TAGESBERICHT VORARBEITER';
-  const hCol=isWS?C.lila:C.gruen;
+  const hCol=isWS?C.wsgrau:C.gruen;
   RECT(M,y,cw,9,hCol);
   doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...C.weiss);
   doc.text(typ,M+4,y+6.2);doc.text(fmtD(report.datum),W-M-4,y+6.2,{align:'right'});
@@ -3747,7 +3747,7 @@ async function generatePDF(report){
       doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...C.dunkel);doc.text(clean(v),x,y+5);
     });y+=14;
     if(report.taetigkeiten?.length){doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...C.hellgrau);doc.text('Taetigkeiten',M,y);doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...C.dunkel);const taeLines=doc.splitTextToSize(clean(report.taetigkeiten.join(' | ')),cw);doc.text(taeLines,M,y+5);y+=5+taeLines.length*5+4;}
-    if(isWS&&report.baustelle){LINE(M,y,W-M,y,C.rahmen);y+=6;T('FAHRZEUG',M,y,9,true,C.lila);y+=5;doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...C.dunkel);doc.text(clean(report.baustelle),M,y);y+=8;}
+    if(isWS&&report.baustelle){LINE(M,y,W-M,y,C.rahmen);y+=6;T('FAHRZEUG',M,y,9,true,C.wsgrau);y+=5;doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...C.dunkel);doc.text(clean(report.baustelle),M,y);y+=8;}
     LINE(M,y,W-M,y,C.rahmen);y+=7;
     T('ARBEITSZEITEN',M,y,9,true,hCol);y+=6;
     RECT(M,y,cw,6,C.heller);LINE(M,y,W-M,y,C.rahmen);LINE(M,y+6,W-M,y+6,C.rahmen);
@@ -3760,7 +3760,7 @@ async function generatePDF(report){
     const fzMin=report.fahrzeitMin||report.fahrzeit_min||0;
     const zVals=isWS?[report.von||'--',report.bis||'--',(report.pause||report.pause_min||30)+' min',(report.nettoWork||report.netto_arbeit_h||'--')+'h',(report.netto||report.netto_gesamt_h||'--')+'h']:
       [report.von||'--',report.bis||'--',(report.pause||report.pause_min||30)+' min',(report.nettoWork||report.netto_arbeit_h||'--')+'h',fzMin+' min',fl,(report.netto||report.netto_gesamt_h||'--')+'h'];
-    const zCols=isWS?[C.dunkel,C.dunkel,C.grau,C.dunkel,C.lila]:[C.dunkel,C.dunkel,C.grau,C.dunkel,C.grau,C.blau,C.gruen];
+    const zCols=isWS?[C.dunkel,C.dunkel,C.grau,C.dunkel,C.wsgrau]:[C.dunkel,C.dunkel,C.grau,C.dunkel,C.grau,C.blau,C.gruen];
     const zBold=isWS?[false,false,false,true,true]:[false,false,false,true,false,true,true];
     zVals.forEach((v,i)=>{doc.setFont('helvetica',zBold[i]?'bold':'normal');doc.setFontSize(zBold[i]?10:9);doc.setTextColor(...zCols[i]);doc.text(clean(String(v)),x2+1,y+5.5);x2+=zW[i];});
     y+=10;
@@ -4376,28 +4376,36 @@ function buildUI(){
 
 // ══════ WERKSTATT ══════
 function buildWS(){
-  const wsProjekt=PROJEKTE.find(p=>p.name.toLowerCase().includes('werkstatt'))||PROJEKTE[0];
-  return'<div class="qsec" style="border-color:rgba(139,92,246,.3)"><div class="qsec-t" style="color:var(--ws)">Werkstatt Einsatz</div>'+
-    '<div class="row"><div class="fg w50"><label>Datum</label><input type="date" id="ws-datum"></div>'+
-    '<div class="fg w50"><label>Name</label><input type="text" id="ws-name" readonly style="color:var(--ws);background:var(--s3)"></div>'+
+  return'<div class="qsec"><div class="qsec-t">Einsatz</div>'+
+    '<div class="row">'+
+    '<div class="fg w50"><label>Datum</label><input type="date" id="ws-datum"></div>'+
+    '<div class="fg w50"><label>Name</label><input type="text" id="ws-name" readonly style="background:var(--s3);color:var(--gl)"></div>'+
+    '</div>'+
+    '<div class="row">'+
     '<div class="fg w50"><label>Bereich</label>'+katSelectHTML('ws-kat','onWSKatChange()','bau')+'</div>'+
     '<div class="fg w50"><label>Projekt / Einsatzort</label><select id="ws-projekt">'+projektOptsByKat('bau','')+'</select></div>'+
-    '<div class="fg w50"><label>Wetter</label><select id="ws-wetter"><option>Sonnig</option><option>Bewoelkt</option><option>Regen</option><option>Frost</option></select></div></div></div>'+
-    '<div class="qsec" style="border-color:rgba(139,92,246,.2)"><div class="qsec-t" style="color:var(--ws)">Taetigkeiten</div>'+
-    '<div class="tags" id="ws-taetigkeiten-tags">'+taetigkeitenTags([],TAETIGKEITEN_WS)+'</div></div>'+
-    '<div class="qsec" style="border-color:rgba(139,92,246,.2)"><div class="qsec-t" style="color:var(--ws)">Fahrzeug</div>'+
-    '<select id="ws-fahrzeug" style="width:100%"><option value="">- Fahrzeug waehlen -</option>'+
+    '</div>'+
+    '<div class="row">'+
+    '<div class="fg w50"><label>Fahrzeug</label><select id="ws-fahrzeug"><option value="">- kein Fahrzeug -</option>'+
     FAHRZEUGE.map(fz=>'<option value="'+fz.id+'">'+fz.kennzeichen+' - '+fz.typ+'</option>').join('')+'</select></div>'+
-    '<div class="qsec" style="border-color:rgba(139,92,246,.2)"><div class="qsec-t" style="color:var(--ws)">Arbeitszeiten</div>'+
-    '<div class="row"><div class="fg w25"><label>Beginn</label><input type="time" id="ws-von" value="06:30" oninput="calcWS()"></div>'+
-    '<div class="fg w25"><label>Ende</label><input type="time" id="ws-bis" value="16:30" oninput="calcWS()"></div>'+
-    '<div class="fg w25"><label>Pause</label><select id="ws-pause" onchange="calcWS()">'+PAUSEN.map(p=>'<option value="'+p+'" '+(p===60?'selected':'')+'>'+p+' min</option>').join('')+'</select></div>'+
-    '<div class="fg w25"><label>Netto</label><input type="text" id="ws-netto" readonly style="color:var(--ws);font-weight:700;font-family:\'IBM Plex Mono\',monospace;font-size:18px"></div></div></div>'+
-    '<div class="qsec" style="border-color:rgba(139,92,246,.2)"><div class="qsec-t" style="color:var(--ws)">Details</div>'+
-    '<textarea id="ws-taetigkeit" placeholder="Beschreibung der Arbeiten..."></textarea>'+mkMic('ws-taetigkeit','Arbeiten')+
-    '<div style="margin-top:8px"><input type="text" id="ws-maengel" placeholder="Festgestellte Maengel...">'+mkMic('ws-maengel','Maengel')+'</div></div>'+
+    '<div class="fg w50"><label>Wetter</label><select id="ws-wetter"><option>Sonnig</option><option>Bewoelkt</option><option>Regen</option><option>Frost</option></select></div>'+
+    '</div></div>'+
+    '<div class="qsec"><div class="qsec-t">Arbeitszeiten</div>'+
+    '<div class="row">'+
+    '<div class="fg w33"><label>Beginn</label><input type="time" id="ws-von" value="06:30" oninput="calcWS()"></div>'+
+    '<div class="fg w33"><label>Ende</label><input type="time" id="ws-bis" value="16:30" oninput="calcWS()"></div>'+
+    '<div class="fg w33"><label>Pause</label><select id="ws-pause" onchange="calcWS()">'+PAUSEN.map(p=>'<option value="'+p+'" '+(p===60?'selected':'')+'>'+p+' min</option>').join('')+'</select></div>'+
+    '</div>'+
+    '<div class="fg" style="margin-top:4px"><label>Netto gesamt</label><input type="text" id="ws-netto" readonly style="color:var(--gl);font-weight:700;font-family:\'IBM Plex Mono\',monospace;font-size:18px"></div></div>'+
+    '<div class="qsec"><div class="qsec-t">Taetigkeiten</div>'+
+    '<div class="tags" id="ws-taetigkeiten-tags">'+taetigkeitenTags([],TAETIGKEITEN_WS)+'</div></div>'+
+    '<div class="qsec"><div class="qsec-t">Details</div>'+
+    '<label>Beschreibung der Arbeiten</label>'+
+    '<textarea id="ws-taetigkeit" placeholder="Was wurde gemacht?" style="margin-top:4px"></textarea>'+mkMic('ws-taetigkeit','Arbeiten')+
+    '<div style="margin-top:10px"><label>Festgestellte Maengel</label>'+
+    '<input type="text" id="ws-maengel" placeholder="Optional" style="margin-top:4px">'+mkMic('ws-maengel','Maengel')+'</div></div>'+
     '<div class="send-status" id="ws-send-status"></div>'+
-    '<div class="arow"><button class="btn btn-ws" style="font-weight:700" ontouchstart="saveAndSendWS()" onclick="saveAndSendWS()">Speichern und PDF senden</button>'+
+    '<div class="arow"><button class="btn btn-p" ontouchstart="saveAndSendWS()" onclick="saveAndSendWS()">Speichern und PDF senden</button>'+
     '<button class="btn" ontouchstart="clearWSForm()" onclick="clearWSForm()">Neu</button></div>';
 }
 function initWSForm(){const nEl=document.getElementById('ws-name');if(nEl)nEl.value=currentUser.name;const dEl=document.getElementById('ws-datum');if(dEl)dEl.value=todayStr();calcWS();}
@@ -4407,7 +4415,7 @@ function clearWSForm(skipConfirm){if(!skipConfirm&&!confirm('Neuen Bericht begin
 
 function buildFZListe(){
   const el=document.getElementById('fzliste-content');if(!el)return;
-  el.innerHTML='<div class="a-sec" style="border-color:rgba(139,92,246,.2)"><div class="a-sec-title ws">Fahrzeug anlegen</div>'+
+  el.innerHTML='<div class="a-sec"><div class="a-sec-title ws">Fahrzeug anlegen</div>'+
     buildFZFormHTML('ws-fz')+
     '<button class="btn btn-ws" ontouchstart="wsAddFZ()" onclick="wsAddFZ()">+ Fahrzeug anlegen</button></div>'+
     '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--ws);letter-spacing:1.5px;text-transform:uppercase;margin:10px 0 8px">Fahrzeugliste</div>'+
