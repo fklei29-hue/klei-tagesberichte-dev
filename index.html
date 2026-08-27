@@ -1119,8 +1119,15 @@ async function freigabeErteilen(id){
     const merged={...data,...upd};
     const reportForPDF={...merged,role:merged.rolle,name:merged.mitarbeiter_name,projektNr:merged.projekt_nr,zeitRows:merged.zeit_rows,machRows:merged.mach_rows,zusatzProjekte:merged.zusatz_projekte,
       sig_mitarbeiter:sigMA, sig_bauleiter:merged.abgenommen_sig||null, sigStrict:true};
-    const pdfUrl=await sendPDFMail(reportForPDF,null);
-    if(pdfUrl)await sb.from('berichte').update({pdf_url:pdfUrl}).eq('id',id);
+    const vers=await sendPDFMail(reportForPDF,null);
+    if(vers.ok){
+      if(vers.driveUrl){
+        const{error:eUrl}=await sb.from('berichte').update({pdf_url:vers.driveUrl}).eq('id',id);
+        if(eUrl){console.error('Drive-Link konnte nicht gespeichert werden:',eUrl);toast('Drive-Link nicht gespeichert: '+eUrl.message,'err');}
+      }
+    }else{
+      toast('Freigabe ist gespeichert, das PDF wurde aber NICHT versendet.','err');
+    }
   }catch(e){toast('PDF/Mail-Fehler: '+e.message,'err');}
   ladeFreigabe();
 }
@@ -3407,9 +3414,13 @@ async function saveAndSendWS(){
   }
   await loadReports();renderSB();toast('Gespeichert','ok');
   const reportForPDF={...d,id:savedId,role:'ws',name:currentUser.name,projektNr:projekt?.nr||'',pause:d.pause_min,fahrzeitMin:0,fahrtStatus:'fahrer',nettoWork:document.getElementById('ws-netto')?.value,netto:document.getElementById('ws-netto')?.value};
-  const pdfUrl=await sendPDFMail(reportForPDF,'ws-send-status');
-  if(pdfUrl)await sb.from('berichte').update({gesendet:true,pdf_url:pdfUrl}).eq('id',savedId);
-  else await sb.from('berichte').update({gesendet:true}).eq('id',savedId);
+  const vers=await sendPDFMail(reportForPDF,'ws-send-status');
+  await markiereVersand(savedId,vers);
+  if(!vers.ok){
+    toast('Bericht ist gespeichert, aber NICHT versendet. Bitte erneut senden.','err');
+    await loadReports();renderSB();
+    return;
+  }
   await loadReports();renderSB();currentId=null;clearWSForm(true);
   }finally{isSending=false;}
 }
@@ -3449,9 +3460,13 @@ async function saveAndSendAR(){
   }
   await loadReports();renderSB();toast('Gespeichert','ok');
   const reportForPDF={...d,id:savedId,role:'ar',name:currentUser.name,projektNr:projekt?.nr||'',pause:d.pause_min,fahrzeitMin:fzMin,fahrtStatus:curFahrtStatus,nettoWork:document.getElementById('a-netto-work')?.value,netto:document.getElementById('a-netto')?.value};
-  const pdfUrl=await sendPDFMail(reportForPDF,'ar-send-status');
-  if(pdfUrl)await sb.from('berichte').update({gesendet:true,pdf_url:pdfUrl}).eq('id',savedId);
-  else await sb.from('berichte').update({gesendet:true}).eq('id',savedId);
+  const vers=await sendPDFMail(reportForPDF,'ar-send-status');
+  await markiereVersand(savedId,vers);
+  if(!vers.ok){
+    toast('Bericht ist gespeichert, aber NICHT versendet. Bitte erneut senden.','err');
+    await loadReports();renderSB();
+    return;
+  }
   await loadReports();renderSB();currentId=null;clearARForm(true);
   }finally{isSending=false;}
 }
@@ -3531,9 +3546,15 @@ async function saveAndSendVA(){
     savedId=data.id;currentId=savedId;
   }
   const reportForPDF={...d,id:savedId,role:'va',projektNr:projekt?.nr||'',zeitRows,machRows:getMachRows(),steps:getSteps(),lieferungen:getLiefData(),maengel:getMangelData(),zusatzProjekte,sig_mitarbeiter:unterschriftData,sig_bauleiter:null};
-  const pdfUrl=await sendPDFMail(reportForPDF,'va-send-status');
-  if(pdfUrl)await sb.from('berichte').update({gesendet:true,pdf_url:pdfUrl}).eq('id',savedId);
-  else await sb.from('berichte').update({gesendet:true}).eq('id',savedId);
+  const vers=await sendPDFMail(reportForPDF,'va-send-status');
+  await markiereVersand(savedId,vers);
+  if(!vers.ok){
+    // Bericht ist gespeichert, aber NICHT versendet: Formular und Entwurf
+    // bleiben stehen, damit der Versand wiederholt werden kann.
+    toast('Bericht ist gespeichert, aber NICHT versendet. Bitte erneut senden.','err');
+    await loadReports();renderSB();
+    return;
+  }
   clearVADraft();
   await loadReports();renderSB();currentId=null;newReport(true);
   }finally{isSending=false;}
@@ -3617,7 +3638,7 @@ async function saveAndSendVASplit(base,zeitRows,hauptProjektId,projIds){
   const allMach=getMachRows();
   const allSteps=getSteps();
   const fotosBackup=fotoDataUrls.slice();
-  let ok=0,fehler=0;
+  let ok=0,fehler=0,nichtGesendet=0;
   for(let idx=0;idx<sortedIds.length;idx++){
     const pid=sortedIds[idx];
     const proj=PROJEKTE.find(p=>p.id===pid);
@@ -3656,14 +3677,22 @@ async function saveAndSendVASplit(base,zeitRows,hauptProjektId,projIds){
     // Fotos nur fuers Hauptprojekt ins PDF; bei Nebenprojekten temporaer leeren
     if(!istHaupt)fotoDataUrls=[];else fotoDataUrls=fotosBackup.slice();
     const reportForPDF={...d,id:savedId,role:'va',projektNr:proj?.nr||'',zeitRows:zr,machRows:mr,steps:stps,lieferungen:d.lieferungen,maengel:d.maengel,zusatzProjekte:d.zusatz_projekte,sig_mitarbeiter:unterschriftData,sig_bauleiter:null};
-    const pdfUrl=await sendPDFMail(reportForPDF,'va-send-status');
-    if(pdfUrl)await sb.from('berichte').update({gesendet:true,pdf_url:pdfUrl}).eq('id',savedId);
-    else await sb.from('berichte').update({gesendet:true}).eq('id',savedId);
-    ok++;
+    const vers=await sendPDFMail(reportForPDF,'va-send-status');
+    await markiereVersand(savedId,vers);
+    if(vers.ok)ok++;else nichtGesendet++;
   }
   fotoDataUrls=fotosBackup; // wiederherstellen
-  if(st){st.className='send-status show '+(fehler?'err':'ok');st.textContent=ok+' Projekt-Bericht(e) gesendet'+(fehler?', '+fehler+' Fehler':'')+'.';}
-  toast(ok+' getrennte Berichte versendet'+(fehler?', '+fehler+' Fehler':''),fehler?'err':'ok');
+  const problem=(fehler||nichtGesendet);
+  let meldung=ok+' Projekt-Bericht(e) gesendet';
+  if(nichtGesendet)meldung+=', '+nichtGesendet+' gespeichert aber NICHT versendet';
+  if(fehler)meldung+=', '+fehler+' nicht gespeichert';
+  if(st){st.className='send-status show '+(problem?'err':'ok');st.textContent=meldung+'.';}
+  toast(meldung,problem?'err':'ok');
+  if(problem){
+    // Entwurf und Formular bleiben stehen, solange nicht alles sauber raus ist.
+    await loadReports();renderSB();
+    return;
+  }
   clearVADraft();
   await loadReports();renderSB();currentId=null;newReport(true);
 }
@@ -3895,6 +3924,13 @@ async function generatePDF(report){
   return doc;
 }
 
+// Liefert IMMER ein eindeutiges Ergebnis, nie nur eine URL:
+//   {ok:true,  driveUrl:'...'}     Mail ist nachweislich raus
+//   {ok:false, doppelt:true}       GAS hat als Doppelversand abgewiesen - nichts passiert
+//   {ok:false, fehler:'...'}       fehlgeschlagen, PDF wurde lokal gespeichert
+// Der Aufrufer MUSS das Ergebnis auswerten, bevor er einen Bericht als
+// gesendet markiert. Frueher wurde hier nur eine URL oder null geliefert,
+// und "null" war nicht von "kein Drive-Link" zu unterscheiden.
 async function sendPDFMail(report,statusElId){
   const statusEl=document.getElementById(statusElId);
   if(statusEl){statusEl.className='send-status show sending';statusEl.textContent='PDF wird erstellt...';}
@@ -3919,17 +3955,49 @@ async function sendPDFMail(report,statusElId){
     };
     const res=await fetch(GAS_URL,{method:'POST',body:JSON.stringify(payload)});
     const txt=await res.text();
-    let driveUrl='';
-    try{const parsed=JSON.parse(txt);driveUrl=parsed.driveUrl||'';}catch(e){}
-    if(res.ok&&(txt.includes('OK')||txt.includes('status'))){
-      if(statusEl){statusEl.className='send-status show ok';statusEl.textContent='PDF gesendet'+(driveUrl?' + Drive abgelegt':'')+' ✓';}
-      toast('PDF gesendet!','ok');return driveUrl||null;
-    }else{throw new Error(txt||'Fehler');}
+    if(!res.ok)throw new Error('HTTP '+res.status+' vom Mailversand: '+String(txt).substring(0,200));
+    let antwort=null;
+    try{
+      antwort=JSON.parse(txt);
+    }catch(parseErr){
+      console.error('Antwort des Mailversands ist kein JSON:',txt);
+      throw new Error('Unerwartete Antwort vom Mailversand: '+String(txt).substring(0,200));
+    }
+    if(!antwort||antwort.status!=='OK')throw new Error((antwort&&antwort.fehler)||String(txt).substring(0,200));
+    if(antwort.skipped){
+      if(statusEl){statusEl.className='send-status show err';statusEl.textContent='NICHT gesendet - Doppelversand abgewiesen';}
+      toast('Nicht gesendet: derselbe Bericht wurde vor wenigen Sekunden schon verarbeitet','err');
+      return {ok:false,doppelt:true};
+    }
+    if(antwort.mailGesendet===false)throw new Error(antwort.mailFehler||'Mailversand fehlgeschlagen');
+    if(antwort.sheetFehler)console.error('Protokoll-Sheet:',antwort.sheetFehler);
+    const driveUrl=antwort.driveUrl||'';
+    if(statusEl){statusEl.className='send-status show ok';statusEl.textContent='PDF gesendet'+(driveUrl?' + Drive abgelegt':'')+' ✓';}
+    toast('PDF gesendet!','ok');
+    return {ok:true,driveUrl:driveUrl};
   }catch(e){
-    if(statusEl){statusEl.className='send-status show err';statusEl.textContent='Fehler: '+e.message;}
-    const doc=await generatePDF(report);
-    doc.save(buildPDFName({datum:report.datum,projekt_nr:report.projektNr||report.projekt_nr,mitarbeiter_name:report.name||report.mitarbeiter_name,mitarbeiter_nr:currentUser?.mitarbeiter_nr,rolle:report.role||report.rolle}));
-    toast('PDF lokal gespeichert','err');return null;
+    console.error('Mailversand fehlgeschlagen:',e);
+    if(statusEl){statusEl.className='send-status show err';statusEl.textContent='NICHT gesendet: '+(e.message||e);}
+    try{
+      const doc=await generatePDF(report);
+      doc.save(buildPDFName({datum:report.datum,projekt_nr:report.projektNr||report.projekt_nr,mitarbeiter_name:report.name||report.mitarbeiter_name,mitarbeiter_nr:currentUser?.mitarbeiter_nr,rolle:report.role||report.rolle}));
+      toast('Versand fehlgeschlagen - PDF wurde lokal gespeichert','err');
+    }catch(pdfErr){
+      console.error('Lokales PDF fehlgeschlagen:',pdfErr);
+      toast('Versand fehlgeschlagen, PDF konnte nicht erzeugt werden: '+(pdfErr.message||pdfErr),'err');
+    }
+    return {ok:false,fehler:e.message||String(e)};
+  }
+}
+
+// Schreibt den Versandstatus. gesendet:true NUR wenn die Mail nachweislich raus ist.
+async function markiereVersand(id,vers){
+  if(!id)return;
+  const daten=(vers&&vers.ok)?{gesendet:true,pdf_url:vers.driveUrl||null}:{gesendet:false};
+  const{error}=await sb.from('berichte').update(daten).eq('id',id);
+  if(error){
+    console.error('Versandstatus konnte nicht gespeichert werden:',error);
+    toast('Versandstatus konnte nicht gespeichert werden: '+error.message,'err');
   }
 }
 
@@ -4033,7 +4101,13 @@ function renderVADetail(r){
     '<div class="arow"><button class="btn btn-p" style="font-size:11px" ontouchstart="resendVA(\''+r.id+'\')" onclick="resendVA(\''+r.id+'\')">PDF senden</button></div>';
 }
 
-async function resendVA(id){const r=reports.find(x=>x.id===id);if(!r)return;const reportForPDF={...r,role:r.rolle,name:r.mitarbeiter_name,projektNr:r.projekt_nr,zeitRows:r.zeit_rows,machRows:r.mach_rows};await sendPDFMail(reportForPDF,'va-send-status');}
+async function resendVA(id){
+  const r=reports.find(x=>x.id===id);if(!r)return;
+  const reportForPDF={...r,role:r.rolle,name:r.mitarbeiter_name,projektNr:r.projekt_nr,zeitRows:r.zeit_rows,machRows:r.mach_rows};
+  const vers=await sendPDFMail(reportForPDF,'va-send-status');
+  await markiereVersand(id,vers);
+  await loadReports();renderSB();
+}
 
 function renderSB(){
   const el=document.getElementById('sb-list');if(!el)return;
