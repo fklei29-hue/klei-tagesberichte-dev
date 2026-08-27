@@ -333,6 +333,29 @@ select option{background:var(--s2);}
 ::-webkit-scrollbar-track{background:var(--bg);}
 ::-webkit-scrollbar-thumb{background:var(--b);border-radius:2px;}
 @media(max-width:680px){.app{grid-template-columns:1fr;}aside{display:none;}.fg.w25,.fg.w33{flex:0 0 calc(50% - 4px);}}
+/* Namenspruefung in den Zeiten-Zeilen: Name nicht in Stammdaten -> rot markiert */
+select.zeit-name.zn-bad{border:2px solid var(--r)!important;background:var(--rg)!important;}
+/* Admin-Tab Abgabe: Monatsmatrix wer hat wann abgegeben */
+.abg-nav{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.abg-monat{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:var(--c);min-width:150px;text-align:center;}
+.abg-wrap{overflow-x:auto;border:1px solid var(--b);border-radius:8px;background:var(--s1);}
+.abg-table{border-collapse:separate;border-spacing:0;font-family:'IBM Plex Mono',monospace;font-size:10px;}
+.abg-table th,.abg-table td{border-bottom:1px solid var(--b);padding:4px 3px;text-align:center;white-space:nowrap;min-width:22px;color:var(--t);}
+.abg-table thead th{color:var(--m);font-weight:600;font-size:9px;background:var(--s2);position:sticky;top:0;z-index:2;}
+.abg-table .abg-name{position:sticky;left:0;background:var(--s1);text-align:left;padding:4px 10px;font-family:'IBM Plex Sans',sans-serif;font-size:11px;color:var(--c);z-index:1;max-width:160px;overflow:hidden;text-overflow:ellipsis;}
+.abg-table thead th.abg-name{background:var(--s2);z-index:3;}
+.abg-we{background:var(--s3);}
+.abg-cell-eigen{display:inline-block;width:17px;height:17px;line-height:17px;border-radius:50%;font-size:9px;font-weight:700;color:#fff;text-align:center;}
+.abg-cell-va{display:inline-block;width:11px;height:11px;border-radius:50%;border:2px solid var(--sky);vertical-align:middle;}
+.abg-sum{color:var(--gl);font-weight:700;font-size:11px;}
+.abg-cw{position:relative;display:inline-block;min-width:17px;min-height:17px;}
+.abg-dot{width:8px;height:8px;border-radius:50%;}
+.abg-dot-a{background:var(--o);}
+.abg-dot-k{background:var(--r);}
+.abg-cw .abg-dot{position:absolute;top:-4px;right:-6px;border:1px solid var(--s1);}
+.abg-click{cursor:pointer;}
+.abg-click:active{background:var(--skyg);}
+.abg-konf-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 4px;border-bottom:1px solid rgba(196,72,40,.15);cursor:pointer;flex-wrap:wrap;}
 </style>
 </head>
 <body class="theme-light">
@@ -366,6 +389,7 @@ select option{background:var(--s2);}
     <div class="admin-tab" id="atab-fz" ontouchstart="showAdminTab('fz')" onclick="showAdminTab('fz')">Fahrzeuge</div>
     <div class="admin-tab" id="atab-email" ontouchstart="showAdminTab('email')" onclick="showAdminTab('email')">E-Mail</div>
     <div class="admin-tab" id="atab-ber" ontouchstart="showAdminTab('ber')" onclick="showAdminTab('ber')">Berichte</div>
+    <div class="admin-tab" id="atab-abg" ontouchstart="showAdminTab('abg')" onclick="showAdminTab('abg')">Abgabe</div>
     <div class="admin-tab" id="atab-ausw" ontouchstart="showAdminTab('ausw')" onclick="showAdminTab('ausw')">Auswertung</div>
     <div class="admin-tab" id="atab-pfl" ontouchstart="showAdminTab('pfl')" onclick="showAdminTab('pfl')">Pflege</div>
     <div class="admin-tab" id="atab-cock" ontouchstart="showAdminTab('cock')" onclick="showAdminTab('cock')">Cockpit</div>
@@ -379,6 +403,7 @@ select option{background:var(--s2);}
     <div class="admin-panel" id="apanel-fz"></div>
     <div class="admin-panel" id="apanel-email"></div>
     <div class="admin-panel" id="apanel-ber"></div>
+    <div class="admin-panel" id="apanel-abg"></div>
     <div class="admin-panel" id="apanel-ausw"></div>
     <div class="admin-panel" id="apanel-pfl"></div>
     <div class="admin-panel" id="apanel-cock"></div>
@@ -935,7 +960,7 @@ function openAdmin(){
   const nurBuchhaltung=(currentUser.rolle==='verwaltung');
   const badge=document.querySelector('#admin-screen .admin-badge');
   if(badge)badge.textContent=nurBuchhaltung?'Buchhaltung':'Admin';
-  ['ma','proj','fz','email','ber','ausw','pfl','cock','kalk','exp'].forEach(t=>{
+  ['ma','proj','fz','email','ber','abg','ausw','pfl','cock','kalk','exp'].forEach(t=>{
     const el=document.getElementById('atab-'+t);if(el)el.style.display=nurBuchhaltung?'none':'';
   });
   showAdminTab('frei');
@@ -947,6 +972,7 @@ function showAdminTab(name){
   if(name==='frei')renderAdminFreigabe();
   if(name==='ma')renderAdminMA();if(name==='proj')renderAdminProj();if(name==='fz')renderAdminFZ();
   if(name==='email')renderAdminEmail();if(name==='ber')renderAdminBer();if(name==='exp')renderAdminExp();
+  if(name==='abg')renderAdminAbgabe();
   if(name==='ausw')renderAdminAusw();
   if(name==='pfl')renderAdminPflege();if(name==='cock')renderAdminCockpit();
   if(name==='kalk')renderKalkPanel('apanel-kalk');
@@ -1430,6 +1456,367 @@ function buildPDFName(data){
   const nr=data.mitarbeiter_nr||'--';
   const rolle=(data.rolle||'ar').toUpperCase();
   return (data.datum||'')+'_'+proj+'_'+name+'_'+nr+'_'+rolle+'.pdf';
+}
+
+// ══════ ADMIN: ABGABE-UEBERSICHT + ZEITABGLEICH (Monatsmatrix) ══════
+// Regeln (festgelegt 08/2026):
+// 1) Original-Berichte bleiben IMMER unveraendert - der Abgleich ist reine Lese-Logik.
+// 2) Vorarbeiter-Eintraege sind massgeblich. Prioritaet richtet sich nach der
+//    Stammdaten-Rolle des ERFASSERS (nicht nach der Berichtsmaske).
+// 3) Eintraege ohne Konkurrenz zaehlen automatisch voll (auch wer allein unterwegs war).
+// 4) Abgleich erfolgt je Person + Tag auf Ebene der Zeitfenster: MA-Eintraege zaehlen
+//    nur ausserhalb der VA-Fenster, Teilueberlappungen werden anteilig gekuerzt.
+// 5) Nicht ueberlappende Zeiten (z.B. anderes Projekt am Vormittag) bleiben erhalten.
+// 6) Gleichrangige Ueberschneidungen (VA-VA oder MA-MA) werden NICHT automatisch
+//    entschieden, sondern als Konflikt markiert und weiter unveraendert gezaehlt.
+// 7) Die Detail-Ansicht zeigt je Tag: wer hat was erfasst, was wird gewertet, was
+//    wurde von wem ueberlagert, und ob automatisch geloest oder Pruefung noetig.
+let _abgMonat=null; // Format 'JJJJ-MM'
+let _abgDaten=null,_abgJ=0,_abgMi=0,_abgTage=0; // letzter Ladezustand fuer Detail-Ansicht
+
+function abgMonatLabel(m){
+  const MON=['Januar','Februar','Maerz','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  const j=parseInt(m.slice(0,4),10);const mi=parseInt(m.slice(5,7),10);
+  return (MON[mi-1]||'')+' '+j;
+}
+function abgChangeMonat(delta){
+  let j=parseInt(_abgMonat.slice(0,4),10),mi=parseInt(_abgMonat.slice(5,7),10)+delta;
+  if(mi<1){mi=12;j--;}
+  if(mi>12){mi=1;j++;}
+  _abgMonat=j+'-'+String(mi).padStart(2,'0');
+  ladeAbgabe();
+}
+function abgHeute(){_abgMonat=todayStr().slice(0,7);ladeAbgabe();}
+
+function renderAdminAbgabe(){
+  const el=document.getElementById('apanel-abg');
+  if(!_abgMonat)_abgMonat=todayStr().slice(0,7);
+  el.innerHTML='<div class="a-sec"><div class="a-sec-title">Abgabe-Uebersicht + Zeitabgleich</div>'+
+    '<div class="abg-nav">'+
+    '<button class="btn" ontouchstart="abgChangeMonat(-1)" onclick="abgChangeMonat(-1)">&#x2039; Zurueck</button>'+
+    '<div class="abg-monat" id="abg-monat-lbl"></div>'+
+    '<button class="btn" ontouchstart="abgChangeMonat(1)" onclick="abgChangeMonat(1)">Vor &#x203A;</button>'+
+    '<button class="btn" ontouchstart="abgHeute()" onclick="abgHeute()">Aktueller Monat</button>'+
+    '</div>'+
+    '<div style="font-size:10px;color:var(--m);margin-bottom:12px;line-height:2.2">'+
+    '<span class="abg-cell-eigen" style="background:var(--g)">V</span> eigener Vorarbeiter-Bericht &nbsp; '+
+    '<span class="abg-cell-eigen" style="background:var(--earth)">A</span> eigener Arbeiter-Bericht &nbsp; '+
+    '<span class="abg-cell-eigen" style="background:var(--ws)">W</span> eigener Werkstatt-Bericht &nbsp; '+
+    '<span class="abg-cell-va"></span> von jemand anderem erfasst<br>'+
+    '<span class="abg-dot abg-dot-a" style="position:static;display:inline-block;vertical-align:middle"></span> Zeiten automatisch abgeglichen &nbsp; '+
+    '<span class="abg-dot abg-dot-k" style="position:static;display:inline-block;vertical-align:middle"></span> Konflikt, bitte pruefen &nbsp;&nbsp; Zelle antippen fuer Details</div>'+
+    '<div id="abg-content"><div class="empty"><div class="spin"></div></div></div></div>';
+  ladeAbgabe();
+}
+
+async function ladeAbgabe(){
+  const lbl=document.getElementById('abg-monat-lbl');if(lbl)lbl.textContent=abgMonatLabel(_abgMonat);
+  const cont=document.getElementById('abg-content');if(!cont)return;
+  cont.innerHTML='<div class="empty"><div class="spin"></div></div>';
+  try{
+    if(!MALISTE||!MALISTE.length)await loadMitarbeiterListe();
+    const j=parseInt(_abgMonat.slice(0,4),10),mi=parseInt(_abgMonat.slice(5,7),10);
+    const tage=new Date(j,mi,0).getDate();
+    const von=_abgMonat+'-01';
+    const bis=_abgMonat+'-'+String(tage).padStart(2,'0');
+    // Berichte des Monats in 1000er-Bloecken laden (Pflicht-Konvention)
+    let alle=[],start=0;
+    while(true){
+      const r=await sb.from('berichte').select('id,datum,rolle,mitarbeiter_id,mitarbeiter_name,zeit_rows,von,bis,pause_min,netto_arbeit_h,netto_gesamt_h,projekt_id,projekt_nr').gte('datum',von).lte('datum',bis).order('datum',{ascending:true}).order('id',{ascending:true}).range(start,start+999);
+      if(r.error)throw r.error;
+      const d=r.data||[];
+      alle=alle.concat(d);
+      if(d.length<1000)break;
+      start+=1000;
+    }
+    _abgDaten=abgAggregieren(alle);_abgJ=j;_abgMi=mi;_abgTage=tage;
+    abgRender(cont,_abgDaten,j,mi,tage);
+  }catch(e){
+    cont.innerHTML='<div style="color:var(--r);font-size:11px;padding:10px">Fehler beim Laden der Abgabe-Uebersicht: '+_dfEsc(e.message||String(e))+'</div>';
+  }
+}
+
+// --- Hilfsfunktionen Zeitfenster ---
+function abgZeitMin(t){
+  if(t==null||typeof t!=='string'||t.indexOf(':')<0)return null;
+  const p=t.split(':');const h=parseInt(p[0],10),m=parseInt(p[1],10);
+  if(isNaN(h)||isNaN(m))return null;
+  return h*60+m;
+}
+function abgMinZeit(m){
+  const mm=((m%1440)+1440)%1440;
+  return String(Math.floor(mm/60)).padStart(2,'0')+':'+String(mm%60).padStart(2,'0');
+}
+function abgProjLabel(projektId,projektNr){
+  const p=projektId?PROJEKTE.find(function(x){return x.id===projektId;}):null;
+  if(p)return (p.nr?p.nr+' ':'')+(p.name||'');
+  return projektNr||'-';
+}
+
+// Sammelt aus den Monats-Berichten alle Einzel-Eintraege je Person + Tag.
+// Jeder Eintrag traegt: erfasste Person, Erfasser + dessen Prioritaet, Projekt,
+// Zeitfenster, Stunden wie erfasst, Herkunft (Bericht).
+function abgSammleEintraege(alle){
+  const map={}; // personId -> tag -> [eintraege]
+  const unbekannt={};
+  function erfasserPrio(b){
+    let rolle=null;
+    if(b.mitarbeiter_id){const e=MALISTE.find(function(m){return m.id===b.mitarbeiter_id;});if(e)rolle=e.rolle;}
+    if(rolle==null)return b.rolle==='va'?'va':'ma';
+    return rolle==='vorarbeiter'?'va':'ma';
+  }
+  function add(pid,tag,e){
+    if(!map[pid])map[pid]={};
+    if(!map[pid][tag])map[pid][tag]=[];
+    map[pid][tag].push(e);
+  }
+  alle.forEach(function(b){
+    const tag=parseInt((b.datum||'').slice(8,10),10);
+    if(!tag)return;
+    const prio=erfasserPrio(b);
+    if(b.rolle==='va'&&Array.isArray(b.zeit_rows)&&b.zeit_rows.length){
+      b.zeit_rows.forEach(function(z){
+        if(!z||!z.name)return;
+        const hit=_dfFindMA(z.name);
+        if(!hit){
+          if(!unbekannt[z.name])unbekannt[z.name]={anz:0,tage:{}};
+          unbekannt[z.name].anz++;if(b.datum)unbekannt[z.name].tage[b.datum]=1;
+          return;
+        }
+        add(hit.id,tag,{
+          personId:hit.id,tag:tag,datum:b.datum,berichtId:b.id,berichtRolle:'va',
+          erfasser:b.mitarbeiter_name||'?',erfasserId:b.mitarbeiter_id||null,prio:prio,
+          selbst:(b.mitarbeiter_id&&hit.id===b.mitarbeiter_id)?true:false,
+          projektId:z.projektId||b.projekt_id||'',projektNr:z.projektNr||b.projekt_nr||'',
+          von:abgZeitMin(z.von),bis:abgZeitMin(z.bis),pause:parseInt(z.pause,10)||0,
+          stunden:_auswNum((z.gesamt!=null&&z.gesamt!=='')?z.gesamt:z.nettoArbeit)
+        });
+      });
+    }else{
+      let pid=b.mitarbeiter_id;
+      if(!pid||!MALISTE.some(function(m){return m.id===pid;})){const h=_dfFindMA(b.mitarbeiter_name||'');pid=h?h.id:null;}
+      if(!pid)return;
+      add(pid,tag,{
+        personId:pid,tag:tag,datum:b.datum,berichtId:b.id,berichtRolle:b.rolle||'ar',
+        erfasser:b.mitarbeiter_name||'?',erfasserId:b.mitarbeiter_id||null,prio:prio,
+        selbst:true,
+        projektId:b.projekt_id||'',projektNr:b.projekt_nr||'',
+        von:abgZeitMin(b.von),bis:abgZeitMin(b.bis),pause:parseInt(b.pause_min,10)||0,
+        stunden:_auswNum((b.netto_gesamt_h!=null&&b.netto_gesamt_h!=='')?b.netto_gesamt_h:b.netto_arbeit_h)
+      });
+    }
+  });
+  return {map:map,unbekannt:unbekannt};
+}
+
+// Kernregel je Person + Tag (reine Funktion, testbar):
+// VA-Eintraege zaehlen immer voll. MA-Eintraege zaehlen nur ausserhalb der VA-Fenster,
+// Teilueberlappungen werden anteilig gekuerzt (Restminuten / Gesamtminuten).
+// Gleichrangige Ueberschneidungen -> Konflikt-Markierung, Stunden bleiben unveraendert.
+function abgKonsolidiereTag(eintraege){
+  function ovl(a1,a2,b1,b2){return Math.max(0,Math.min(a2,b2)-Math.max(a1,b1));}
+  const mitF=[],ohneF=[];
+  eintraege.forEach(function(e){
+    e.konflikt=false;e.ueberlagertVon=[];
+    if(e.von!=null&&e.bis!=null){e._s=e.von;e._e=(e.bis<=e.von)?e.bis+1440:e.bis;mitF.push(e);}
+    else ohneF.push(e);
+  });
+  const va=mitF.filter(function(e){return e.prio==='va';});
+  const ma=mitF.filter(function(e){return e.prio!=='va';});
+  let konflikt=false,auto=false;
+  // VA gegen VA: gleiche Prioritaet -> Ueberschneidung ist ein Konflikt
+  for(let i=0;i<va.length;i++)for(let k=i+1;k<va.length;k++){
+    if(ovl(va[i]._s,va[i]._e,va[k]._s,va[k]._e)>0){konflikt=true;va[i].konflikt=true;va[k].konflikt=true;}
+  }
+  va.forEach(function(e){e.gewertet=e.stunden;e.rest=[[e._s,e._e]];e.zustand=e.konflikt?'konflikt':'voll';});
+  // MA: alle VA-Fenster des Tages abziehen (projektunabhaengig - eine Person kann
+  // nicht gleichzeitig auf zwei Baustellen sein)
+  const vaF=va.map(function(e){return[e._s,e._e];});
+  ma.forEach(function(e){
+    let rest=[[e._s,e._e]];
+    vaF.forEach(function(f){
+      const neu=[];
+      rest.forEach(function(r){
+        if(ovl(r[0],r[1],f[0],f[1])<=0){neu.push(r);return;}
+        if(r[0]<f[0])neu.push([r[0],Math.min(r[1],f[0])]);
+        if(r[1]>f[1])neu.push([Math.max(r[0],f[1]),r[1]]);
+      });
+      rest=neu;
+    });
+    e.rest=rest.filter(function(r){return r[1]-r[0]>0;});
+    const voll=e._e-e._s;
+    const restMin=e.rest.reduce(function(s,r){return s+(r[1]-r[0]);},0);
+    if(voll<=0){e.gewertet=e.stunden;e.zustand='konflikt';e.konflikt=true;konflikt=true;}
+    else if(restMin>=voll){e.gewertet=e.stunden;e.zustand='voll';}
+    else if(restMin<=0){e.gewertet=0;e.zustand='ersetzt';auto=true;}
+    else{e.gewertet=Math.round(e.stunden*restMin/voll*100)/100;e.zustand='teil';auto=true;}
+    if(e.zustand==='teil'||e.zustand==='ersetzt'){
+      e.ueberlagertVon=va.filter(function(v){return ovl(e._s,e._e,v._s,v._e)>0;})
+        .map(function(v){return v.erfasser+' ('+(v.projektNr||'?')+', '+abgMinZeit(v._s)+'-'+abgMinZeit(v._e)+')';});
+    }
+  });
+  // MA gegen MA auf den Restfenstern: gleiche Prioritaet -> Konflikt
+  for(let i=0;i<ma.length;i++)for(let k=i+1;k<ma.length;k++){
+    let o=0;
+    (ma[i].rest||[]).forEach(function(r1){(ma[k].rest||[]).forEach(function(r2){o+=ovl(r1[0],r1[1],r2[0],r2[1]);});});
+    if(o>0){konflikt=true;ma[i].konflikt=true;ma[k].konflikt=true;ma[i].zustand='konflikt';ma[k].zustand='konflikt';}
+  }
+  // Eintraege ohne Zeitfenster: ohne Konkurrenz voll, sonst nicht automatisch entscheidbar
+  ohneF.forEach(function(e){
+    e.rest=null;e.gewertet=e.stunden;
+    if(mitF.length>0||ohneF.length>1){e.zustand='konflikt';e.konflikt=true;konflikt=true;}
+    else e.zustand='voll';
+  });
+  const alle2=va.concat(ma).concat(ohneF);
+  const sumOrig=alle2.reduce(function(s,e){return s+(e.stunden||0);},0);
+  const sumGew=alle2.reduce(function(s,e){return s+(e.gewertet||0);},0);
+  return {eintraege:alle2,status:konflikt?'konflikt':(auto?'auto':'ok'),
+    sumOrig:Math.round(sumOrig*100)/100,sumGew:Math.round(sumGew*100)/100};
+}
+
+// Aggregation fuer die Matrix: Personenliste, je Tag konsolidiertes Ergebnis,
+// Monatssummen (erfasst vs. gewertet) und Liste unbekannter Namen.
+function abgAggregieren(alle){
+  const ges=abgSammleEintraege(alle);
+  const personen=maAuswahlListe().slice();
+  const inListe={};personen.forEach(function(p){inListe[p.id]=true;});
+  Object.keys(ges.map).forEach(function(pid){
+    if(inListe[pid])return;
+    const hit=MALISTE.find(function(m){return m.id===pid;});
+    if(hit&&!MA_AUSWAHL_AUSGESCHLOSSEN.includes(hit.rolle)){personen.push(hit);inListe[pid]=true;}
+  });
+  personen.sort(function(a,b){return (a.name||'').localeCompare(b.name||'','de');});
+  const matrix={};
+  personen.forEach(function(p){
+    const tmap=ges.map[p.id]||{};
+    const tage={};let sumO=0,sumG=0,nAuto=0,nKonf=0;
+    Object.keys(tmap).forEach(function(tk){
+      const t=parseInt(tk,10);
+      const kons=abgKonsolidiereTag(tmap[tk]);
+      let eigen=null,fremd=false;
+      kons.eintraege.forEach(function(e){
+        if(e.selbst){if(!eigen||e.berichtRolle==='va')eigen=e.berichtRolle||'ar';}
+        else fremd=true;
+      });
+      tage[t]={eigen:eigen,fremd:fremd,kons:kons};
+      sumO+=kons.sumOrig;sumG+=kons.sumGew;
+      if(kons.status==='auto')nAuto++;
+      if(kons.status==='konflikt')nKonf++;
+    });
+    matrix[p.id]={tage:tage,sumOrig:Math.round(sumO*100)/100,sumGew:Math.round(sumG*100)/100,nAuto:nAuto,nKonflikt:nKonf};
+  });
+  return {personen:personen,matrix:matrix,unbekannt:ges.unbekannt};
+}
+
+function abgRender(cont,daten,j,mi,tage){
+  const personen=daten.personen,matrix=daten.matrix,unbekannt=daten.unbekannt;
+  if(!personen.length){cont.innerHTML='<div style="color:var(--m);font-size:11px;padding:10px">Keine Mitarbeiter in den Stammdaten gefunden</div>';return;}
+  let head='<tr><th class="abg-name">Mitarbeiter</th>';
+  for(let t=1;t<=tage;t++){
+    const wd=new Date(j,mi-1,t).getDay();
+    head+='<th class="'+((wd===0||wd===6)?'abg-we':'')+'">'+t+'</th>';
+  }
+  head+='<th>Tage</th><th>Std. erfasst</th><th>Std. gewertet</th></tr>';
+  let gAuto=0,gKonf=0;const konfListe=[];
+  const zeilen=personen.map(function(p){
+    const m=matrix[p.id]||{tage:{},sumOrig:0,sumGew:0,nAuto:0,nKonflikt:0};
+    gAuto+=m.nAuto;gKonf+=m.nKonflikt;
+    let sum=0,tds='';
+    for(let t=1;t<=tage;t++){
+      const wd=new Date(j,mi-1,t).getDay();
+      const we=(wd===0||wd===6);
+      const tg=m.tage[t];
+      let inner='',click='';
+      if(tg){
+        sum++;
+        let sym='';
+        if(tg.eigen){
+          const rl=tg.eigen;
+          const col=rl==='va'?'var(--g)':(rl==='ws'?'var(--ws)':'var(--earth)');
+          const ltr=rl==='va'?'V':(rl==='ws'?'W':'A');
+          sym='<span class="abg-cell-eigen" style="background:'+col+'">'+ltr+'</span>';
+        }else if(tg.fremd){
+          sym='<span class="abg-cell-va"></span>';
+        }
+        let dot='';
+        if(tg.kons.status==='auto')dot='<span class="abg-dot abg-dot-a"></span>';
+        if(tg.kons.status==='konflikt'){dot='<span class="abg-dot abg-dot-k"></span>';konfListe.push({pid:p.id,name:p.name,tag:t});}
+        inner='<span class="abg-cw">'+sym+dot+'</span>';
+        click=' class="abg-click'+(we?' abg-we':'')+'" ontouchstart="abgZeigeTag(\''+_dfEsc(p.id)+'\','+t+')" onclick="abgZeigeTag(\''+_dfEsc(p.id)+'\','+t+')"';
+      }else{
+        click=we?' class="abg-we"':'';
+      }
+      tds+='<td'+click+'>'+inner+'</td>';
+    }
+    const inaktiv=p.aktiv===false?' <span style="color:var(--m);font-size:9px">(inaktiv)</span>':'';
+    const diff=Math.abs(m.sumOrig-m.sumGew)>0.001;
+    return '<tr><td class="abg-name" title="'+_dfEsc(p.name)+'">'+_dfEsc(p.name)+inaktiv+'</td>'+tds+
+      '<td class="abg-sum">'+sum+'</td>'+
+      '<td style="color:var(--m)">'+_auswFmtH(m.sumOrig)+'</td>'+
+      '<td class="abg-sum"'+(diff?' style="color:var(--o)"':'')+'>'+_auswFmtH(m.sumGew)+'</td></tr>';
+  }).join('');
+  let html='<div class="abg-wrap"><table class="abg-table"><thead>'+head+'</thead><tbody>'+zeilen+'</tbody></table></div>';
+  html+='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:var(--m);margin-top:10px">'+
+    gAuto+' Tag'+(gAuto===1?'':'e')+' automatisch abgeglichen &middot; '+
+    (gKonf>0?'<span style="color:var(--r);font-weight:700">'+gKonf+' Konflikt'+(gKonf===1?'':'e')+' zu pruefen</span>':'keine Konflikte')+
+    ' &middot; Std. erfasst = Summe aller Eingaben, Std. gewertet = nach Abgleich (Doppelungen bereinigt)</div>';
+  if(konfListe.length){
+    html+='<div style="margin-top:10px;padding:10px;border:1px solid rgba(196,72,40,.35);border-radius:8px;background:var(--rg)">'+
+      '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--r);margin-bottom:6px">Zu pruefende Tage</div>'+
+      konfListe.map(function(k){
+        return '<div class="abg-konf-row" ontouchstart="abgZeigeTag(\''+_dfEsc(k.pid)+'\','+k.tag+')" onclick="abgZeigeTag(\''+_dfEsc(k.pid)+'\','+k.tag+')">'+
+          '<span style="font-size:12px;color:var(--c);font-weight:600">'+_dfEsc(k.name)+'</span>'+
+          '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:var(--m)">'+String(k.tag).padStart(2,'0')+'.'+String(mi).padStart(2,'0')+'.'+j+' &#x279A;</span></div>';
+      }).join('')+'</div>';
+  }
+  html+='<div id="abg-detail"></div>';
+  const ubKeys=Object.keys(unbekannt);
+  if(ubKeys.length){
+    html+='<div style="margin-top:14px;padding:12px;border:1px solid rgba(196,72,40,.35);border-radius:8px;background:var(--rg)">'+
+      '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--r);margin-bottom:8px">Namen ohne Stammdaten-Treffer ('+ubKeys.length+')</div>'+
+      '<div style="font-size:10px;color:var(--m);margin-bottom:8px;line-height:1.5">Diese Namen stehen in Zeiten-Zeilen von VA-Berichten, passen aber zu keinem Stammdaten-Mitarbeiter. Ihre Stunden koennen keiner Person zugeordnet werden und fehlen daher oben. Bereinigung per SQL folgt als naechster Schritt.</div>'+
+      ubKeys.sort().map(function(n){
+        const u=unbekannt[n];
+        const tg=Object.keys(u.tage).sort().map(function(d){return fmtD(d);}).join(', ');
+        return '<div style="display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px solid rgba(196,72,40,.15);flex-wrap:wrap">'+
+          '<span style="font-size:12px;color:var(--c);font-weight:600">'+_dfEsc(n)+'</span>'+
+          '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m)">'+u.anz+'x - '+tg+'</span></div>';
+      }).join('')+'</div>';
+  }
+  cont.innerHTML=html;
+}
+
+// Tages-Detail: alle Original-Eintraege einer Person an einem Tag + was gewertet wird.
+function abgZeigeTag(pid,tag){
+  const box=document.getElementById('abg-detail');if(!box||!_abgDaten)return;
+  const p=_abgDaten.personen.find(function(x){return x.id===pid;});
+  const tg=_abgDaten.matrix[pid]&&_abgDaten.matrix[pid].tage[tag];
+  if(!p||!tg){box.innerHTML='';return;}
+  const kons=tg.kons;
+  const datumTxt=String(tag).padStart(2,'0')+'.'+String(_abgMi).padStart(2,'0')+'.'+_abgJ;
+  const stTxt=kons.status==='konflikt'
+    ?'<span style="color:var(--r);font-weight:700">Konflikt - Pruefung noetig</span>'
+    :(kons.status==='auto'?'<span style="color:var(--o);font-weight:700">automatisch abgeglichen</span>':'<span style="color:var(--g);font-weight:700">ohne Ueberschneidung</span>');
+  let rows=kons.eintraege.map(function(e){
+    const wer=e.selbst?'selbst erfasst':'erfasst von '+_dfEsc(e.erfasser)+(e.prio==='va'?' (Vorarbeiter)':' (Mitarbeiter)');
+    const fenster=(e.von!=null&&e.bis!=null)?abgMinZeit(e._s)+'-'+abgMinZeit(e._e)+' Uhr, Pause '+(e.pause||0)+'min':'ohne Von/Bis-Zeit';
+    let bewertung='';
+    if(e.zustand==='voll')bewertung='<span style="color:var(--g)">voll gewertet: '+_auswFmtH(e.gewertet)+'h</span>';
+    else if(e.zustand==='teil')bewertung='<span style="color:var(--o)">teilweise ueberlagert durch '+_dfEsc((e.ueberlagertVon||[]).join(' + '))+'<br>gewertet nur '+(e.rest||[]).map(function(r){return abgMinZeit(r[0])+'-'+abgMinZeit(r[1]);}).join(', ')+' Uhr = '+_auswFmtH(e.gewertet)+'h (statt '+_auswFmtH(e.stunden)+'h, anteilig gekuerzt)</span>';
+    else if(e.zustand==='ersetzt')bewertung='<span style="color:var(--m)">komplett ueberlagert durch '+_dfEsc((e.ueberlagertVon||[]).join(' + '))+' - zaehlt 0,00h (statt '+_auswFmtH(e.stunden)+'h)</span>';
+    else bewertung='<span style="color:var(--r)">KONFLIKT: gleichrangige Ueberschneidung - zaehlt vorerst unveraendert '+_auswFmtH(e.gewertet)+'h, bitte Berichte pruefen</span>';
+    return '<div style="padding:8px 0;border-bottom:1px solid var(--b)">'+
+      '<div style="font-size:12px;color:var(--c);font-weight:600">'+_dfEsc(abgProjLabel(e.projektId,e.projektNr))+' <span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m)">('+_dfEsc(e.berichtRolle.toUpperCase())+'-Bericht)</span></div>'+
+      '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:var(--t);margin:2px 0">'+fenster+' &middot; erfasst: '+_auswFmtH(e.stunden)+'h &middot; '+wer+'</div>'+
+      '<div style="font-size:11px;margin-top:2px">'+bewertung+'</div></div>';
+  }).join('');
+  box.innerHTML='<div class="a-sec" style="margin-top:14px;border-color:var(--sky)">'+
+    '<div class="a-sec-title">Zeitabgleich: '+_dfEsc(p.name)+' - '+datumTxt+' &middot; '+stTxt+'</div>'+rows+
+    '<div style="display:flex;gap:16px;margin-top:10px;font-family:\'IBM Plex Mono\',monospace;font-size:11px">'+
+    '<span style="color:var(--m)">erfasst gesamt: '+_auswFmtH(kons.sumOrig)+'h</span>'+
+    '<span style="color:var(--gl);font-weight:700">gewertet: '+_auswFmtH(kons.sumGew)+'h</span></div>'+
+    '<button class="btn" style="margin-top:10px" ontouchstart="document.getElementById(\'abg-detail\').innerHTML=\'\'" onclick="document.getElementById(\'abg-detail\').innerHTML=\'\'">Schliessen</button></div>';
+  box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 async function renderAdminExp(){
@@ -2653,6 +3040,14 @@ async function saveAndSendVA(){
   const projektId=projektSel?.value||'';
   const projekt=PROJEKTE.find(p=>p.id===projektId);
   const zeitRows=getZeitRows();
+  // Pflicht: Jeder Name muss exakt aus den Stammdaten kommen (Dropdown-Auswahl).
+  // Sonst kein Versand - betroffene Zeilen werden rot markiert.
+  const badNames=markInvalidZeitNames();
+  if(badNames.length){
+    showTab('zeit');
+    toast('Nicht gesendet: Name nicht in Stammdaten (rot markiert) - bitte aus der Liste waehlen: '+badNames.join(', '),'err');
+    return;
+  }
   const totalH=zeitRows.reduce((s,w)=>s+(parseFloat((w.gesamt||'0').replace(',','.'))||0),0);
   const zusatzProjekte=getZusatzProjekte();
   const d={
@@ -3293,6 +3688,27 @@ function _dfFindMA(name){
   const hits=MALISTE.filter(m=>_dfNorm(m.name).split(',')[0].trim()===key);
   return hits.length===1?hits[0]:null;
 }
+// Pflicht-Pruefung Personenauswahl: Name muss EXAKT (normalisiert) in den Stammdaten stehen.
+// Verhindert, dass Tippfehler-Namen aus alten Entwuerfen oder alten App-Versionen
+// erneut gespeichert werden und in der Auswertung als Duplikat-Personen auftauchen.
+function zeitNameInStamm(name){
+  if(!name)return true; // leere Zeilen filtert getZeitRows ohnehin heraus
+  if(!MALISTE||!MALISTE.length)return true; // Stammdaten (noch) nicht geladen -> nicht faelschlich blockieren
+  var key=_dfNorm(name);
+  return MALISTE.some(function(m){return _dfNorm(m.name)===key;});
+}
+// Markiert alle Zeiten-Zeilen rot, deren Name nicht in den Stammdaten steht.
+// Rueckgabe: Liste der ungueltigen Namen (ohne Doppelte).
+function markInvalidZeitNames(){
+  var bad=[];
+  document.querySelectorAll('#zeit-body tr').forEach(function(tr){
+    var sel=tr.querySelector('.zeit-name');if(!sel)return;
+    var n=sel.value||'';
+    if(n&&!zeitNameInStamm(n)){sel.classList.add('zn-bad');if(bad.indexOf(n)<0)bad.push(n);}
+    else sel.classList.remove('zn-bad');
+  });
+  return bad;
+}
 // Live-Filter fuer die Projekt-Spalte: tippt man im Suchfeld, werden die Optionen
 // des zugehoerigen <select> neu aufgebaut (nur passende). Robust auf iPad/Safari,
 // weil Optionen neu gesetzt statt nur versteckt werden.
@@ -3322,7 +3738,7 @@ function maAuswahlListe(){
 function maRowOpts(sel){
   const list=maAuswahlListe().slice().sort((a,b)=>(a.name||'').localeCompare(b.name||'','de'));
   let html='<option value="">- Name -</option>'+list.map(m=>'<option value="'+_dfEsc(m.name)+'" '+(sel===m.name?'selected':'')+'>'+_dfEsc(m.name)+(m.mitarbeiter_nr?' #'+m.mitarbeiter_nr:'')+'</option>').join('');
-  if(sel&&!list.some(m=>m.name===sel))html+='<option value="'+_dfEsc(sel)+'" selected>'+_dfEsc(sel)+'</option>';
+  if(sel&&!list.some(m=>m.name===sel))html+='<option value="'+_dfEsc(sel)+'" selected>'+_dfEsc(sel)+(zeitNameInStamm(sel)?'':' (nicht in Stammdaten!)')+'</option>';
   return html;
 }
 // Live-Filter fuer die Namens-Spalte: tippt man im Suchfeld, werden die Optionen
@@ -3338,7 +3754,7 @@ function filterRowMA(inp){
     .sort((a,b)=>(a.name||'').localeCompare(b.name||'','de'));
   let html='<option value="">- Name -</option>'+list.map(m=>'<option value="'+_dfEsc(m.name)+'" '+(cur===m.name?'selected':'')+'>'+_dfEsc(m.name)+(m.mitarbeiter_nr?' #'+m.mitarbeiter_nr:'')+'</option>').join('');
   // bereits gewaehlten Namen behalten, auch wenn rausgefiltert
-  if(cur&&!list.some(m=>m.name===cur))html+='<option value="'+_dfEsc(cur)+'" selected>'+_dfEsc(cur)+'</option>';
+  if(cur&&!list.some(m=>m.name===cur))html+='<option value="'+_dfEsc(cur)+'" selected>'+_dfEsc(cur)+(zeitNameInStamm(cur)?'':' (nicht in Stammdaten!)')+'</option>';
   sel.innerHTML=html;
 }
 // Bei Auswahl eines Mitarbeiters: Qualifikation aus den Stammdaten vorbelegen
@@ -3349,6 +3765,7 @@ function onZeitNameChange(sel){
     const tr=sel.closest('tr');const q=tr?tr.querySelector('.zeit-qual'):null;
     if(q)q.value=ma.qualifikation;
   }
+  if(zeitNameInStamm(sel.value))sel.classList.remove('zn-bad');else sel.classList.add('zn-bad');
   refreshStepMAs();
 }
 // Aktuell im VA-Hauptprojekt gewaehlte Kategorie
@@ -3759,6 +4176,8 @@ function addZeitRow(data={}){
     '<td><select class="row-tae" style="font-size:9px;min-width:110px">'+taeOpts+'</select></td>'+
     '<td><button class="delbtn" ontouchstart="this.closest(\'tr\').remove();updZeitTotal();refreshStepMAs()" onclick="this.closest(\'tr\').remove();updZeitTotal();refreshStepMAs()">&#x2715;</button></td>';
   tbody.appendChild(tr);calcZR(tr.querySelector('.zeit-von'));setTimeout(refreshStepMAs,50);
+  // Entwurf-Wiederherstellung: Name nicht in Stammdaten -> sofort sichtbar rot markieren
+  if(data.name&&!zeitNameInStamm(data.name)){const zn=tr.querySelector('.zeit-name');if(zn)zn.classList.add('zn-bad');}
 }
 
 function onZeitProjektChange(sel){const tr=sel.closest('tr');if(!tr)return;const fz=getProjektFahrzeit(sel.value);const fzEl=tr.querySelector('.zeit-fahrzeit');if(fzEl&&fz>0)fzEl.value=fz;calcZR(tr.querySelector('.zeit-von'));}
