@@ -518,6 +518,7 @@ body.wsd .content .et{font-family:'Public Sans',sans-serif;color:var(--zMut2);}
     <div class="admin-tab" id="atab-pfl" ontouchstart="showAdminTab('pfl')" onclick="showAdminTab('pfl')">Pflege</div>
     <div class="admin-tab" id="atab-cock" ontouchstart="showAdminTab('cock')" onclick="showAdminTab('cock')">Cockpit</div>
     <div class="admin-tab" id="atab-kalk" ontouchstart="showAdminTab('kalk')" onclick="showAdminTab('kalk')">Kalkulation</div>
+    <div class="admin-tab" id="atab-eint" ontouchstart="showAdminTab('eint')" onclick="showAdminTab('eint')">Einteilung</div>
     <div class="admin-tab" id="atab-exp" ontouchstart="showAdminTab('exp')" onclick="showAdminTab('exp')">Export</div>
   </div>
   <div class="admin-content">
@@ -532,6 +533,7 @@ body.wsd .content .et{font-family:'Public Sans',sans-serif;color:var(--zMut2);}
     <div class="admin-panel" id="apanel-pfl"></div>
     <div class="admin-panel" id="apanel-cock"></div>
     <div class="admin-panel" id="apanel-kalk"></div>
+    <div class="admin-panel" id="apanel-eint"></div>
     <div class="admin-panel" id="apanel-exp"></div>
   </div>
 </div>
@@ -1006,7 +1008,7 @@ function doLogout(){
 
 async function loadProjekte(){const{data}=await sb.from('projekte').select('*').eq('aktiv',true).order('nr');if(data)PROJEKTE=data;}
 async function loadFahrzeuge(){const{data}=await sb.from('fahrzeuge').select('*').eq('aktiv',true).order('kennzeichen');if(data)FAHRZEUGE=data;}
-async function loadMitarbeiterListe(){const{data}=await sb.from('mitarbeiter').select('id,name,mitarbeiter_nr,qualifikation,rolle,aktiv');if(data)MALISTE=data;}
+async function loadMitarbeiterListe(){const{data}=await sb.from('mitarbeiter').select('id,name,mitarbeiter_nr,kuerzel,qualifikation,rolle,aktiv');if(data)MALISTE=data;}
 
 async function loadReports(){
   let q=sb.from('berichte').select('*').order('datum',{ascending:false}).order('erstellt_am',{ascending:false});
@@ -1018,6 +1020,7 @@ async function loadReports(){
 async function initApp(){
   currentRole=currentUser.rolle;
   await loadReports();await loadFahrzeuge();await loadMitarbeiterListe();
+  await ladeEinteilungHeute();
   const b=document.getElementById('role-badge');
   b.className='role-badge '+(currentRole==='werkstatt'?'werkstatt':currentRole);
   b.textContent={arbeiter:'Arbeiter',vorarbeiter:'Vorarbeiter',werkstatt:'Werkstatt'}[currentRole]||currentRole;
@@ -1092,7 +1095,7 @@ function openAdmin(){
   const nurBuchhaltung=(currentUser.rolle==='verwaltung');
   const badge=document.querySelector('#admin-screen .admin-badge');
   if(badge)badge.textContent=nurBuchhaltung?'Buchhaltung':'Admin';
-  ['ma','proj','fz','email','ber','ausw','pfl','cock','kalk','exp'].forEach(t=>{
+  ['ma','proj','fz','email','ber','ausw','pfl','cock','kalk','eint','exp'].forEach(t=>{
     const el=document.getElementById('atab-'+t);if(el)el.style.display=nurBuchhaltung?'none':'';
   });
   // Abgabe-Uebersicht sieht auch die Buchhaltung: Pruefliste + Sammelfreigabe.
@@ -1110,6 +1113,7 @@ function showAdminTab(name){
   if(name==='ausw')renderAdminAusw();
   if(name==='pfl')renderAdminPflege();if(name==='cock')renderAdminCockpit();
   if(name==='kalk')renderKalkPanel('apanel-kalk');
+  if(name==='eint')renderAdminEint();
 }
 
 // ══════ BUCHHALTUNGS-FREIGABE (finale Instanz) ══════
@@ -3332,6 +3336,709 @@ function exportCockpitCSV(){
   dlFile('KLEI_Baustellen_Cockpit.csv','\ufeff'+lines.join('\n'),'text/csv;charset=utf-8');
 }
 
+// ══════ EINTEILUNG (Tageseinteilung aus Excel) ══════
+// Baustein Stufe 1. Der Schalter EINTEILUNG_AKTIV steuert ausschliesslich die
+// MITARBEITER-Seite: Banner "Meine Einteilung" und Vorbelegung im Bericht.
+// Der Admin-Import laeuft unabhaengig davon und kann jederzeit getestet werden.
+// Nach RLS + Passwort-Hashing (siehe TEIL D Punkt 4) hier auf true stellen.
+var EINTEILUNG_AKTIV=false;
+
+var EINT_ALIASE=[];      // {alias_norm, alias_anzeige, mitarbeiter_id}
+var EINT_HEUTE=[];       // alle Einteilungszeilen des heutigen Tages
+var EINT_VORSCHAU=null;  // geparste, noch nicht gespeicherte Datei
+var EINT_CDN='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+var _xlsxGeladen=false,_xlsxFehler=false,_xlsxCallbacks=[];
+
+// ---- SheetJS erst beim Oeffnen des Tabs laden (Muster wie Kalkulationsmodul) ----
+function ladeXlsxModul(cb){
+  if(_xlsxGeladen||_xlsxFehler){cb();return;}
+  _xlsxCallbacks.push(cb);
+  if(_xlsxCallbacks.length>1)return;
+  var s=document.createElement('script');
+  s.src=EINT_CDN;
+  s.onload=function(){_xlsxGeladen=true;var c=_xlsxCallbacks;_xlsxCallbacks=[];c.forEach(function(f){f();});};
+  s.onerror=function(){_xlsxFehler=true;var c=_xlsxCallbacks;_xlsxCallbacks=[];c.forEach(function(f){f();});};
+  document.head.appendChild(s);
+}
+
+// ---- Hilfsfunktionen ----
+function _eintNorm(s){
+  s=String(s==null?'':s).toLowerCase();
+  s=s.replace(/\u00e4/g,'ae').replace(/\u00f6/g,'oe').replace(/\u00fc/g,'ue').replace(/\u00df/g,'ss');
+  return s.replace(/[^a-z0-9]/g,'');
+}
+function _eintDatumDe(iso){
+  if(!iso)return '--';
+  var t=String(iso).split('-');
+  if(t.length!==3)return String(iso);
+  return t[2]+'.'+t[1]+'.'+t[0];
+}
+// Laedt eine Tabelle vollstaendig in 1000er-Bloecken (Konvention TEIL A).
+async function _eintLadeAlle(tabelle,spalten,filterFn){
+  var alle=[],von=0,block=1000;
+  for(;;){
+    var q=sb.from(tabelle).select(spalten);
+    if(filterFn)q=filterFn(q);
+    var res=await q.range(von,von+block-1);
+    if(res.error)return {ok:false,fehler:res.error.message,daten:[]};
+    var d=res.data||[];
+    alle=alle.concat(d);
+    if(d.length<block)break;
+    von+=block;
+  }
+  return {ok:true,fehler:'',daten:alle};
+}
+
+// ---- Aliase laden ----
+async function ladeEintAliase(){
+  var r=await _eintLadeAlle('einteilung_aliase','alias_norm,alias_anzeige,mitarbeiter_id',null);
+  if(!r.ok){
+    EINT_ALIASE=[];
+    console.error('EINTEILUNG: Aliase konnten nicht geladen werden - '+r.fehler);
+    return {ok:false,fehler:r.fehler};
+  }
+  EINT_ALIASE=r.daten;
+  return {ok:true,fehler:''};
+}
+
+// ---- Namensaufloesung: Alias, voller Name, Kuerzel, eindeutiger Nachname ----
+function eintFindeMitarbeiter(rohName){
+  var norm=_eintNorm(rohName);
+  if(!norm)return {id:null,quelle:'leer'};
+  var al=EINT_ALIASE.find(function(a){return a.alias_norm===norm&&a.mitarbeiter_id;});
+  if(al)return {id:al.mitarbeiter_id,quelle:'alias'};
+  var voll=MALISTE.filter(function(m){return _eintNorm(m.name)===norm;});
+  if(voll.length===1)return {id:voll[0].id,quelle:'name'};
+  if(voll.length>1)return {id:null,quelle:'mehrdeutig'};
+  var kz=MALISTE.filter(function(m){return m.kuerzel&&_eintNorm(m.kuerzel)===norm;});
+  if(kz.length===1)return {id:kz[0].id,quelle:'kuerzel'};
+  if(kz.length>1)return {id:null,quelle:'mehrdeutig'};
+  var nach=MALISTE.filter(function(m){
+    var teile=String(m.name||'').trim().split(/\s+/);
+    return teile.length>0&&_eintNorm(teile[teile.length-1])===norm;
+  });
+  if(nach.length===1)return {id:nach[0].id,quelle:'nachname'};
+  if(nach.length>1)return {id:null,quelle:'mehrdeutig'};
+  return {id:null,quelle:'unbekannt'};
+}
+
+// ---- Namensliste aus einer Zelle ----
+function eintSplitNamen(txt,auchSlash){
+  var t=String(txt==null?'':txt).replace(/\r/g,'\n');
+  var teile=auchSlash?t.split(/[\n,;\/]+/):t.split(/[\n,;]+/);
+  var out=[];
+  teile.forEach(function(s){
+    s=s.replace(/\.{2,}/g,' ').replace(/\u2026/g,' ').trim();
+    s=s.replace(/^[\-\u2013\u2022\s]+/,'').replace(/[\s\-\u2013]+$/,'');
+    if(!s)return;
+    // Mindestens zwei zusammenhaengende Buchstaben, sonst ist es kein Name,
+    // sondern ein Fragment wie "4+T". Alles Uebrige landet bewusst in der
+    // Pruefliste, damit nichts still verschwindet.
+    if(!/[a-zA-Z\u00c0-\u017f]{2,}/.test(s))return;
+    if(s.length>60)return;                      // offensichtlich kein Name
+    out.push(s);
+  });
+  return out;
+}
+
+// ---- Abwesenheitszeile: Labels aus Spalte A den Gruppen in der Namenszelle zuordnen ----
+function eintAbwesenheitPersonen(bez,crew){
+  var labels=String(bez||'').split('/').map(function(s){return s.trim();}).filter(Boolean);
+  var gruppen=String(crew||'').split('/');
+  var out=[];
+  for(var i=0;i<gruppen.length;i++){
+    var lab=labels[i]||'abwesend';
+    eintSplitNamen(gruppen[i],false).forEach(function(n){out.push({roh:n,grund:lab});});
+  }
+  return out;
+}
+
+// ---- Grund fuer die Kollegenansicht entschaerfen (Datenschutz) ----
+// Berufsschule und UEA sind betrieblich relevant und duerfen im Klartext stehen.
+// Alles andere (Krank, Urlaub) erscheint fuer Kollegen nur als "abwesend".
+function eintGrundOeffentlich(g){
+  var n=_eintNorm(g);
+  if(n.indexOf('berufsschule')>=0||n.indexOf('schule')>=0)return 'Berufsschule';
+  if(n==='ua'||n==='uea'||n.indexOf('ueberbetrieb')>=0)return 'UEA';
+  return 'abwesend';
+}
+
+// ---- Parser: Array-of-Arrays aus dem Blatt in strukturierte Zeilen ----
+function eintParseBlatt(aoa){
+  var erg={datum:'',kopfZeile:-1,spalten:{},zeilen:[],warnungen:[]};
+  var i,j,r,t,m;
+  // 1) Datum irgendwo in den ersten Zeilen suchen
+  for(i=0;i<Math.min(aoa.length,15)&&!erg.datum;i++){
+    r=aoa[i]||[];
+    for(j=0;j<r.length;j++){
+      m=String(r[j]==null?'':r[j]).match(/(\d{1,2})\.(\d{1,2})\.(\d{4})/);
+      if(m){erg.datum=m[3]+'-'+('0'+m[2]).slice(-2)+'-'+('0'+m[1]).slice(-2);break;}
+    }
+  }
+  // 2) Kopfzeile ueber die Spalte "Projekt-Nr." finden
+  var cProj=-1,cFz=-1,cFzg=-1,cTr=-1,cCrew=-1,cKz=-1;
+  for(i=0;i<Math.min(aoa.length,15);i++){
+    r=aoa[i]||[];
+    var trefferHier=-1;
+    for(j=0;j<r.length;j++){
+      t=_eintNorm(r[j]);
+      if(!t)continue;
+      if(t==='projektnr'||t.indexOf('projektnr')===0){cProj=j;trefferHier=i;}
+      if(t.indexOf('fahrzeit')===0)cFz=j;
+      if(t.indexOf('fahrzeugnr')===0||t==='fahrzeug')cFzg=j;
+      if(t.indexOf('transport')===0)cTr=j;
+      if(/uhr$/.test(t)&&t.length<=12)cCrew=j;
+    }
+    if(trefferHier>=0){erg.kopfZeile=trefferHier;break;}
+  }
+  if(erg.kopfZeile<0){
+    erg.warnungen.push('Kopfzeile mit "Projekt-Nr." nicht gefunden. Bitte pruefen, ob das richtige Tabellenblatt gewaehlt ist.');
+    return erg;
+  }
+  if(cCrew<0&&cTr>0)cCrew=cTr-1;
+  if(cCrew<0){
+    erg.warnungen.push('Spalte mit den Namen (Kopf "7.00 Uhr") nicht gefunden. Ohne sie kann nichts zugeordnet werden.');
+    return erg;
+  }
+  if(cCrew>0)cKz=cCrew-1;
+  if(cProj<0)erg.warnungen.push('Spalte "Projekt-Nr." nicht gefunden - Zeilen werden ohne Projektbezug importiert.');
+  if(cFz<0)erg.warnungen.push('Spalte "Fahrzeit" nicht gefunden.');
+  erg.spalten={proj:cProj,fahrzeit:cFz,fahrzeug:cFzg,transporte:cTr,crew:cCrew,kuerzel:cKz};
+
+  // 3) Datenzeilen
+  var reihenfolge=0;
+  for(i=erg.kopfZeile+1;i<aoa.length;i++){
+    r=aoa[i]||[];
+    var bez=String(r[0]==null?'':r[0]).trim();
+    var crew=cCrew>=0?String(r[cCrew]==null?'':r[cCrew]).trim():'';
+    if(!bez&&!crew)continue;
+    var bezN=_eintNorm(bez);
+    var typ='baustelle';
+    if(bezN.indexOf('krank')>=0||bezN.indexOf('urlaub')>=0||bezN.indexOf('berufsschule')>=0)typ='abwesenheit';
+    else if(bezN.indexOf('buero')===0||(bezN.indexOf('werkstatt')>=0&&bezN.indexOf('bauhof')>=0))typ='intern';
+
+    var projNr=cProj>=0?String(r[cProj]==null?'':r[cProj]).trim():'';
+    var pTreffer=null;
+    if(projNr){
+      pTreffer=PROJEKTE.find(function(p){return _eintNorm(p.nr)===_eintNorm(projNr);})||null;
+    }
+    var fzRoh=cFz>=0?String(r[cFz]==null?'':r[cFz]).trim():'';
+    var fzZahl=parseInt(fzRoh.replace(/[^0-9]/g,''),10);
+    if(isNaN(fzZahl))fzZahl=null;
+
+    var personen=[];
+    if(typ==='abwesenheit'){
+      eintAbwesenheitPersonen(bez,crew).forEach(function(p){
+        var tr=eintFindeMitarbeiter(p.roh);
+        personen.push({roh:p.roh,grund:p.grund,mitarbeiter_id:tr.id,quelle:tr.quelle});
+      });
+    }else{
+      eintSplitNamen(crew,true).forEach(function(n){
+        var tr=eintFindeMitarbeiter(n);
+        personen.push({roh:n,grund:'',mitarbeiter_id:tr.id,quelle:tr.quelle});
+      });
+    }
+
+    reihenfolge++;
+    erg.zeilen.push({
+      idx:erg.zeilen.length,
+      reihenfolge:reihenfolge,
+      typ:typ,
+      bez:bez,
+      projNr:projNr,
+      projekt:pTreffer,
+      projektFehlt:(projNr!==''&&!pTreffer),
+      fahrzeitDatei:fzZahl,
+      fahrzeitStamm:pTreffer?(parseInt(pTreffer.fahrzeit_min||0,10)||0):null,
+      fahrzeugNr:cFzg>=0?String(r[cFzg]==null?'':r[cFzg]).trim():'',
+      transporte:cTr>=0?String(r[cTr]==null?'':r[cTr]).trim():'',
+      verantwortlich:cKz>=0?String(r[cKz]==null?'':r[cKz]).trim():'',
+      crewRoh:crew,
+      personen:personen
+    });
+  }
+  if(!erg.zeilen.length)erg.warnungen.push('Keine Datenzeilen gefunden.');
+  return erg;
+}
+
+// ══════ ADMIN-TAB EINTEILUNG ══════
+function renderAdminEint(){
+  var el=document.getElementById('apanel-eint');
+  if(!el)return;
+  el.innerHTML='<div class="a-sec"><div class="a-sec-title">Tageseinteilung importieren</div>'+
+    '<div style="font-size:11px;color:var(--m);line-height:1.5;margin-bottom:10px">Die Einteilungsdatei (.xlsx oder .csv) unveraendert hochladen. Zuerst erscheint eine Vorschau mit allen Zuordnungen, gespeichert wird erst nach Bestaetigung.</div>'+
+    (EINTEILUNG_AKTIV?
+      '<div style="background:var(--earthg);border:1px solid var(--earth);border-radius:var(--rad);padding:8px 10px;margin-bottom:10px;font-size:11px;color:var(--t)">Die Mitarbeiteransicht ist <b>aktiv</b>. Importierte Einteilungen sind fuer die Kollegen sichtbar.</div>':
+      '<div style="background:var(--s3);border:1px solid var(--b);border-radius:var(--rad);padding:8px 10px;margin-bottom:10px;font-size:11px;color:var(--m)">Die Mitarbeiteransicht ist <b>noch nicht freigeschaltet</b> (EINTEILUNG_AKTIV = false). Import und Vorschau funktionieren, die Kollegen sehen aber nichts. Freischalten erst nach RLS und Passwort-Hashing.</div>')+
+    '<div class="row"><div class="fg w100"><label>Datei waehlen</label>'+
+    '<input type="file" id="eint-file" accept=".xlsx,.xlsm,.xls,.csv" onchange="eintDateiGewaehlt()" style="font-size:11px"></div></div>'+
+    '<div id="eint-status" style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:var(--m);min-height:16px;margin-bottom:8px"></div>'+
+    '<div id="eint-vorschau"></div>'+
+    '</div>'+
+    '<div class="a-sec"><div class="a-sec-title">Gespeicherte Einteilungen</div>'+
+    '<div class="row"><div class="fg w50"><label>Datum</label><input type="date" id="eint-tag" value="'+todayStr()+'" onchange="eintZeigeTag()"></div></div>'+
+    '<div id="eint-tagliste"><div style="color:var(--m);font-size:10px;padding:8px">Lade...</div></div></div>';
+  eintZeigeTag();
+}
+
+function eintStatus(txt,farbe){
+  var el=document.getElementById('eint-status');
+  if(el){el.textContent=txt;el.style.color=farbe||'var(--m)';}
+}
+
+function eintDateiGewaehlt(){
+  var inp=document.getElementById('eint-file');
+  if(!inp||!inp.files||!inp.files.length)return;
+  var datei=inp.files[0];
+  eintStatus('Tabellenmodul wird geladen...','var(--m)');
+  ladeXlsxModul(function(){
+    if(_xlsxFehler||typeof XLSX==='undefined'){
+      eintStatus('FEHLER: Das Tabellenmodul konnte nicht geladen werden. Internetverbindung pruefen und Seite neu laden.','var(--r)');
+      return;
+    }
+    eintStatus('Datei wird gelesen...','var(--m)');
+    var reader=new FileReader();
+    reader.onerror=function(){eintStatus('FEHLER: Die Datei konnte nicht gelesen werden.','var(--r)');};
+    reader.onload=async function(ev){
+      // Aliase erst hier laden - so kostet das Modul beim normalen Login nichts.
+      var aRes=await ladeEintAliase();
+      if(!aRes.ok){
+        eintStatus('FEHLER: Die gespeicherten Zuordnungen konnten nicht geladen werden ('+aRes.fehler+'). Ohne sie waeren alle Namen offen. Import abgebrochen.','var(--r)');
+        return;
+      }
+      var wb=null;
+      try{
+        wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
+      }catch(err){
+        eintStatus('FEHLER beim Oeffnen der Datei: '+err.message,'var(--r)');
+        return;
+      }
+      if(!wb||!wb.SheetNames||!wb.SheetNames.length){
+        eintStatus('FEHLER: Die Datei enthaelt kein lesbares Tabellenblatt.','var(--r)');
+        return;
+      }
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var aoa=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''});
+      EINT_VORSCHAU=eintParseBlatt(aoa);
+      EINT_VORSCHAU.dateiname=datei.name;
+      if(!EINT_VORSCHAU.datum){
+        var m2=String(datei.name).match(/(\d{4})[.\-_](\d{2})[.\-_](\d{2})/);
+        if(m2)EINT_VORSCHAU.datum=m2[1]+'-'+m2[2]+'-'+m2[3];
+      }
+      eintStatus('Blatt "'+wb.SheetNames[0]+'" gelesen: '+EINT_VORSCHAU.zeilen.length+' Zeilen.','var(--g)');
+      renderEintVorschau();
+    };
+    reader.readAsArrayBuffer(datei);
+  });
+}
+
+function eintMaOpts(sel){
+  var list=maAuswahlListe().slice().sort(function(a,b){return (a.name||'').localeCompare(b.name||'','de');});
+  return '<option value="">- nicht zuordnen -</option>'+list.map(function(m){
+    return '<option value="'+_dfEsc(m.id)+'"'+(sel===m.id?' selected':'')+'>'+_dfEsc(m.name)+(m.mitarbeiter_nr?' #'+m.mitarbeiter_nr:'')+'</option>';
+  }).join('');
+}
+
+function renderEintVorschau(){
+  var el=document.getElementById('eint-vorschau');
+  if(!el)return;
+  var v=EINT_VORSCHAU;
+  if(!v){el.innerHTML='';return;}
+
+  var offen=[],gesamtPers=0,zugeordnet=0;
+  v.zeilen.forEach(function(z){
+    z.personen.forEach(function(p,pi){
+      gesamtPers++;
+      if(p.mitarbeiter_id)zugeordnet++;
+      else offen.push({zIdx:z.idx,pIdx:pi,roh:p.roh,bez:z.bez});
+    });
+  });
+  var projFehlt=v.zeilen.filter(function(z){return z.projektFehlt;}).length;
+  var fzAbw=v.zeilen.filter(function(z){return z.fahrzeitDatei!==null&&z.fahrzeitStamm!==null&&z.fahrzeitDatei!==z.fahrzeitStamm;});
+
+  var h='';
+  if(v.warnungen.length){
+    h+='<div style="background:#fdecea;border:1px solid var(--r);border-radius:var(--rad);padding:8px 10px;margin-bottom:10px">'+
+      v.warnungen.map(function(w){return '<div style="font-size:11px;color:var(--r);line-height:1.5">'+_dfEsc(w)+'</div>';}).join('')+'</div>';
+  }
+  if(!v.zeilen.length){el.innerHTML=h;return;}
+
+  // Kopfzeile mit Datum
+  h+='<div class="row"><div class="fg w50"><label>Datum der Einteilung</label>'+
+    '<input type="date" id="eint-vor-datum" value="'+_dfEsc(v.datum||'')+'"></div>'+
+    '<div class="fg w50"><label>Zuordnungen merken</label>'+
+    '<select id="eint-merken"><option value="1" selected>Ja - beim naechsten Mal automatisch</option><option value="0">Nein - nur dieses Mal</option></select></div></div>';
+  if(!v.datum){
+    h+='<div style="font-size:11px;color:var(--r);margin-bottom:8px">Im Blatt wurde kein Datum gefunden. Bitte oben von Hand setzen.</div>';
+  }
+
+  // Kennzahlen
+  h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0">'+
+    '<div class="sc"><div class="sv">'+v.zeilen.length+'</div><div class="sl">Zeilen</div></div>'+
+    '<div class="sc"><div class="sv">'+gesamtPers+'</div><div class="sl">Namen</div></div>'+
+    '<div class="sc"><div class="sv" style="color:'+(offen.length?'var(--r)':'var(--g)')+'">'+offen.length+'</div><div class="sl">offen</div></div>'+
+    '<div class="sc"><div class="sv" style="color:'+(projFehlt?'var(--r)':'var(--g)')+'">'+projFehlt+'</div><div class="sl">Projekt fehlt</div></div>'+
+    '</div>';
+
+  // Offene Zuordnungen
+  if(offen.length){
+    h+='<div style="background:#fdecea;border:1px solid var(--r);border-radius:var(--rad);padding:10px;margin-bottom:10px">'+
+      '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--r);letter-spacing:1px;margin-bottom:6px">OFFENE ZUORDNUNGEN ('+offen.length+')</div>'+
+      '<div style="font-size:11px;color:var(--t);line-height:1.5;margin-bottom:8px">Diese Namen konnten keinem Mitarbeiter zugeordnet werden. Nicht zugeordnete Namen werden zwar gespeichert, tauchen aber in keiner persoenlichen Ansicht auf.</div>'+
+      '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Name aus Datei</th><th>Zeile</th><th>Mitarbeiter</th></tr></thead><tbody>';
+    offen.forEach(function(o){
+      h+='<tr><td style="font-weight:600">'+_dfEsc(o.roh)+'</td>'+
+        '<td style="font-size:10px;color:var(--m)">'+_dfEsc(String(o.bez).substring(0,34))+'</td>'+
+        '<td><select style="font-size:10px;min-width:150px" onchange="eintSetzeZuordnung('+o.zIdx+','+o.pIdx+',this.value)">'+eintMaOpts('')+'</select></td></tr>';
+    });
+    h+='</tbody></table></div></div>';
+  }
+
+  // Fahrzeit-Gegenprobe
+  if(fzAbw.length){
+    h+='<div style="background:var(--earthg);border:1px solid var(--earth);border-radius:var(--rad);padding:8px 10px;margin-bottom:10px">'+
+      '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--earth);letter-spacing:1px;margin-bottom:4px">FAHRZEIT WEICHT AB ('+fzAbw.length+')</div>'+
+      fzAbw.slice(0,8).map(function(z){
+        return '<div style="font-size:11px;color:var(--t);line-height:1.5">'+_dfEsc(String(z.bez).substring(0,40))+': Datei '+z.fahrzeitDatei+' min, Stammdaten '+z.fahrzeitStamm+' min</div>';
+      }).join('')+
+      '<div style="font-size:10px;color:var(--m);margin-top:4px">Nur ein Hinweis. Die Stammdaten werden nicht veraendert.</div></div>';
+  }
+
+  // Zeilenuebersicht
+  h+='<div class="tbl-wrap"><table class="tbl"><thead><tr><th>#</th><th>Baustelle / Aufgabe</th><th>Projekt-Nr.</th><th>Verantw.</th><th>Fahrzeug</th><th>Personen</th></tr></thead><tbody>';
+  v.zeilen.forEach(function(z){
+    var pers=z.personen.map(function(p){
+      var ma=p.mitarbeiter_id?MALISTE.find(function(m){return m.id===p.mitarbeiter_id;}):null;
+      var farbe=ma?'var(--g)':'var(--r)';
+      var txt=ma?ma.name:(p.roh+' (?)');
+      return '<span style="color:'+farbe+';font-size:10px">'+_dfEsc(txt)+(p.grund?' ['+_dfEsc(p.grund)+']':'')+'</span>';
+    }).join('<span style="color:var(--m)"> &middot; </span>');
+    var typBadge=z.typ==='abwesenheit'?'<span style="font-size:9px;color:var(--r)">[abwesend]</span> ':(z.typ==='intern'?'<span style="font-size:9px;color:var(--m)">[intern]</span> ':'');
+    h+='<tr><td style="font-size:10px;color:var(--m)">'+z.reihenfolge+'</td>'+
+      '<td style="font-size:10px">'+typBadge+_dfEsc(String(z.bez).substring(0,46))+'</td>'+
+      '<td style="font-size:10px;color:'+(z.projektFehlt?'var(--r)':'var(--t)')+'">'+_dfEsc(z.projNr||'-')+(z.projektFehlt?' (unbekannt)':'')+'</td>'+
+      '<td style="font-size:10px;color:var(--m)">'+_dfEsc(z.verantwortlich)+'</td>'+
+      '<td style="font-size:10px;color:var(--m)">'+_dfEsc(z.fahrzeugNr)+'</td>'+
+      '<td>'+(pers||'<span style="font-size:10px;color:var(--m)">-</span>')+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+
+  h+='<div class="arow" style="margin-top:10px"><button class="btn btn-p" ontouchstart="eintSpeichern()" onclick="eintSpeichern()">Einteilung speichern</button>'+
+    '<button class="btn" ontouchstart="eintVorschauVerwerfen()" onclick="eintVorschauVerwerfen()">Verwerfen</button></div>';
+
+  el.innerHTML=h;
+}
+
+function eintSetzeZuordnung(zIdx,pIdx,maId){
+  if(!EINT_VORSCHAU)return;
+  var z=EINT_VORSCHAU.zeilen[zIdx];
+  if(!z||!z.personen[pIdx])return;
+  z.personen[pIdx].mitarbeiter_id=maId||null;
+  z.personen[pIdx].quelle=maId?'manuell':'unbekannt';
+  renderEintVorschau();
+}
+
+function eintVorschauVerwerfen(){
+  EINT_VORSCHAU=null;
+  var f=document.getElementById('eint-file');if(f)f.value='';
+  var el=document.getElementById('eint-vorschau');if(el)el.innerHTML='';
+  eintStatus('Vorschau verworfen.','var(--m)');
+}
+
+async function eintSpeichern(){
+  var v=EINT_VORSCHAU;
+  if(!v||!v.zeilen.length){eintStatus('Nichts zu speichern.','var(--r)');return;}
+  var datum=(document.getElementById('eint-vor-datum')||{}).value||v.datum||'';
+  if(!datum){eintStatus('FEHLER: Bitte zuerst ein Datum setzen.','var(--r)');return;}
+  var merken=((document.getElementById('eint-merken')||{}).value||'1')==='1';
+  if(!confirm('Einteilung fuer den '+_eintDatumDe(datum)+' speichern?\n\nEine bereits gespeicherte Einteilung fuer diesen Tag wird dabei ersetzt.'))return;
+
+  eintStatus('Speichern laeuft...','var(--m)');
+
+  // 1) Neue Aliase sichern (nur manuell zugeordnete, noch unbekannte Namen)
+  if(merken){
+    var neueAliase=[];
+    v.zeilen.forEach(function(z){
+      z.personen.forEach(function(p){
+        if(!p.mitarbeiter_id||p.quelle!=='manuell')return;
+        var norm=_eintNorm(p.roh);
+        if(!norm)return;
+        if(EINT_ALIASE.some(function(a){return a.alias_norm===norm;}))return;
+        if(neueAliase.some(function(a){return a.alias_norm===norm;}))return;
+        neueAliase.push({alias_norm:norm,alias_anzeige:p.roh,mitarbeiter_id:p.mitarbeiter_id});
+      });
+    });
+    if(neueAliase.length){
+      var aRes=await sb.from('einteilung_aliase').insert(neueAliase);
+      if(aRes.error){
+        eintStatus('FEHLER beim Speichern der Zuordnungen: '+aRes.error.message,'var(--r)');
+        return;
+      }
+      EINT_ALIASE=EINT_ALIASE.concat(neueAliase);
+    }
+  }
+
+  // 2) Import-Protokoll anlegen
+  var offenCount=0,okCount=0;
+  v.zeilen.forEach(function(z){z.personen.forEach(function(p){if(p.mitarbeiter_id)okCount++;else offenCount++;});});
+  var impRes=await sb.from('einteilung_importe').insert({
+    datum:datum,
+    dateiname:v.dateiname||'',
+    zeilen_gesamt:v.zeilen.length,
+    zeilen_ok:okCount,
+    zeilen_offen:offenCount,
+    importiert_von:currentUser?currentUser.name:''
+  }).select('id');
+  if(impRes.error||!impRes.data||!impRes.data.length){
+    eintStatus('FEHLER: Import konnte nicht angelegt werden. '+(impRes.error?impRes.error.message:'Keine ID zurueckgeliefert.'),'var(--r)');
+    return;
+  }
+  var importId=impRes.data[0].id;
+
+  // 3) Zeilen bauen
+  var saetze=[];
+  v.zeilen.forEach(function(z){
+    var basis={
+      datum:datum,
+      reihenfolge:z.reihenfolge,
+      typ:z.typ,
+      projekt_id:z.projekt?z.projekt.id:null,
+      projekt_nr:z.projNr||'',
+      baustelle_text:z.bez||'',
+      kolonne_roh:z.crewRoh||'',
+      verantwortlich:z.verantwortlich||'',
+      fahrzeug_nr:z.fahrzeugNr||'',
+      transporte:z.transporte||'',
+      fahrzeit_min:z.fahrzeitDatei,
+      startzeit:'',
+      import_id:importId
+    };
+    if(!z.personen.length){
+      var leer=Object.assign({},basis);
+      leer.mitarbeiter_id=null;leer.alias_roh='';leer.grund='';
+      saetze.push(leer);
+      return;
+    }
+    z.personen.forEach(function(p){
+      var s=Object.assign({},basis);
+      s.mitarbeiter_id=p.mitarbeiter_id||null;
+      s.alias_roh=p.roh||'';
+      s.grund=p.grund||'';
+      saetze.push(s);
+    });
+  });
+
+  // 4) NEUE Zeilen zuerst schreiben, danach die alten loeschen.
+  //    So bleibt bei einem Fehler die bisherige Einteilung erhalten.
+  var block=500;
+  for(var i=0;i<saetze.length;i+=block){
+    var teil=saetze.slice(i,i+block);
+    var insRes=await sb.from('einteilungen').insert(teil);
+    if(insRes.error){
+      eintStatus('FEHLER beim Schreiben der Zeilen: '+insRes.error.message+' - Der alte Stand wurde NICHT geloescht.','var(--r)');
+      return;
+    }
+  }
+  var delRes=await sb.from('einteilungen').delete().eq('datum',datum).neq('import_id',importId);
+  if(delRes.error){
+    eintStatus('ACHTUNG: Neue Einteilung gespeichert, aber der alte Stand konnte nicht geloescht werden ('+delRes.error.message+'). Der Tag enthaelt jetzt doppelte Zeilen.','var(--r)');
+    return;
+  }
+
+  eintStatus('Gespeichert: '+saetze.length+' Zeilen fuer den '+_eintDatumDe(datum)+'.','var(--g)');
+  toast('Einteilung gespeichert','ok');
+  EINT_VORSCHAU=null;
+  var f=document.getElementById('eint-file');if(f)f.value='';
+  var el=document.getElementById('eint-vorschau');if(el)el.innerHTML='';
+  var tagEl=document.getElementById('eint-tag');if(tagEl)tagEl.value=datum;
+  eintZeigeTag();
+  if(datum===todayStr())await ladeEinteilungHeute();
+}
+
+// ---- gespeicherten Tag anzeigen (Admin, mit Klartext-Gruenden) ----
+async function eintZeigeTag(){
+  var el=document.getElementById('eint-tagliste');
+  if(!el)return;
+  var tag=(document.getElementById('eint-tag')||{}).value||todayStr();
+  el.innerHTML='<div style="color:var(--m);font-size:10px;padding:8px">Lade...</div>';
+  var r=await _eintLadeAlle('einteilungen','*',function(q){return q.eq('datum',tag).order('reihenfolge',{ascending:true});});
+  if(!r.ok){
+    el.innerHTML='<div style="font-size:11px;color:var(--r);padding:8px">FEHLER beim Laden: '+_dfEsc(r.fehler)+'</div>';
+    return;
+  }
+  if(!r.daten.length){
+    el.innerHTML='<div style="font-size:11px;color:var(--m);padding:8px">Fuer den '+_eintDatumDe(tag)+' ist keine Einteilung gespeichert.</div>';
+    return;
+  }
+  var gruppen={};
+  r.daten.forEach(function(e){
+    var k=String(e.reihenfolge)+'|'+(e.baustelle_text||'');
+    if(!gruppen[k])gruppen[k]={z:e,pers:[]};
+    if(e.mitarbeiter_id||e.alias_roh)gruppen[k].pers.push(e);
+  });
+  var keys=Object.keys(gruppen).sort(function(a,b){return parseInt(a)-parseInt(b);});
+  var h='<div class="tbl-wrap"><table class="tbl"><thead><tr><th>#</th><th>Baustelle / Aufgabe</th><th>Projekt-Nr.</th><th>Personen</th></tr></thead><tbody>';
+  keys.forEach(function(k){
+    var g=gruppen[k];
+    var pers=g.pers.map(function(e){
+      var ma=e.mitarbeiter_id?MALISTE.find(function(m){return m.id===e.mitarbeiter_id;}):null;
+      var txt=ma?ma.name:(e.alias_roh+' (?)');
+      return '<span style="font-size:10px;color:'+(ma?'var(--t)':'var(--r)')+'">'+_dfEsc(txt)+(e.grund?' ['+_dfEsc(e.grund)+']':'')+'</span>';
+    }).join('<span style="color:var(--m)"> &middot; </span>');
+    h+='<tr><td style="font-size:10px;color:var(--m)">'+g.z.reihenfolge+'</td>'+
+      '<td style="font-size:10px">'+_dfEsc(String(g.z.baustelle_text||'').substring(0,46))+'</td>'+
+      '<td style="font-size:10px;color:var(--m)">'+_dfEsc(g.z.projekt_nr||'-')+'</td>'+
+      '<td>'+(pers||'<span style="font-size:10px;color:var(--m)">-</span>')+'</td></tr>';
+  });
+  h+='</tbody></table></div>'+
+    '<div style="font-size:10px;color:var(--m);margin-top:6px">'+r.daten.length+' Zeilen. Gruende (Krank, Urlaub) sind nur in dieser Adminansicht im Klartext sichtbar.</div>'+
+    '<div class="arow" style="margin-top:8px"><button class="btn btn-r" ontouchstart="eintTagLoeschen()" onclick="eintTagLoeschen()">Diesen Tag loeschen</button></div>';
+  el.innerHTML=h;
+}
+
+async function eintTagLoeschen(){
+  var tag=(document.getElementById('eint-tag')||{}).value||'';
+  if(!tag)return;
+  if(!confirm('Die gespeicherte Einteilung fuer den '+_eintDatumDe(tag)+' vollstaendig loeschen?'))return;
+  var res=await sb.from('einteilungen').delete().eq('datum',tag);
+  if(res.error){toast('FEHLER: '+res.error.message,'err');return;}
+  toast('Einteilung geloescht','ok');
+  eintZeigeTag();
+  if(tag===todayStr())await ladeEinteilungHeute();
+}
+
+// ══════ MITARBEITER-SEITE ══════
+async function ladeEinteilungHeute(){
+  EINT_HEUTE=[];
+  if(!EINTEILUNG_AKTIV)return;
+  var r=await _eintLadeAlle('einteilungen','*',function(q){return q.eq('datum',todayStr()).order('reihenfolge',{ascending:true});});
+  if(!r.ok){
+    console.error('EINTEILUNG: Tagesdaten konnten nicht geladen werden - '+r.fehler);
+    return;
+  }
+  EINT_HEUTE=r.daten;
+}
+
+// Alle Einsaetze des angemeldeten Nutzers fuer heute (ohne Abwesenheitszeilen)
+function eintMeineEinsaetze(){
+  if(!EINTEILUNG_AKTIV||!currentUser)return [];
+  return EINT_HEUTE.filter(function(e){
+    return e.mitarbeiter_id===currentUser.id&&e.typ!=='abwesenheit';
+  });
+}
+
+// Kollegen derselben Zeile
+function eintKollegen(e){
+  return EINT_HEUTE.filter(function(x){
+    return x.reihenfolge===e.reihenfolge&&x.mitarbeiter_id&&x.mitarbeiter_id!==currentUser.id;
+  }).map(function(x){
+    var ma=MALISTE.find(function(m){return m.id===x.mitarbeiter_id;});
+    return ma?ma.name:x.alias_roh;
+  }).filter(Boolean);
+}
+
+// Abwesende des Tages, Gruende entschaerft
+function eintAbwesendeHeute(){
+  var out=[];
+  EINT_HEUTE.forEach(function(e){
+    if(e.typ!=='abwesenheit'||!e.mitarbeiter_id)return;
+    var ma=MALISTE.find(function(m){return m.id===e.mitarbeiter_id;});
+    if(!ma)return;
+    out.push(ma.name+' ('+eintGrundOeffentlich(e.grund)+')');
+  });
+  return out;
+}
+
+function renderEintBanner(){
+  var el=document.getElementById('eint-banner');
+  if(!el)return;
+  if(!EINTEILUNG_AKTIV){el.innerHTML='';return;}
+  var meine=eintMeineEinsaetze();
+  if(!meine.length){el.innerHTML='';return;}
+  var h='<div style="background:var(--earthg);border:1px solid var(--earth);border-radius:var(--rad);padding:10px;margin-bottom:10px">'+
+    '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--earth);letter-spacing:1px;margin-bottom:6px">MEINE EINTEILUNG HEUTE</div>';
+  meine.forEach(function(e){
+    var koll=eintKollegen(e);
+    h+='<div style="margin-bottom:6px">'+
+      '<div style="font-size:12px;font-weight:700;color:var(--t)">'+_dfEsc(e.baustelle_text||'--')+'</div>'+
+      '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m)">'+
+      (e.projekt_nr?_dfEsc(e.projekt_nr):'ohne Projekt-Nr.')+
+      (e.fahrzeug_nr?' &middot; Fahrzeug '+_dfEsc(e.fahrzeug_nr):'')+
+      (e.fahrzeit_min?' &middot; '+e.fahrzeit_min+' min Fahrzeit':'')+'</div>'+
+      (e.transporte?'<div style="font-size:10px;color:var(--t);margin-top:2px">Transport: '+_dfEsc(e.transporte)+'</div>':'')+
+      (koll.length?'<div style="font-size:10px;color:var(--m);margin-top:2px">Mit: '+_dfEsc(koll.join(', '))+'</div>':'')+
+      '</div>';
+  });
+  if(meine.length>1){
+    h+='<div style="font-size:10px;color:var(--earth);margin-top:4px">'+meine.length+' Stationen heute. Das Projekt im Bericht wurde deshalb nicht vorbelegt.</div>';
+  }
+  var abw=eintAbwesendeHeute();
+  if(abw.length){
+    h+='<div style="font-size:10px;color:var(--m);margin-top:6px;border-top:1px solid var(--earth);padding-top:5px">Heute nicht da: '+_dfEsc(abw.join(', '))+'</div>';
+  }
+  h+='<div style="font-size:10px;color:var(--m);margin-top:5px">Die Einteilung ist ein Vorschlag. Aendern kannst du alles wie gewohnt.</div></div>';
+  el.innerHTML=h;
+}
+
+// ---- Vorbelegung im Bericht ----
+// Nur bei genau EINEM Einsatz mit erkanntem Projekt. Bei mehreren oder keinem
+// passiert bewusst nichts, damit nie ein falsches Projekt vorgewaehlt wird.
+function einteilungVorbelegen(){
+  if(!EINTEILUNG_AKTIV||!currentUser)return;
+  renderEintBanner();
+  var meine=eintMeineEinsaetze().filter(function(e){return e.projekt_id;});
+  if(meine.length!==1)return;
+  var e=meine[0];
+  var proj=PROJEKTE.find(function(p){return p.id===e.projekt_id;});
+  if(!proj)return;
+  var kat=proj.kategorie||'bau';
+
+  if(currentRole==='vorarbeiter'){
+    var vk=document.getElementById('v-kat');
+    var vp=document.getElementById('v-projekt');
+    if(!vp)return;
+    if(vk){vk.value=kat;}
+    vp.innerHTML=projektOptsByKat(kat,proj.id);
+    vp.value=proj.id;
+    // Kolonne aus der Einteilung in die Zeitzeilen uebernehmen.
+    // Nur bei einem frischen, leeren Formular - ein wiederhergestellter
+    // Entwurf wird nicht angetastet.
+    var tbody=document.getElementById('zeit-body');
+    if(tbody){
+      var zeilen=tbody.querySelectorAll('tr');
+      var leer=true;
+      zeilen.forEach(function(tr){
+        var n=tr.querySelector('.zeit-name');
+        if(n&&n.value)leer=false;
+      });
+      if(leer&&zeilen.length<=1){
+        var kolonne=EINT_HEUTE.filter(function(x){
+          return x.reihenfolge===e.reihenfolge&&x.mitarbeiter_id;
+        });
+        if(kolonne.length){
+          tbody.innerHTML='';
+          kolonne.forEach(function(x){
+            var ma=MALISTE.find(function(m){return m.id===x.mitarbeiter_id;});
+            if(!ma)return;
+            var qual=['VA','Facharbeiter','Helfer','Azubi','Sub'].indexOf(ma.qualifikation)>=0?ma.qualifikation:'Facharbeiter';
+            addZeitRow({name:ma.name,qual:qual,projektId:proj.id});
+          });
+          if(!tbody.querySelectorAll('tr').length)addZeitRow();
+        }
+      }
+    }
+    if(typeof onVAProjektChange==='function')onVAProjektChange();
+  }else if(currentRole==='arbeiter'){
+    var ak=document.getElementById('a-kat');
+    var ap=document.getElementById('a-projekt');
+    if(!ap)return;
+    if(ak)ak.value=kat;
+    ap.innerHTML=projektOptsByKat(kat,proj.id);
+    ap.value=proj.id;
+    if(typeof onARProjektChange==='function')onARProjektChange();
+  }
+}
+
 // ══════ PROJEKTLEITER ══════
 // ══════ KALKULATION SPORTPLATZBAU (Terrasuite-Modul) ══════
 // Nutzt die externen Modul-Dateien kalk-data.js, kalk-engine.js und
@@ -4547,7 +5254,7 @@ function buildUI(){
       '<div class="panel" id="panel-kalender"><div id="kalender-content"></div></div>'+
       '<div class="panel" id="panel-details"><div id="detailContent"><div class="empty"><div class="ei">&#128203;</div><div class="et">Bericht waehlen</div></div></div></div>'+
       '<div class="panel" id="panel-ue"><div id="ue-content"></div></div>';
-    setTimeout(()=>{addStep();addZeitRow();addLief();addMenge();addLVRow();const d=document.getElementById('v-datum');if(d)d.value=todayStr();startVAAutoSave();setTimeout(checkVADraft,600);},100);
+    setTimeout(()=>{addStep();addZeitRow();addLief();addMenge();addLVRow();const d=document.getElementById('v-datum');if(d)d.value=todayStr();einteilungVorbelegen();startVAAutoSave();setTimeout(checkVADraft,600);},100);
   }
 }
 
@@ -4612,7 +5319,8 @@ async function wsAddFZ(){
 
 // ══════ AR FORM ══════
 function buildAR(){
-  return'<div class="qsec"><div class="qsec-t">Einsatz</div><div class="row">'+
+  return'<div id="eint-banner"></div>'+
+    '<div class="qsec"><div class="qsec-t">Einsatz</div><div class="row">'+
     '<div class="fg w50"><label>Datum</label><input type="date" id="a-datum"></div>'+
     '<div class="fg w50"><label>Name</label><input type="text" id="a-name" readonly style="color:var(--gl);background:var(--s3)"></div>'+
     '<div class="fg w50"><label>Bereich</label>'+katSelectHTML('a-kat','onARKatChange()','bau')+'</div>'+
@@ -4653,6 +5361,7 @@ function initARForm(){
   const nEl=document.getElementById('a-name');if(nEl)nEl.value=currentUser.name;
   const qEl=document.getElementById('a-qual');if(qEl)qEl.value=currentUser.qualifikation||'Facharbeiter GaLa';
   const dEl=document.getElementById('a-datum');if(dEl)dEl.value=todayStr();calcAR();
+  einteilungVorbelegen();
 }
 function onARKatChange(){const kat=document.getElementById('a-kat')?.value||'bau';const sel=document.getElementById('a-projekt');if(sel)sel.innerHTML=projektOptsByKat(kat,'');onARProjektChange();}
 function onARProjektChange(){const sel=document.getElementById('a-projekt');if(!sel)return;const fz=getProjektFahrzeit(sel.value);const anzeige=document.getElementById('a-fahrzeit-anzeige');if(anzeige)anzeige.value=fz>0?fz+' min (aus Projekt)':'0 min';calcAR();}
@@ -4795,7 +5504,8 @@ function getZusatzProjekte(){
 }
 
 function buildVAZeit(){
-  return'<div class="sec"><div class="sh">Personal-Zeiterfassung <span id="zeit-total" style="margin-left:auto;color:var(--gl);font-family:\'IBM Plex Mono\',monospace;font-size:10px">0,0h gesamt</span></div>'+
+  return'<div id="eint-banner"></div>'+
+    '<div class="sec"><div class="sh">Personal-Zeiterfassung <span id="zeit-total" style="margin-left:auto;color:var(--gl);font-family:\'IBM Plex Mono\',monospace;font-size:10px">0,0h gesamt</span></div>'+
     '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-bottom:8px">Fahrzeit wird aus Hauptprojekt automatisch übernommen</div>'+
     // MEHRERE BAUSTELLEN HINWEIS
     '<div style="background:var(--earthg);border:1px solid var(--earth);border-radius:var(--rad);padding:8px 10px;margin-bottom:8px">'+
@@ -5067,7 +5777,7 @@ function newReport(skipConfirm){
   const zpw=document.getElementById('zusatz-proj-wrap');if(zpw)zpw.innerHTML='';
   const st=document.getElementById('va-send-status');if(st){st.className='send-status';st.textContent='';}
   clearFotos();
-  setTimeout(()=>{addStep();addZeitRow();addLief();addMenge();addLVRow();},50);
+  setTimeout(()=>{addStep();addZeitRow();addLief();addMenge();addLVRow();einteilungVorbelegen();},50);
   curWeather='Sonnig';document.querySelectorAll('.wc').forEach((c,i)=>c.classList.toggle('s',i===0));
   document.querySelectorAll('#va-taetigkeiten-tags .tg').forEach(t=>t.classList.remove('a'));
   showTab('zeit');toast('Neuer Bericht','ok');
