@@ -710,6 +710,15 @@ body.wsd .content .et{font-family:'IBM Plex Sans',sans-serif;color:var(--zMut2);
 const SUPA_URL='https://nctciyyshywmdamyqvqo.supabase.co';
 const SUPA_KEY='sb_publishable_or0S3skW6i6-jfofutK_jQ_sA3urW4y';
 const GAS_URL='https://script.google.com/macros/s/AKfycbxiKa_Ga-M4HGtOK6f1uyhvJED0RChqrv-x01EY05LugYda9MJEDqH8JCOpkr6B6lyoqQ/exec';
+// ══════ TESTMODUS (nur Vollzugriff, gilt nur fuer die laufende Sitzung) ══════
+// Im Testmodus liest und schreibt die App ALLE Berichte in der Tabelle berichte_test statt berichte.
+// Die echte Tabelle wird dabei nie angefasst, deshalb braucht keine Auswertung und kein Export einen Filter.
+// Mails gehen im Testmodus ausschliesslich an TEST_MAIL, mit [TEST] im Betreff.
+// Stammdaten (Mitarbeiter, Projekte, Fahrzeuge, E-Mail-Empfaenger) bleiben auch im Testmodus die echten.
+// WICHTIG: Jede neue Spalte in berichte muss auch in berichte_test angelegt werden.
+const TEST_MAIL='kleizeitmanager34@gmail.com';
+let TESTMODUS=false,_testBusy=false,_testGasOk=false;
+function tblBerichte(){return TESTMODUS?'berichte_test':'berichte';}
 
 // FEST HINTERLEGT — im Admin ein/ausschaltbar
 const EMAIL_FEST=[
@@ -752,7 +761,7 @@ let isSending=false;
 
 // ══════ VA-ENTWURF (lokales Zwischenspeichern) ══════
 let draftTimer=null;
-function draftKey(){return 'klei_va_draft_'+(currentUser?currentUser.id:'anon');}
+function draftKey(){return 'klei_va_draft_'+(TESTMODUS?'test_':'')+(currentUser?currentUser.id:'anon');}
 
 // Sammelt den aktuellen Formularstand des VA-Berichts (ohne Pflichtfeld-Zwang)
 function collectVADraft(){
@@ -987,6 +996,7 @@ function doLogout(){
   stopVAAutoSave();
   currentUser=null;reports=[];currentId=null;currentRole=null;unterschriftData=null;
   istMasterUser=false;masterEchteRolle=null;
+  TESTMODUS=false;_testGasOk=false;testmodusBanner();
   laufTest=null;tEdit=null;matEditId=null;bhEditId=null;bhArbeit=null;AUSB_MAT=[];AUSB_TESTS=[];AUSB_ABG=[];AUSB_BH=[];
   ['admin-screen','pl-screen','menu-screen','ausb-screen','br-screen'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById('login-screen').style.display='flex';
@@ -1000,7 +1010,7 @@ async function loadFahrzeuge(){const{data}=await sb.from('fahrzeuge').select('*'
 async function loadMitarbeiterListe(){const{data}=await sb.from('mitarbeiter').select('id,name,mitarbeiter_nr,kuerzel,qualifikation,rolle,aktiv');if(data)MALISTE=data;}
 
 async function loadReports(){
-  let q=sb.from('berichte').select('*').order('datum',{ascending:false}).order('erstellt_am',{ascending:false});
+  let q=sb.from(tblBerichte()).select('*').order('datum',{ascending:false}).order('erstellt_am',{ascending:false});
   q=q.eq('mitarbeiter_id',currentUser.id);
   const{data}=await q.limit(100);
   if(data)reports=data;
@@ -1134,7 +1144,7 @@ async function ladeFreigabe(){
   const ma=(document.getElementById('frei-ma')?.value||'').trim();
   const status=document.getElementById('frei-status')?.value;
   const proj=document.getElementById('frei-proj')?.value||'';
-  let q=sb.from('berichte').select('*').order('datum',{ascending:false}).order('id',{ascending:false});
+  let q=sb.from(tblBerichte()).select('*').order('datum',{ascending:false}).order('id',{ascending:false});
   if(status==='offen')q=q.eq('bh_freigegeben',false);
   if(status==='frei')q=q.eq('bh_freigegeben',true);
   if(ma)q=q.ilike('mitarbeiter_name','%'+ma+'%');
@@ -1197,7 +1207,7 @@ function freiBerichtCard(b){
 
 // Bericht als PDF ansehen (mit aktuellem Unterschriften-Stand)
 async function freigabeAnsehen(id){
-  const{data}=await sb.from('berichte').select('*').eq('id',id).single();if(!data)return;
+  const{data}=await sb.from(tblBerichte()).select('*').eq('id',id).single();if(!data)return;
   toast('PDF wird erstellt...','info');
   try{
     let sigMA=data.unterschrift_mitarbeiter||null;
@@ -1213,7 +1223,7 @@ async function freigabeAnsehen(id){
 // Finale Buchhaltungs-Freigabe: zentrale Unterschrift speichern, neues PDF erzeugen + senden
 async function freigabeErteilen(id){
   if(!unterschriftData){toast('Bitte zuerst Ihre Unterschrift im Profil zeichnen','err');openProfil();return;}
-  const{data}=await sb.from('berichte').select('*').eq('id',id).single();
+  const{data}=await sb.from(tblBerichte()).select('*').eq('id',id).single();
   if(!data){toast('Bericht nicht gefunden','err');return;}
   // Arbeitszeitgesetz-Pruefung: Hinweis im Bestaetigungsdialog, blockiert nicht.
   let azTxt='';
@@ -1231,7 +1241,7 @@ async function freigabeErteilen(id){
     upd.abgenommen_sig=unterschriftData;
     if(!data.abgenommen_von)upd.abgenommen_von=currentUser.name;
   }
-  const{error}=await sb.from('berichte').update(upd).eq('id',id);
+  const{error}=await sb.from(tblBerichte()).update(upd).eq('id',id);
   if(error){toast('Fehler: '+error.message,'err');return;}
   toast('Freigegeben ✓ — PDF wird erzeugt...','ok');
   try{
@@ -1244,7 +1254,7 @@ async function freigabeErteilen(id){
     const vers=await sendPDFMail(reportForPDF,null);
     if(vers.ok){
       if(vers.driveUrl){
-        const{error:eUrl}=await sb.from('berichte').update({pdf_url:vers.driveUrl}).eq('id',id);
+        const{error:eUrl}=await sb.from(tblBerichte()).update({pdf_url:vers.driveUrl}).eq('id',id);
         if(eUrl){console.error('Drive-Link konnte nicht gespeichert werden:',eUrl);toast('Drive-Link nicht gespeichert: '+eUrl.message,'err');}
       }
     }else{
@@ -1256,7 +1266,7 @@ async function freigabeErteilen(id){
 
 async function freigabeZurueck(id){
   if(!confirm('Freigabe wirklich zuruecknehmen?'))return;
-  await sb.from('berichte').update({bh_freigegeben:false,bh_freigegeben_von:null,bh_freigegeben_am:null}).eq('id',id);
+  await sb.from(tblBerichte()).update({bh_freigegeben:false,bh_freigegeben_von:null,bh_freigegeben_am:null}).eq('id',id);
   toast('Freigabe zurueckgenommen','info');ladeFreigabe();
 }
 
@@ -1565,7 +1575,7 @@ async function renderAdminBer(){
 
 async function filterBer(){
   const von=document.getElementById('ber-von').value,bis=document.getElementById('ber-bis').value,ma=document.getElementById('ber-ma').value.trim();
-  let q=sb.from('berichte').select('*').order('datum',{ascending:false}).limit(200);
+  let q=sb.from(tblBerichte()).select('*').order('datum',{ascending:false}).limit(200);
   if(von)q=q.gte('datum',von);if(bis)q=q.lte('datum',bis);if(ma)q=q.ilike('mitarbeiter_name','%'+ma+'%');
   const{data}=await q;
   const el=document.getElementById('ber-list');
@@ -1581,7 +1591,7 @@ async function filterBer(){
 }
 
 async function adminOpenBericht(id){
-  const{data}=await sb.from('berichte').select('*').eq('id',id).single();if(!data)return;
+  const{data}=await sb.from(tblBerichte()).select('*').eq('id',id).single();if(!data)return;
   toast('PDF wird erstellt...','info');
   try{
     const{data:ma}=await sb.from('mitarbeiter').select('unterschrift_data').eq('id',data.mitarbeiter_id).single();
@@ -1665,7 +1675,7 @@ async function ladeAbgabe(){
     // Berichte des Monats in 1000er-Bloecken laden (Pflicht-Konvention)
     let alle=[],start=0;
     while(true){
-      const r=await sb.from('berichte').select('id,datum,rolle,mitarbeiter_id,mitarbeiter_name,zeit_rows,von,bis,pause_min,netto_arbeit_h,netto_gesamt_h,projekt_id,projekt_nr,bh_freigegeben,abgenommen').gte('datum',von).lte('datum',bis).order('datum',{ascending:true}).order('id',{ascending:true}).range(start,start+999);
+      const r=await sb.from(tblBerichte()).select('id,datum,rolle,mitarbeiter_id,mitarbeiter_name,zeit_rows,von,bis,pause_min,netto_arbeit_h,netto_gesamt_h,projekt_id,projekt_nr,bh_freigegeben,abgenommen').gte('datum',von).lte('datum',bis).order('datum',{ascending:true}).order('id',{ascending:true}).range(start,start+999);
       if(r.error)throw r.error;
       const d=r.data||[];
       alle=alle.concat(d);
@@ -2073,7 +2083,7 @@ async function abgSammelFreigabe(pid){
     // Vorhandene Bauleiter-Unterschrift ermitteln, damit sie nicht ueberschrieben wird
     let vorhanden=[];
     for(let i=0;i<ids.length;i+=200){
-      const r=await sb.from('berichte').select('id,abgenommen_sig,abgenommen_von').in('id',ids.slice(i,i+200));
+      const r=await sb.from(tblBerichte()).select('id,abgenommen_sig,abgenommen_von').in('id',ids.slice(i,i+200));
       if(r.error)throw r.error;
       vorhanden=vorhanden.concat(r.data||[]);
     }
@@ -2092,7 +2102,7 @@ async function abgSammelFreigabe(pid){
       for(let i=0;i<liste.length;i+=200){
         const teil=liste.slice(i,i+200);
         if(!teil.length)continue;
-        const r=await sb.from('berichte').update(daten).in('id',teil);
+        const r=await sb.from(tblBerichte()).update(daten).in('id',teil);
         if(r.error)throw r.error;
       }
     }
@@ -2294,7 +2304,7 @@ async function azPruefeBericht(b){
   const von=azDatumPlus(datum,-7),bis=azDatumPlus(datum,7);
   let alle=[],start=0;
   while(true){
-    const r=await sb.from('berichte')
+    const r=await sb.from(tblBerichte())
       .select('id,datum,rolle,mitarbeiter_id,mitarbeiter_name,zeit_rows,von,bis,pause_min,netto_arbeit_h,netto_gesamt_h,projekt_id,projekt_nr')
       .gte('datum',von).lte('datum',bis)
       .order('datum',{ascending:true}).order('id',{ascending:true})
@@ -2392,7 +2402,7 @@ async function renderAdminExp(){
 }
 
 async function loadExpStats(){
-  const{data}=await sb.from('berichte').select('mitarbeiter_name,mitarbeiter_nr,netto_gesamt_h,netto_arbeit_h,datum,rolle').order('datum',{ascending:false}).limit(500);
+  const{data}=await sb.from(tblBerichte()).select('mitarbeiter_name,mitarbeiter_nr,netto_gesamt_h,netto_arbeit_h,datum,rolle').order('datum',{ascending:false}).limit(500);
   if(!data){document.getElementById('exp-stats').innerHTML='<div style="color:var(--m);font-size:10px;padding:8px">Keine Daten</div>';return;}
   const totalH=data.reduce((s,b)=>s+(parseFloat(b.netto_gesamt_h||b.netto_arbeit_h||0)),0);
   const maMap={};
@@ -2411,7 +2421,7 @@ async function loadExpStats(){
 async function expBuchhaltungCSV(){
   const von=document.getElementById('exp-von').value,bis=document.getElementById('exp-bis').value;
   const nurFrei=document.getElementById('exp-nur-frei')?.checked;
-  let q=sb.from('berichte').select('*').order('datum').order('mitarbeiter_name');
+  let q=sb.from(tblBerichte()).select('*').order('datum').order('mitarbeiter_name');
   if(von)q=q.gte('datum',von);if(bis)q=q.lte('datum',bis);
   if(nurFrei!==false)q=q.eq('bh_freigegeben',true);
   const{data}=await q;
@@ -2448,7 +2458,7 @@ async function expNKImport(){
   if(isNaN(lohnart)||lohnart<=0){toast('Bitte eine gueltige Standard-Lohnart eintragen','err');return;}
   var zEl=document.getElementById('exp-nk-zeiten');
   var mitZeiten=zEl?zEl.checked:true;
-  var q=sb.from('berichte').select('*').order('datum');
+  var q=sb.from(tblBerichte()).select('*').order('datum');
   if(von)q=q.gte('datum',von);
   if(bis)q=q.lte('datum',bis);
   if(nurFrei)q=q.eq('bh_freigegeben',true);
@@ -2482,7 +2492,7 @@ async function expNKImport(){
 async function expDFCSVAdmin(){
   const von=document.getElementById('exp-von').value,bis=document.getElementById('exp-bis').value;
   const nurFrei=document.getElementById('exp-nur-frei')?.checked;
-  let q=sb.from('berichte').select('*').order('datum');
+  let q=sb.from(tblBerichte()).select('*').order('datum');
   if(von)q=q.gte('datum',von);if(bis)q=q.lte('datum',bis);
   if(nurFrei!==false)q=q.eq('bh_freigegeben',true); // Standard: nur von der Buchhaltung freigegebene
   const{data}=await q;
@@ -2577,7 +2587,7 @@ async function ladeProjMapAusw(){
 async function auswFetchBerichte(von,bis){
   let alle=[],start=0;const BLOCK=1000;
   while(true){
-    let q=sb.from('berichte').select('id,datum,rolle,mitarbeiter_name,projekt_id,netto_gesamt_h,netto_arbeit_h,zeit_rows,mach_rows').order('datum',{ascending:true}).order('id',{ascending:true});
+    let q=sb.from(tblBerichte()).select('id,datum,rolle,mitarbeiter_name,projekt_id,netto_gesamt_h,netto_arbeit_h,zeit_rows,mach_rows').order('datum',{ascending:true}).order('id',{ascending:true});
     if(von)q=q.gte('datum',von);
     if(bis)q=q.lte('datum',bis);
     const r=await q.range(start,start+BLOCK-1);
@@ -2862,7 +2872,7 @@ async function ctrlLadeDaten(force){
     _ctrlLV=lvm;
     const bl=[];let bs=0;
     while(true){
-      const r=await sb.from('berichte').select('id,datum,rolle,projekt_id,projekt_nr,zeit_rows,mach_rows,steps').order('datum',{ascending:true}).order('id',{ascending:true}).range(bs,bs+999);
+      const r=await sb.from(tblBerichte()).select('id,datum,rolle,projekt_id,projekt_nr,zeit_rows,mach_rows,steps').order('datum',{ascending:true}).order('id',{ascending:true}).range(bs,bs+999);
       if(r.error)throw r.error;
       const d=r.data||[];
       for(let i=0;i<d.length;i++)bl.push(d[i]);
@@ -4095,7 +4105,7 @@ async function filterPLBer(){
   const von=document.getElementById('pl-von').value,bis=document.getElementById('pl-bis').value;
   const ma=document.getElementById('pl-ma').value.trim(),proj=document.getElementById('pl-proj').value;
   const status=document.getElementById('pl-status').value;
-  let q=sb.from('berichte').select('*').order('datum',{ascending:false}).limit(200);
+  let q=sb.from(tblBerichte()).select('*').order('datum',{ascending:false}).limit(200);
   if(von)q=q.gte('datum',von);if(bis)q=q.lte('datum',bis);if(ma)q=q.ilike('mitarbeiter_name','%'+ma+'%');
   if(proj)q=q.eq('projekt_id',proj);if(status==='offen')q=q.eq('abgenommen',false);if(status==='abgenommen')q=q.eq('abgenommen',true);
   const{data}=await q;
@@ -4121,14 +4131,14 @@ async function plToggleAbnahme(id,aktuell){
   if(aktuell){
     // Abnahme zuruecknehmen
     if(!confirm('Abnahme zuruecknehmen?'))return;
-    await sb.from('berichte').update({abgenommen:false,abgenommen_von:null,abgenommen_am:null,abgenommen_sig:null}).eq('id',id);
+    await sb.from(tblBerichte()).update({abgenommen:false,abgenommen_von:null,abgenommen_am:null,abgenommen_sig:null}).eq('id',id);
     toast('Abnahme zurueckgenommen','info');filterPLBer();return;
   }
   // Abnehmen: eigene Unterschrift noetig
   if(!unterschriftData){toast('Bitte zuerst Ihre Unterschrift im Profil zeichnen','err');openProfil();return;}
   if(!confirm('Diesen Bericht als Bauleiter abnehmen (mit Ihrer Unterschrift)?'))return;
   const upd={abgenommen:true,abgenommen_von:currentUser.name,abgenommen_am:new Date().toISOString(),abgenommen_sig:unterschriftData};
-  const{error}=await sb.from('berichte').update(upd).eq('id',id);
+  const{error}=await sb.from(tblBerichte()).update(upd).eq('id',id);
   if(error){toast('Fehler: '+error.message,'err');return;}
   // KEINE E-Mail beim Bauleiter — Bericht wird nur fuer die Buchhaltung aktualisiert.
   // Die Buchhaltung versendet beim finalen Freigeben das neue PDF.
@@ -4137,13 +4147,13 @@ async function plToggleAbnahme(id,aktuell){
 }
 
 async function plOpenBericht(id){
-  const{data}=await sb.from('berichte').select('*').eq('id',id).single();if(!data)return;
+  const{data}=await sb.from(tblBerichte()).select('*').eq('id',id).single();if(!data)return;
   if(data.pdf_url){
     if(confirm('Drive-Link oeffnen?'))window.open(data.pdf_url,'_blank');
     return;
   }
   const notiz=prompt('Notiz (leer = ueberspringen):','');
-  if(notiz!==null&&notiz.trim()){await sb.from('berichte').update({pl_notiz:notiz.trim()}).eq('id',id);toast('Notiz gespeichert','ok');}
+  if(notiz!==null&&notiz.trim()){await sb.from(tblBerichte()).update({pl_notiz:notiz.trim()}).eq('id',id);toast('Notiz gespeichert','ok');}
   toast('PDF wird erstellt...','info');
   try{
     const{data:ma}=await sb.from('mitarbeiter').select('unterschrift_data').eq('id',data.mitarbeiter_id).single();
@@ -4166,7 +4176,7 @@ async function renderPLProj(){
 }
 
 async function loadProjektBerichte(projektId){
-  const{data}=await sb.from('berichte').select('*').eq('projekt_id',projektId).order('datum',{ascending:false}).limit(100);
+  const{data}=await sb.from(tblBerichte()).select('*').eq('projekt_id',projektId).order('datum',{ascending:false}).limit(100);
   const proj=PROJEKTE.find(p=>p.id===projektId);
   const el=document.getElementById('pl-proj-berichte');
   if(!data?.length){el.innerHTML='<div style="color:var(--m);font-size:10px;padding:8px">Keine Berichte</div>';return;}
@@ -4185,7 +4195,7 @@ async function loadProjektBerichte(projektId){
 async function renderPLOffen(){
   const el=document.getElementById('appanel-offen');
   el.innerHTML='<div style="color:var(--m);font-size:10px;padding:8px"><div class="spin"></div></div>';
-  const{data}=await sb.from('berichte').select('*').eq('abgenommen',false).order('datum',{ascending:false}).limit(100);
+  const{data}=await sb.from(tblBerichte()).select('*').eq('abgenommen',false).order('datum',{ascending:false}).limit(100);
   if(!data?.length){el.innerHTML='<div class="a-sec"><div class="a-sec-title earth">Offene Berichte</div><div style="color:var(--gl);font-size:12px;padding:8px">Alle abgenommen ✓</div></div>';return;}
   el.innerHTML='<div class="a-sec"><div class="a-sec-title earth">Offene Berichte ('+data.length+')</div>'+
     data.map(b=>'<div class="pl-bericht" ontouchstart="plOpenBericht(\''+b.id+'\')" onclick="plOpenBericht(\''+b.id+'\')">'+
@@ -4239,10 +4249,10 @@ async function saveAndSendWS(){
   if(st){st.className='send-status show sending';st.textContent='Speichern...';}
   let savedId=currentId;
   if(currentId){
-    const{error}=await sb.from('berichte').update(d).eq('id',currentId);
+    const{error}=await sb.from(tblBerichte()).update(d).eq('id',currentId);
     if(error){toast('Fehler: '+error.message,'err');return;}
   }else{
-    const{data:ins,error}=await sb.from('berichte').insert(d).select().single();
+    const{data:ins,error}=await sb.from(tblBerichte()).insert(d).select().single();
     if(error){toast('Fehler: '+error.message,'err');return;}
     savedId=ins.id;currentId=savedId;
   }
@@ -4286,10 +4296,10 @@ async function saveAndSendAR(){
   if(st){st.className='send-status show sending';st.textContent='Speichern...';}
   let savedId=currentId;
   if(currentId){
-    const{error}=await sb.from('berichte').update(d).eq('id',currentId);
+    const{error}=await sb.from(tblBerichte()).update(d).eq('id',currentId);
     if(error){toast('Fehler: '+error.message,'err');return;}
   }else{
-    const{data,error}=await sb.from('berichte').insert(d).select().single();
+    const{data,error}=await sb.from(tblBerichte()).insert(d).select().single();
     if(error){toast('Fehler: '+error.message,'err');return;}
     savedId=data.id;currentId=savedId;
   }
@@ -4373,10 +4383,10 @@ async function saveAndSendVA(){
   if(st){st.className='send-status show sending';st.textContent='Speichern...';}
   let savedId=currentId;
   if(currentId){
-    const{error}=await sb.from('berichte').update(d).eq('id',currentId);
+    const{error}=await sb.from(tblBerichte()).update(d).eq('id',currentId);
     if(error){toast('Fehler: '+error.message,'err');return;}
   }else{
-    const{data,error}=await sb.from('berichte').insert(d).select().single();
+    const{data,error}=await sb.from(tblBerichte()).insert(d).select().single();
     if(error){toast('Fehler: '+error.message,'err');return;}
     savedId=data.id;currentId=savedId;
   }
@@ -4506,7 +4516,7 @@ async function saveAndSendVASplit(base,zeitRows,hauptProjektId,projIds){
       gesendet:false
     };
     let savedId=null;
-    const{data:ins,error}=await sb.from('berichte').insert(d).select().single();
+    const{data:ins,error}=await sb.from(tblBerichte()).insert(d).select().single();
     if(error){fehler++;toast('Fehler bei '+(proj?.nr||'?')+': '+error.message,'err');continue;}
     savedId=ins.id;
     // Fotos nur fuers Hauptprojekt ins PDF; bei Nebenprojekten temporaer leeren
@@ -4569,7 +4579,7 @@ async function generatePDF(report){
   y+=22;LINE(M,y,W-M,y,C.gruen,1.0);y+=5;
 
   const isWS=report.role==='ws';
-  const typ=isWS?'WERKSTATTBERICHT':report.role==='ar'?'ARBEITSZEITNACHWEIS':'TAGESBERICHT VORARBEITER';
+  const typ=(TESTMODUS?'TEST - ':'')+(isWS?'WERKSTATTBERICHT':report.role==='ar'?'ARBEITSZEITNACHWEIS':'TAGESBERICHT VORARBEITER');
   const hCol=isWS?C.wsgrau:C.gruen;
   RECT(M,y,cw,9,hCol);
   doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...C.weiss);
@@ -4799,12 +4809,20 @@ async function sendPDFMail(report,statusElId){
     const pdfBase64=doc.output('datauristring').split(',')[1];
     const pLabel=getProjektLabel(report.projekt_id||report.projektNr||'');
     const netto=String(report.netto||report.netto_gesamt_h||report.netto_arbeit_h||'0');
-    const{to,cc}=await getActiveEmpfaenger();
-    const pdfName=buildPDFName({datum:report.datum,projekt_nr:report.projektNr||report.projekt_nr,mitarbeiter_name:report.name||report.mitarbeiter_name,mitarbeiter_nr:report.mitarbeiter_nr||currentUser?.mitarbeiter_nr,rolle:report.role||report.rolle});
+    let{to,cc}=await getActiveEmpfaenger();
+    if(TESTMODUS){
+      // Testmodus: niemals an die echten Empfaenger
+      to=[TEST_MAIL];cc=[];
+      if(!_testGasOk&&!confirm('TESTMODUS: Das Google-Script hat den Testmodus in dieser Sitzung noch nicht bestaetigt.\n\nDie Mail geht nur an '+TEST_MAIL+'. Ist das Script aber noch nicht aktualisiert, landet das Test-PDF zusaetzlich im echten Drive-Ordner und im Protokoll-Sheet.\n\nTrotzdem senden?')){
+        if(statusEl){statusEl.className='send-status show err';statusEl.textContent='Testversand abgebrochen - nichts gesendet';}
+        return {ok:false,fehler:'Testversand abgebrochen'};
+      }
+    }
+    const pdfName=(TESTMODUS?'TEST_':'')+buildPDFName({datum:report.datum,projekt_nr:report.projektNr||report.projekt_nr,mitarbeiter_name:report.name||report.mitarbeiter_name,mitarbeiter_nr:report.mitarbeiter_nr||currentUser?.mitarbeiter_nr,rolle:report.role||report.rolle});
     const payload={
       empfaenger:to.join(','),
       cc:cc.join(','),
-      betreff:'KLEI Tagesbericht '+fmtD(report.datum)+' - '+(report.role==='ar'||report.role==='ws'?report.name||report.mitarbeiter_name:pLabel),
+      betreff:(TESTMODUS?'[TEST] ':'')+'KLEI Tagesbericht '+fmtD(report.datum)+' - '+(report.role==='ar'||report.role==='ws'?report.name||report.mitarbeiter_name:pLabel),
       rolle:report.role||'ar',
       name:report.name||report.mitarbeiter_name||'',
       datum:report.datum,
@@ -4813,6 +4831,7 @@ async function sendPDFMail(report,statusElId){
       maNr:currentUser?.mitarbeiter_nr||'',
       pdfName,pdfBase64
     };
+    if(TESTMODUS)payload.test=true;
     const res=await fetch(GAS_URL,{method:'POST',body:JSON.stringify(payload)});
     const txt=await res.text();
     if(!res.ok)throw new Error('HTTP '+res.status+' vom Mailversand: '+String(txt).substring(0,200));
@@ -4832,6 +4851,18 @@ async function sendPDFMail(report,statusElId){
     if(antwort.mailGesendet===false)throw new Error(antwort.mailFehler||'Mailversand fehlgeschlagen');
     if(antwort.sheetFehler)console.error('Protokoll-Sheet:',antwort.sheetFehler);
     const driveUrl=antwort.driveUrl||'';
+    if(TESTMODUS){
+      if(antwort.test===true){
+        _testGasOk=true;
+        if(statusEl){statusEl.className='send-status show ok';statusEl.textContent='TEST gesendet an '+TEST_MAIL+' ✓';}
+        toast('Testbericht gesendet (nur an '+TEST_MAIL+')','ok');
+      }else{
+        console.error('Testmodus: Google-Script hat das Test-Kennzeichen nicht bestaetigt. Antwort:',antwort);
+        if(statusEl){statusEl.className='send-status show err';statusEl.textContent='TEST gesendet an '+TEST_MAIL+' - ABER Script kennt den Testmodus nicht: PDF liegt im echten Drive-Ordner/Protokoll';}
+        toast('Achtung: Google-Script kennt den Testmodus noch nicht - Test-PDF liegt im echten Drive-Ordner und Protokoll-Sheet','err');
+      }
+      return {ok:true,driveUrl:driveUrl};
+    }
     if(statusEl){statusEl.className='send-status show ok';statusEl.textContent='PDF gesendet'+(driveUrl?' + Drive abgelegt':'')+' ✓';}
     toast('PDF gesendet!','ok');
     return {ok:true,driveUrl:driveUrl};
@@ -4854,7 +4885,7 @@ async function sendPDFMail(report,statusElId){
 async function markiereVersand(id,vers){
   if(!id)return;
   const daten=(vers&&vers.ok)?{gesendet:true,pdf_url:vers.driveUrl||null}:{gesendet:false};
-  const{error}=await sb.from('berichte').update(daten).eq('id',id);
+  const{error}=await sb.from(tblBerichte()).update(daten).eq('id',id);
   if(error){
     console.error('Versandstatus konnte nicht gespeichert werden:',error);
     toast('Versandstatus konnte nicht gespeichert werden: '+error.message,'err');
@@ -5017,7 +5048,7 @@ function buildUE(){
     }).join('');
 }
 
-async function delReport(id){if(!confirm('Bericht loeschen?'))return;await sb.from('berichte').delete().eq('id',id);if(currentId===id)currentId=null;await loadReports();renderSB();document.getElementById('detailContent').innerHTML='<div class="empty"><div class="ei">&#128465;</div><div class="et">Geloescht</div></div>';toast('Geloescht','err');}
+async function delReport(id){if(!confirm('Bericht loeschen?'))return;await sb.from(tblBerichte()).delete().eq('id',id);if(currentId===id)currentId=null;await loadReports();renderSB();document.getElementById('detailContent').innerHTML='<div class="empty"><div class="ei">&#128465;</div><div class="et">Geloescht</div></div>';toast('Geloescht','err');}
 // ══════ HILFSFUNKTIONEN ══════
 function getProjektLabel(nrOrId){const p=PROJEKTE.find(x=>x.id===nrOrId||x.nr===nrOrId);if(!p)return nrOrId||'--';return p.nr?p.nr+' - '+p.name:p.name;}
 function getProjektFahrzeit(nrOrId){const p=PROJEKTE.find(x=>x.id===nrOrId||x.nr===nrOrId);return p?parseInt(p.fahrzeit_min||0):0;}
@@ -5954,9 +5985,62 @@ function masterPanelHTML(){
     }).join('')+'</div>'+
     '<div style="font-size:10px;color:var(--m);margin-top:8px;line-height:1.5">'+
     'Gilt nur fuer diese Sitzung, in den Stammdaten bleibst du '+_dfEsc(masterEchteRolle||'--')+'. '+
-    'Was du in einer Ansicht schreibst oder freigibst, sind echte Datensaetze unter deinem Namen. '+
+    'Was du in einer Ansicht schreibst oder freigibst, sind echte Datensaetze unter deinem Namen - ausser im Testmodus. '+
     'Die Azubi-Sicht der Ausbildung erscheint, sobald Vorarbeiter, Arbeiter oder Werkstatt aktiv ist.</div>'+
+    '<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--b)">'+
+    '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--m);margin-bottom:8px">Testmodus</div>'+
+    '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
+    '<button class="btn'+(TESTMODUS?' btn-sky':'')+'" style="font-size:11px;padding:5px 10px" ontouchstart="testmodusSetze(true)" onclick="testmodusSetze(true)">Testmodus EIN'+(TESTMODUS?' &#x2713;':'')+'</button>'+
+    '<button class="btn'+(TESTMODUS?'':' btn-sky')+'" style="font-size:11px;padding:5px 10px" ontouchstart="testmodusSetze(false)" onclick="testmodusSetze(false)">Testmodus AUS'+(TESTMODUS?'':' &#x2713;')+'</button>'+
+    '</div>'+
+    '<div style="font-size:10px;color:var(--m);margin-top:8px;line-height:1.5">'+
+    'Im Testmodus landen alle Berichte, Abnahmen und Freigaben in einer eigenen Test-Tabelle. Auswertung, Abgabe, Cockpit und Export zeigen dann nur Testdaten. '+
+    'Mails gehen nur an '+_dfEsc(TEST_MAIL)+'. Stammdaten (Mitarbeiter, Projekte, Fahrzeuge) bleiben die echten - Aenderungen daran sind auch im Testmodus echt. '+
+    'Der Testmodus endet beim Abmelden.</div>'+
+    '</div>'+
     '</div>';
+}
+// Testmodus ein-/ausschalten. Nur Vollzugriff. Bewusst zwei Buttons (EIN/AUS) statt Umschalter,
+// weil ontouchstart + onclick auf dem iPad beide feuern - ein Umschalter wuerde sofort zurueckspringen.
+async function testmodusSetze(an){
+  an=!!an;
+  if(!istMasterUser){toast('Der Testmodus ist nur mit Vollzugriff verfuegbar','err');return;}
+  if(_testBusy||TESTMODUS===an)return;
+  _testBusy=true;
+  try{
+    if(an){
+      // Erst pruefen, ob die Test-Tabelle da ist - sonst wuerde spaeter jedes Speichern scheitern
+      const r=await sb.from('berichte_test').select('id').limit(1);
+      if(r.error){
+        console.error('Testmodus: berichte_test nicht erreichbar:',r.error);
+        toast('Testmodus nicht moeglich: Tabelle berichte_test fehlt oder ist nicht lesbar ('+(r.error.message||'unbekannter Fehler')+'). Bitte zuerst das SQL ausfuehren.','err');
+        return;
+      }
+    }
+    stopVAAutoSave();
+    TESTMODUS=an;_testGasOk=false;
+    // Alles verwerfen, was aus der jeweils anderen Tabelle geladen wurde
+    reports=[];currentId=null;
+    _abgDaten=null;_auswData=null;_ctrlBerichte=null;_cpAggCache={};
+    testmodusBanner();
+    toast(an?'Testmodus EIN - Berichte gehen in die Test-Tabelle, Mails nur an '+TEST_MAIL:'Testmodus AUS - du arbeitest wieder mit den echten Daten',an?'info':'ok');
+    openMenu();
+  }catch(e){
+    console.error('Testmodus umschalten fehlgeschlagen:',e);
+    toast('Testmodus umschalten fehlgeschlagen: '+(e.message||String(e)),'err');
+  }finally{_testBusy=false;}
+}
+// Dauerhaft sichtbarer Hinweis, solange der Testmodus laeuft (blockiert keine Bedienung).
+function testmodusBanner(){
+  let el=document.getElementById('testmodus-banner');
+  if(!TESTMODUS){if(el)el.style.display='none';return;}
+  if(!el){
+    el=document.createElement('div');el.id='testmodus-banner';
+    el.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:99999;pointer-events:none;background:#c44828;color:#fff;font-family:\'IBM Plex Mono\',monospace;font-size:10px;font-weight:600;letter-spacing:1px;padding:3px 14px;border-radius:0 0 8px 8px;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.3)';
+    el.textContent='TESTMODUS - TESTDATEN, KEIN TAGESGESCHAEFT';
+    document.body.appendChild(el);
+  }
+  el.style.display='block';
 }
 
 const MODULE_DEFS=[
