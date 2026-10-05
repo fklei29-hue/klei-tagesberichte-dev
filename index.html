@@ -13,7 +13,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0e1209;--s1:#141a0d;--s2:#1a2210;--s3:#202a14;--b:#2c3a1c;--g:#72b832;--gd:#4d8520;--gg:rgba(114,184,50,.1);--gl:#9ed45a;--earth:#9a6c1a;--earthg:rgba(154,108,26,.12);--sky:#3d8fa8;--skyg:rgba(61,143,168,.1);--r:#c44828;--rg:rgba(196,72,40,.1);--o:#d4782a;--c:#dce8c4;--m:#6a8848;--t:#b8cc98;--rad:4px;--ws:#9aa88f;--wsg:rgba(154,168,143,.12);}
 body.theme-light{--bg:#eef0ea;--s1:#ffffff;--s2:#ffffff;--s3:#f0f2ec;--b:#c2ccb0;--g:#4d8520;--gd:#3a6818;--gg:rgba(77,133,32,.14);--gl:#2f5614;--earth:#7a5212;--earthg:rgba(122,82,18,.12);--sky:#256075;--skyg:rgba(37,96,117,.1);--r:#a8331a;--rg:rgba(168,51,26,.1);--o:#b25e18;--c:#0d1207;--m:#5a6748;--t:#161e0c;--ws:#4a5a3d;--wsg:rgba(74,90,61,.12);}
@@ -22,7 +21,6 @@ body.theme-light input,body.theme-light textarea,body.theme-light select{backgro
 body.theme-light .toast{box-shadow:0 6px 20px rgba(0,0,0,.15);}
 body.theme-light #sig-canvas{background:white;}
 body.theme-light terrasuite-kalkulation{--bg:#eef0ea;--surface:#ffffff;--surface2:#f0f2ec;--line:#c2ccb0;--text:#1f2a0d;--muted:#5a6748;--accent:#3a6818;--warn:#b25e18;}
-body.theme-light .vbar{background:rgba(196,72,40,.08);}
 .theme-btn{background:none;border:1px solid var(--b);border-radius:var(--rad);padding:6px 10px;color:var(--m);font-size:14px;cursor:pointer;line-height:1;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 html,body{height:100%;overflow:hidden;}
@@ -184,16 +182,6 @@ main{display:flex;flex-direction:column;overflow:hidden;}
 .tab.act.ws-tab{color:var(--gl);border-bottom-color:var(--g);}
 .content{flex:1;overflow-y:auto;padding:12px 14px;padding-bottom:70px;}
 .panel{display:none;}.panel.act{display:block;}
-.vbar{background:rgba(196,72,40,.15);border:1px solid rgba(196,72,40,.4);border-radius:var(--rad);padding:10px 14px;margin-bottom:10px;display:none;align-items:center;gap:10px;position:sticky;top:0;z-index:50;}
-.vbar.on{display:flex;}
-.vwave{display:flex;gap:3px;align-items:center;}
-.vwave span{display:inline-block;width:3px;border-radius:2px;background:var(--r);animation:wv .7s ease-in-out infinite;}
-.vwave span:nth-child(1){height:6px}.vwave span:nth-child(2){height:12px;animation-delay:.1s}.vwave span:nth-child(3){height:8px;animation-delay:.2s}.vwave span:nth-child(4){height:14px;animation-delay:.3s}.vwave span:nth-child(5){height:6px;animation-delay:.4s}
-@keyframes wv{0%,100%{transform:scaleY(.5)}50%{transform:scaleY(1.2)}}
-.vbar-lbl{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--r);flex:1;}
-.vbar-stop{background:var(--r);color:white;border:none;border-radius:var(--rad);padding:6px 14px;font-family:'IBM Plex Sans',sans-serif;font-weight:700;font-size:11px;cursor:pointer;}
-.mic-btn{display:inline-flex;align-items:center;gap:6px;background:var(--s3);border:1px solid var(--b);border-radius:20px;padding:7px 14px;font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;color:var(--m);cursor:pointer;user-select:none;-webkit-user-select:none;margin-top:6px;}
-.mic-btn.on{background:rgba(196,72,40,.15);border-color:var(--r);color:var(--r);}
 .row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
 .fg{display:flex;flex-direction:column;gap:4px;flex:1;min-width:90px;}
 .fg.w100{flex:0 0 100%;}.fg.w50{flex:0 0 calc(50% - 4px);}.fg.w33{flex:0 0 calc(33.33% - 6px);}.fg.w25{flex:0 0 calc(25% - 6px);}
@@ -384,7 +372,7 @@ body.wsd.theme-light{
   --zFoot:rgba(244,245,242,.92);--zHead:#1e3317;--zHeadTx:#cfe0c8;--zHeadSub:#a8c49e;
   --zBtnSh:rgba(61,122,46,.35);
 }
-body.wsd{display:flex;flex-direction:column;background:var(--zBg);font-family:'Public Sans','IBM Plex Sans',sans-serif;}
+body.wsd{display:flex;flex-direction:column;background:var(--zBg);font-family:'IBM Plex Sans',sans-serif;}
 /* Kopfleiste */
 body.wsd header{flex:none;height:auto;min-height:58px;background:var(--zHead);border-bottom:none;padding:9px 16px;gap:12px;flex-wrap:wrap;row-gap:6px;}
 body.wsd .h-logo{height:38px;background:#fff;border-radius:7px;padding:3px 5px;}
@@ -395,19 +383,19 @@ body.wsd #wsd-tabslot{display:flex;gap:4px;margin-left:16px;flex-wrap:wrap;}
 body.wsd .role-badge,body.wsd .h-user,body.wsd .h-divider,body.wsd .sb-date{display:none;}
 body.wsd .wsd-hdate{display:inline;font-size:12.5px;color:var(--zHeadTx);margin-right:2px;white-space:nowrap;}
 body.wsd .wsd-avatar{display:flex;width:32px;height:32px;border-radius:50%;background:var(--zA2);color:#fff;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none;}
-body.wsd header .hbtn,body.wsd header .theme-btn{background:none;border:1px solid rgba(255,255,255,.22);border-radius:8px;color:var(--zHeadTx);font-family:'Public Sans',sans-serif;font-size:11.5px;font-weight:600;padding:6px 11px;}
+body.wsd header .hbtn,body.wsd header .theme-btn{background:none;border:1px solid rgba(255,255,255,.22);border-radius:8px;color:var(--zHeadTx);font-family:'IBM Plex Sans',sans-serif;font-size:11.5px;font-weight:600;padding:6px 11px;}
 /* Tabs als Pills in der Kopfleiste */
 body.wsd .tabs{background:transparent;border-bottom:none;padding:0;overflow-x:visible;display:flex;gap:4px;}
-body.wsd .tab{padding:8px 14px;border-bottom:none;border-radius:8px;font-size:13.5px;font-weight:600;color:var(--zHeadTx);font-family:'Public Sans',sans-serif;}
+body.wsd .tab{padding:8px 14px;border-bottom:none;border-radius:8px;font-size:13.5px;font-weight:600;color:var(--zHeadTx);font-family:'IBM Plex Sans',sans-serif;}
 body.wsd .tab.act,body.wsd .tab.act.ws-tab{background:var(--zA2);color:#fff;border-bottom:none;}
 body.wsd .tab:not(.act):hover{background:rgba(255,255,255,.14);}
 /* Grundraster */
 body.wsd .app{flex:1;height:auto;min-height:0;grid-template-columns:284px 1fr;}
 body.wsd aside{background:var(--zSide);border-right:1px solid var(--zLine);}
 body.wsd .sb-head{display:flex;flex-direction:column;gap:10px;padding:14px 12px 12px;border-bottom:1px solid var(--zILine);}
-body.wsd .btn-new,body.wsd .btn-new.ws{background:var(--zA);color:#fff;border-radius:10px;padding:12px;font-family:'Public Sans',sans-serif;font-weight:700;font-size:14px;box-shadow:0 1px 2px rgba(30,51,23,.25);}
+body.wsd .btn-new,body.wsd .btn-new.ws{background:var(--zA);color:#fff;border-radius:10px;padding:12px;font-family:'IBM Plex Sans',sans-serif;font-weight:700;font-size:14px;box-shadow:0 1px 2px rgba(30,51,23,.25);}
 body.wsd .btn-new:active{transform:translateY(1px);}
-body.wsd #wsd-sb-such{display:block;padding:9px 12px;border:1px solid var(--zLine2);border-radius:8px;font-size:13px;background:var(--zField);color:var(--zTxt);font-family:'Public Sans',sans-serif;}
+body.wsd #wsd-sb-such{display:block;padding:9px 12px;border:1px solid var(--zLine2);border-radius:8px;font-size:13px;background:var(--zField);color:var(--zTxt);font-family:'IBM Plex Sans',sans-serif;}
 body.wsd #wsd-sb-such::placeholder{color:var(--zPh);}
 /* Berichtsliste */
 body.wsd .sb-list{padding:10px;}
@@ -415,9 +403,9 @@ body.wsd .ri{padding:11px 12px;border-radius:10px;border:1px solid var(--zILine)
 body.wsd .ri.act{border:1.5px solid var(--zA2);background:var(--zSelBg);padding:10.5px 11.5px;}
 body.wsd .wsd-ri-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
 body.wsd .wsd-ri-top .ri-n{font-size:13.5px;font-weight:700;color:var(--zTxt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-body.wsd .wsd-ri-top .ri-d{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--zMut2);margin-bottom:0;flex:none;}
+body.wsd .wsd-ri-top .ri-d{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--zMut2);margin-bottom:0;flex:none;}
 body.wsd .ri .ri-tags{margin-top:6px;gap:6px;align-items:center;}
-body.wsd .ri .tag-s{font-family:'Public Sans',sans-serif;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;}
+body.wsd .ri .tag-s{font-family:'IBM Plex Sans',sans-serif;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;}
 body.wsd .sb-list .tag-e{background:#e4ecf7;color:#2b5aa0;}
 body.wsd .sb-list .tag-g{background:#f4ead9;color:#8a6420;}
 body.wsd .sb-list .tag-ws{background:#e6eadf;color:#55604c;}
@@ -433,50 +421,52 @@ body.wsd .content{padding:26px 30px 30px;background:var(--zBg);}
 body.wsd .panel{max-width:960px;margin:0 auto;}
 body.wsd .wsd-page{max-width:920px;margin:0 auto;display:flex;flex-direction:column;gap:18px;}
 body.wsd .wsd-titlerow{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;}
-body.wsd .wsd-h1{margin:0;font-size:22px;font-weight:800;letter-spacing:-.2px;color:var(--zTxt);font-family:'Public Sans',sans-serif;}
+body.wsd .wsd-h1{margin:0;font-size:22px;font-weight:800;letter-spacing:-.2px;color:var(--zTxt);font-family:'IBM Plex Sans',sans-serif;}
 body.wsd .wsd-lastinfo{font-size:12.5px;color:var(--zMut2);}
 body.wsd .content .qsec{background:var(--zCard);border:1px solid var(--zLine);border-radius:14px;padding:20px 22px;margin-bottom:0;}
-body.wsd .content .qsec-t{font-family:'Public Sans',sans-serif;font-size:12px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--zSecT);margin-bottom:14px;}
+body.wsd .content .qsec-t{font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--zSecT);margin-bottom:14px;}
 body.wsd .wsd-trow{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;}
 body.wsd .content .wsd-trow .qsec-t{margin-bottom:0;}
 body.wsd .wsd-hint{font-size:12px;color:var(--zPh);}
 body.wsd .wsd-grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;}
 body.wsd .wsd-zeitgrid{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:14px 18px;align-items:end;}
 body.wsd .content .fg{gap:6px;min-width:0;}
-body.wsd .content label{font-family:'Public Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--zMut);}
-body.wsd .content input,body.wsd .content select,body.wsd .content textarea{background:var(--zField);border:1px solid var(--zLine2);border-radius:8px;color:var(--zTxt);font-family:'Public Sans',sans-serif;font-size:14.5px;padding:10px 12px;}
+body.wsd .content label{font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--zMut);}
+body.wsd .content input,body.wsd .content select,body.wsd .content textarea{background:var(--zField);border:1px solid var(--zLine2);border-radius:8px;color:var(--zTxt);font-family:'IBM Plex Sans',sans-serif;font-size:14.5px;padding:10px 12px;}
 body.wsd .content input:focus,body.wsd .content select:focus,body.wsd .content textarea:focus{outline:2px solid var(--zA2);outline-offset:-1px;border-color:var(--zLine2);}
 body.wsd .content ::placeholder{color:var(--zPh);}
 body.wsd #ws-name{background:var(--zRead);color:var(--zMut);border-color:var(--zILine);}
-body.wsd #ws-von,body.wsd #ws-bis{font-family:'JetBrains Mono',monospace;font-size:15px;}
+body.wsd #ws-von,body.wsd #ws-bis{font-family:'IBM Plex Mono',monospace;font-size:15px;}
 body.wsd .wsd-nettocol{align-items:flex-end;}
 body.wsd .wsd-nettocol label{text-align:right;}
 body.wsd .wsd-nettobox{display:flex;align-items:baseline;gap:5px;padding:8px 14px;border-radius:8px;background:var(--zSoftG);border:1px solid var(--zSoftGB);}
-body.wsd .wsd-nettobox input#ws-netto{background:transparent;border:none;padding:0;width:72px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600;color:var(--zNetto);}
+body.wsd .wsd-nettobox input#ws-netto{background:transparent;border:none;padding:0;width:72px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;color:var(--zNetto);}
 body.wsd .wsd-nettobox input#ws-netto:focus{outline:none;}
-body.wsd .wsd-nettobox span{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:var(--zNetto);}
+body.wsd .wsd-nettobox span{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;color:var(--zNetto);}
 body.wsd .content .tags{gap:8px;}
-body.wsd .content .tg{padding:9px 16px;border-radius:999px;font-family:'Public Sans',sans-serif;font-size:13.5px;font-weight:600;background:var(--zCard);border:1px solid var(--zLine2);color:var(--zChip);}
+body.wsd .content .tg{padding:9px 16px;border-radius:999px;font-family:'IBM Plex Sans',sans-serif;font-size:13.5px;font-weight:600;background:var(--zCard);border:1px solid var(--zLine2);color:var(--zChip);}
 body.wsd .content .tg.a{background:var(--zA);border-color:var(--zA);color:#fff;}
 body.wsd .content textarea{min-height:96px;line-height:1.5;resize:vertical;}
-body.wsd .content .mic-btn{background:transparent;border:1px solid var(--zLine2);border-radius:999px;color:var(--zMut);font-family:'Public Sans',sans-serif;font-size:12px;font-weight:600;padding:7px 14px;margin-top:8px;}
-body.wsd .content .mic-btn.on{background:rgba(196,72,40,.12);border-color:#c0492c;color:#c0492c;}
 body.wsd .wsd-gap{margin-top:12px;}
+.wsd-marow{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr auto;gap:10px 12px;align-items:end;margin-top:12px;padding-top:12px;border-top:1px solid var(--zLine2,var(--b));}
+.wsd-marow .wsm-netto{font-family:'IBM Plex Mono',monospace;font-weight:600;}
+.wsd-mahint{font-size:11px;color:var(--zMut,var(--m));margin-top:10px;line-height:1.5;}
+@media(max-width:760px){.wsd-marow{grid-template-columns:1fr 1fr;}}
 /* Fussleiste */
 body.wsd .wsd-footer{position:sticky;bottom:0;display:flex;gap:10px;align-items:center;padding:13px 16px;background:var(--zFoot);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--zLine);border-radius:12px;z-index:40;box-shadow:0 -2px 12px rgba(0,0,0,.05);}
-body.wsd .wsd-footer .send-status{margin-top:0;padding:6px 10px;font-family:'Public Sans',sans-serif;font-size:12px;border-radius:8px;}
+body.wsd .wsd-footer .send-status{margin-top:0;padding:6px 10px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;border-radius:8px;}
 body.wsd .wsd-footer .send-status.ok{background:var(--zSoftG);border:1px solid var(--zSoftGB);color:var(--zSecT);}
 body.wsd .wsd-footer .send-status.err{background:rgba(196,72,40,.1);border:1px solid rgba(196,72,40,.35);color:#c0492c;}
 body.wsd:not(.theme-light) .wsd-footer .send-status.err{color:#e08568;}
 body.wsd .wsd-footer .send-status.sending{background:rgba(37,96,117,.1);border:1px solid rgba(37,96,117,.3);color:#256075;}
 body.wsd:not(.theme-light) .wsd-footer .send-status.sending{color:#7db6c9;}
-body.wsd .content .btn{background:var(--zCard);border:1px solid var(--zLine2);border-radius:10px;padding:11px 18px;font-family:'Public Sans',sans-serif;font-size:14px;font-weight:600;color:var(--zChip);}
+body.wsd .content .btn{background:var(--zCard);border:1px solid var(--zLine2);border-radius:10px;padding:11px 18px;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:600;color:var(--zChip);}
 body.wsd .content .btn:active{transform:translateY(1px);}
 body.wsd .content .btn-p{background:var(--zA);border:none;color:#fff;font-weight:700;padding:11px 22px;box-shadow:0 2px 6px var(--zBtnSh);}
 /* Uebrige Tabs (Fahrzeuge etc.) im neuen Rahmen */
 body.wsd .content .a-sec{background:var(--zCard);border:1px solid var(--zLine);border-radius:14px;padding:18px 20px;}
-body.wsd .content .a-sec-title{font-family:'Public Sans',sans-serif;font-size:11px;font-weight:800;letter-spacing:1.2px;border-bottom:1px solid var(--zILine);}
-body.wsd .content .et{font-family:'Public Sans',sans-serif;color:var(--zMut2);}
+body.wsd .content .a-sec-title{font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:800;letter-spacing:1.2px;border-bottom:1px solid var(--zILine);}
+body.wsd .content .et{font-family:'IBM Plex Sans',sans-serif;color:var(--zMut2);}
 /* Anpassung schmale Breiten (iPad hochkant) */
 @media(max-width:1020px){body.wsd .app{grid-template-columns:240px 1fr;}body.wsd .content{padding:20px 18px 24px;}}
 @media(max-width:760px){body.wsd .wsd-grid2{grid-template-columns:1fr;}body.wsd .wsd-zeitgrid{grid-template-columns:1fr 1fr;}body.wsd .wsd-nettocol{align-items:flex-start;}body.wsd .wsd-nettocol label{text-align:left;}body.wsd #wsd-tabslot{margin-left:0;order:10;flex-basis:100%;}}
@@ -757,7 +747,6 @@ let currentUser=null,PROJEKTE=[],reports=[],FAHRZEUGE=[],MALISTE=[];
 let currentId=null,currentRole=null,curWeather='Sonnig';
 let stepIdx=0,liefIdx=0,mangelIdx=0,curFahrtStatus='fahrer';
 let fotoDataUrls=[],kalMonat=new Date().getMonth(),kalJahr=new Date().getFullYear();
-let voiceActive=false,voiceTarget=null,recognition=null;
 let unterschriftData=null,sigDrawing=false,sigCtx=null,sigCanvas=null;
 let isSending=false;
 
@@ -900,10 +889,10 @@ function getDatenschutzHTML(){
   '<ul style="margin-left:18px"><li>Name, Mitarbeiternummer, Qualifikation</li><li>Arbeitszeiten (Beginn, Ende, Pause, Fahrzeiten)</li><li>Eingesetzte Fahrzeuge, Maschinen und Geraete</li><li>Taetigkeitsbeschreibungen und Mengen</li><li>Unterschrift (digital, freiwillig im Profil hinterlegt)</li><li>Fotos der Baustelle (von Vorarbeitern erfasst)</li><li>Projekt- und Baustelleninformationen</li></ul>'+
 
   '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:var(--gl);letter-spacing:1.5px;text-transform:uppercase;margin:14px 0 6px">3. Sprachaufnahmen</div>'+
-  '<div>Sprachaufnahmen werden <b>nicht gespeichert</b>. Die Spracheingabe wird ausschliesslich live in Text umgewandelt. Die Aufnahme selbst verbleibt nur waehrend des Sprechens kurzzeitig im Geraet und wird nicht uebertragen.</div>'+
+  '<div>Die App enthaelt <b>keine Spracheingabe</b>. Es werden keine Sprachaufnahmen erstellt, gespeichert oder uebertragen.</div>'+
 
   '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:var(--gl);letter-spacing:1.5px;text-transform:uppercase;margin:14px 0 6px">4. Wo werden die Daten gespeichert</div>'+
-  '<ul style="margin-left:18px"><li><b>Supabase</b> (Datenbank, Server in Irland / EU)</li><li><b>Google Drive</b> (PDF-Archiv, Anbieter: Google LLC, USA)</li><li><b>Outlook / Gmail</b> (E-Mail-Versand der Tagesberichte)</li><li><b>Claude API</b> (Anthropic, USA - nur fuer optionale KI-Analyse von Vorarbeiter-Berichten)</li></ul>'+
+  '<ul style="margin-left:18px"><li><b>Supabase</b> (Datenbank, Server in Irland / EU)</li><li><b>Google Drive</b> (PDF-Archiv, Anbieter: Google LLC, USA)</li><li><b>Outlook / Gmail</b> (E-Mail-Versand der Tagesberichte)</li></ul>'+
   '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:var(--m);margin-top:6px;font-style:italic">Geplant: Migration zu einem firmeneigenen Server in Deutschland.</div>'+
 
   '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:var(--gl);letter-spacing:1.5px;text-transform:uppercase;margin:14px 0 6px">5. Wer hat Zugriff</div>'+
@@ -1615,8 +1604,8 @@ function buildPDFName(data){
 // ══════ ADMIN: ABGABE-UEBERSICHT + ZEITABGLEICH (Monatsmatrix) ══════
 // Regeln (festgelegt 08/2026):
 // 1) Original-Berichte bleiben IMMER unveraendert - der Abgleich ist reine Lese-Logik.
-// 2) Vorarbeiter-Eintraege sind massgeblich. Prioritaet richtet sich nach der
-//    Stammdaten-Rolle des ERFASSERS (nicht nach der Berichtsmaske).
+// 2) Rangfolge: Vorarbeiter > Werkstatt > Mitarbeiter (seit 10/2026 dreistufig). Prioritaet
+//    richtet sich nach der Stammdaten-Rolle des ERFASSERS (nicht nach der Berichtsmaske).
 // 3) Eintraege ohne Konkurrenz zaehlen automatisch voll (auch wer allein unterwegs war).
 // 4) Abgleich erfolgt je Person + Tag auf Ebene der Zeitfenster: MA-Eintraege zaehlen
 //    nur ausserhalb der VA-Fenster, Teilueberlappungen werden anteilig gekuerzt.
@@ -1716,8 +1705,8 @@ function abgSammleEintraege(alle){
   function erfasserPrio(b){
     let rolle=null;
     if(b.mitarbeiter_id){const e=MALISTE.find(function(m){return m.id===b.mitarbeiter_id;});if(e)rolle=e.rolle;}
-    if(rolle==null)return b.rolle==='va'?'va':'ma';
-    return rolle==='vorarbeiter'?'va':'ma';
+    if(rolle==null)return b.rolle==='va'?'va':(b.rolle==='ws'?'ws':'ma');
+    return rolle==='vorarbeiter'?'va':(rolle==='werkstatt'?'ws':'ma');
   }
   function add(pid,tag,e){
     if(!map[pid])map[pid]={};
@@ -1728,7 +1717,7 @@ function abgSammleEintraege(alle){
     const tag=parseInt((b.datum||'').slice(8,10),10);
     if(!tag)return;
     const prio=erfasserPrio(b);
-    if(b.rolle==='va'&&Array.isArray(b.zeit_rows)&&b.zeit_rows.length){
+    if((b.rolle==='va'||b.rolle==='ws')&&Array.isArray(b.zeit_rows)&&b.zeit_rows.length){
       b.zeit_rows.forEach(function(z){
         if(!z||!z.name)return;
         const hit=_dfFindMA(z.name);
@@ -1738,7 +1727,7 @@ function abgSammleEintraege(alle){
           return;
         }
         add(hit.id,tag,{
-          personId:hit.id,tag:tag,datum:b.datum,berichtId:b.id,berichtRolle:'va',
+          personId:hit.id,tag:tag,datum:b.datum,berichtId:b.id,berichtRolle:b.rolle,
           erfasser:b.mitarbeiter_name||'?',erfasserId:b.mitarbeiter_id||null,prio:prio,
           selbst:(b.mitarbeiter_id&&hit.id===b.mitarbeiter_id)?true:false,
           projektId:z.projektId||b.projekt_id||'',projektNr:z.projektNr||b.projekt_nr||'',
@@ -1764,56 +1753,58 @@ function abgSammleEintraege(alle){
 }
 
 // Kernregel je Person + Tag (reine Funktion, testbar):
-// VA-Eintraege zaehlen immer voll. MA-Eintraege zaehlen nur ausserhalb der VA-Fenster,
-// Teilueberlappungen werden anteilig gekuerzt (Restminuten / Gesamtminuten).
+// Rangfolge der Erfasser: Vorarbeiter > Werkstatt > Mitarbeiter (festgelegt 30.09.2026).
+// Eintraege der hoechsten Stufe zaehlen immer voll. Eintraege einer niedrigeren Stufe zaehlen
+// nur ausserhalb der Zeitfenster ALLER hoeheren Stufen, Teilueberlappungen werden anteilig
+// gekuerzt (Restminuten / Gesamtminuten).
 // Gleichrangige Ueberschneidungen -> Konflikt-Markierung, Stunden bleiben unveraendert.
 function abgKonsolidiereTag(eintraege){
   function ovl(a1,a2,b1,b2){return Math.max(0,Math.min(a2,b2)-Math.max(a1,b1));}
+  function rang(e){return e.prio==='va'?0:(e.prio==='ws'?1:2);}
   const mitF=[],ohneF=[];
   eintraege.forEach(function(e){
     e.konflikt=false;e.ueberlagertVon=[];
     if(e.von!=null&&e.bis!=null){e._s=e.von;e._e=(e.bis<=e.von)?e.bis+1440:e.bis;mitF.push(e);}
     else ohneF.push(e);
   });
-  const va=mitF.filter(function(e){return e.prio==='va';});
-  const ma=mitF.filter(function(e){return e.prio!=='va';});
+  const stufen=[[],[],[]];
+  mitF.forEach(function(e){stufen[rang(e)].push(e);});
   let konflikt=false,auto=false;
-  // VA gegen VA: gleiche Prioritaet -> Ueberschneidung ist ein Konflikt
-  for(let i=0;i<va.length;i++)for(let k=i+1;k<va.length;k++){
-    if(ovl(va[i]._s,va[i]._e,va[k]._s,va[k]._e)>0){konflikt=true;va[i].konflikt=true;va[k].konflikt=true;}
-  }
-  va.forEach(function(e){e.gewertet=e.stunden;e.rest=[[e._s,e._e]];e.zustand=e.konflikt?'konflikt':'voll';});
-  // MA: alle VA-Fenster des Tages abziehen (projektunabhaengig - eine Person kann
-  // nicht gleichzeitig auf zwei Baustellen sein)
-  const vaF=va.map(function(e){return[e._s,e._e];});
-  ma.forEach(function(e){
-    let rest=[[e._s,e._e]];
-    vaF.forEach(function(f){
-      const neu=[];
-      rest.forEach(function(r){
-        if(ovl(r[0],r[1],f[0],f[1])<=0){neu.push(r);return;}
-        if(r[0]<f[0])neu.push([r[0],Math.min(r[1],f[0])]);
-        if(r[1]>f[1])neu.push([Math.max(r[0],f[1]),r[1]]);
+  for(let st=0;st<3;st++){
+    const gruppe=stufen[st];
+    // alle Eintraege hoeherer Stufen (projektunabhaengig - eine Person kann nicht
+    // gleichzeitig an zwei Orten sein)
+    let hoeher=[];
+    for(let h=0;h<st;h++)hoeher=hoeher.concat(stufen[h]);
+    gruppe.forEach(function(e){
+      let rest=[[e._s,e._e]];
+      hoeher.forEach(function(f){
+        const neu=[];
+        rest.forEach(function(r){
+          if(ovl(r[0],r[1],f._s,f._e)<=0){neu.push(r);return;}
+          if(r[0]<f._s)neu.push([r[0],Math.min(r[1],f._s)]);
+          if(r[1]>f._e)neu.push([Math.max(r[0],f._e),r[1]]);
+        });
+        rest=neu;
       });
-      rest=neu;
+      e.rest=rest.filter(function(r){return r[1]-r[0]>0;});
+      const voll=e._e-e._s;
+      const restMin=e.rest.reduce(function(sum,r){return sum+(r[1]-r[0]);},0);
+      if(voll<=0){e.gewertet=e.stunden;e.zustand='konflikt';e.konflikt=true;konflikt=true;}
+      else if(restMin>=voll){e.gewertet=e.stunden;e.zustand='voll';}
+      else if(restMin<=0){e.gewertet=0;e.zustand='ersetzt';auto=true;}
+      else{e.gewertet=Math.round(e.stunden*restMin/voll*100)/100;e.zustand='teil';auto=true;}
+      if(e.zustand==='teil'||e.zustand==='ersetzt'){
+        e.ueberlagertVon=hoeher.filter(function(v){return ovl(e._s,e._e,v._s,v._e)>0;})
+          .map(function(v){return v.erfasser+' ('+(v.projektNr||'?')+', '+abgMinZeit(v._s)+'-'+abgMinZeit(v._e)+')';});
+      }
     });
-    e.rest=rest.filter(function(r){return r[1]-r[0]>0;});
-    const voll=e._e-e._s;
-    const restMin=e.rest.reduce(function(s,r){return s+(r[1]-r[0]);},0);
-    if(voll<=0){e.gewertet=e.stunden;e.zustand='konflikt';e.konflikt=true;konflikt=true;}
-    else if(restMin>=voll){e.gewertet=e.stunden;e.zustand='voll';}
-    else if(restMin<=0){e.gewertet=0;e.zustand='ersetzt';auto=true;}
-    else{e.gewertet=Math.round(e.stunden*restMin/voll*100)/100;e.zustand='teil';auto=true;}
-    if(e.zustand==='teil'||e.zustand==='ersetzt'){
-      e.ueberlagertVon=va.filter(function(v){return ovl(e._s,e._e,v._s,v._e)>0;})
-        .map(function(v){return v.erfasser+' ('+(v.projektNr||'?')+', '+abgMinZeit(v._s)+'-'+abgMinZeit(v._e)+')';});
+    // gleiche Stufe gegeneinander auf den Restfenstern: gleiche Prioritaet -> Konflikt
+    for(let i=0;i<gruppe.length;i++)for(let k=i+1;k<gruppe.length;k++){
+      let o=0;
+      (gruppe[i].rest||[]).forEach(function(r1){(gruppe[k].rest||[]).forEach(function(r2){o+=ovl(r1[0],r1[1],r2[0],r2[1]);});});
+      if(o>0){konflikt=true;gruppe[i].konflikt=true;gruppe[k].konflikt=true;gruppe[i].zustand='konflikt';gruppe[k].zustand='konflikt';}
     }
-  });
-  // MA gegen MA auf den Restfenstern: gleiche Prioritaet -> Konflikt
-  for(let i=0;i<ma.length;i++)for(let k=i+1;k<ma.length;k++){
-    let o=0;
-    (ma[i].rest||[]).forEach(function(r1){(ma[k].rest||[]).forEach(function(r2){o+=ovl(r1[0],r1[1],r2[0],r2[1]);});});
-    if(o>0){konflikt=true;ma[i].konflikt=true;ma[k].konflikt=true;ma[i].zustand='konflikt';ma[k].zustand='konflikt';}
   }
   // Eintraege ohne Zeitfenster: ohne Konkurrenz voll, sonst nicht automatisch entscheidbar
   ohneF.forEach(function(e){
@@ -1821,9 +1812,9 @@ function abgKonsolidiereTag(eintraege){
     if(mitF.length>0||ohneF.length>1){e.zustand='konflikt';e.konflikt=true;konflikt=true;}
     else e.zustand='voll';
   });
-  const alle2=va.concat(ma).concat(ohneF);
-  const sumOrig=alle2.reduce(function(s,e){return s+(e.stunden||0);},0);
-  const sumGew=alle2.reduce(function(s,e){return s+(e.gewertet||0);},0);
+  const alle2=stufen[0].concat(stufen[1]).concat(stufen[2]).concat(ohneF);
+  const sumOrig=alle2.reduce(function(sum,e){return sum+(e.stunden||0);},0);
+  const sumGew=alle2.reduce(function(sum,e){return sum+(e.gewertet||0);},0);
   return {eintraege:alle2,status:konflikt?'konflikt':(auto?'auto':'ok'),
     sumOrig:Math.round(sumOrig*100)/100,sumGew:Math.round(sumGew*100)/100};
 }
@@ -1952,7 +1943,7 @@ function abgRender(cont,daten,j,mi,tage){
     const nKonf=pruefListe.filter(function(k){return k.art==='konflikt';}).length;
     html+='<div style="margin-top:10px;padding:10px;border:1px solid rgba(196,72,40,.35);border-radius:8px;background:var(--rg)">'+
       '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--r);margin-bottom:4px">Pruefliste - '+pruefListe.length+' Tag'+(pruefListe.length===1?'':'e')+' mit Abweichung</div>'+
-      '<div style="font-size:10px;color:var(--m);margin-bottom:8px;line-height:1.5">Rot = gleichrangiger Konflikt, muss angesehen werden. Orange = Eigenbericht wurde von einem Vorarbeiterbericht ueberlagert, automatisch geloest. Sortiert nach Groesse der Abweichung. Zeile antippen oeffnet den Tag.'+
+      '<div style="font-size:10px;color:var(--m);margin-bottom:8px;line-height:1.5">Rot = gleichrangiger Konflikt, muss angesehen werden. Orange = Bericht wurde von einem hoeherrangigen Bericht ueberlagert (Vorarbeiter vor Werkstatt vor Arbeiter), automatisch geloest. Sortiert nach Groesse der Abweichung. Zeile antippen oeffnet den Tag.'+
       (nKonf?' <span style="color:var(--r)">'+nKonf+' Konflikt'+(nKonf===1?'':'e')+' offen.</span>':'')+'</div>'+
       pruefListe.map(function(k){
         const farbe=k.art==='konflikt'?'var(--r)':'var(--o)';
@@ -1994,7 +1985,7 @@ function abgZeigeTag(pid,tag){
     ?'<span style="color:var(--r);font-weight:700">Konflikt - Pruefung noetig</span>'
     :(kons.status==='auto'?'<span style="color:var(--o);font-weight:700">automatisch abgeglichen</span>':'<span style="color:var(--g);font-weight:700">ohne Ueberschneidung</span>');
   let rows=kons.eintraege.map(function(e){
-    const wer=e.selbst?'selbst erfasst':'erfasst von '+_dfEsc(e.erfasser)+(e.prio==='va'?' (Vorarbeiter)':' (Mitarbeiter)');
+    const wer=e.selbst?'selbst erfasst':'erfasst von '+_dfEsc(e.erfasser)+(e.prio==='va'?' (Vorarbeiter)':(e.prio==='ws'?' (Werkstatt)':' (Mitarbeiter)'));
     const fenster=(e.von!=null&&e.bis!=null)?abgMinZeit(e._s)+'-'+abgMinZeit(e._e)+' Uhr, Pause '+(e.pause||0)+'min':'ohne Von/Bis-Zeit';
     let bewertung='';
     if(e.zustand==='voll')bewertung='<span style="color:var(--g)">voll gewertet: '+_auswFmtH(e.gewertet)+'h</span>';
@@ -2036,7 +2027,7 @@ function abgUeberlagerungsText(kons){
   const eintraege=(kons&&kons.eintraege)?kons.eintraege:[];
   eintraege.forEach(function(e){
     if(e.zustand!=='teil'&&e.zustand!=='ersetzt')return;
-    const wer=(e.ueberlagertVon&&e.ueberlagertVon.length)?e.ueberlagertVon.join(' + '):'einem Vorarbeiterbericht';
+    const wer=(e.ueberlagertVon&&e.ueberlagertVon.length)?e.ueberlagertVon.join(' + '):'einem hoeherrangigen Bericht';
     teile.push((e.selbst?'Eigenbericht':'Eintrag von '+e.erfasser)+' '+_auswFmtH(e.stunden)+'h '+
       (e.zustand==='ersetzt'?'faellt ganz weg':'gekuerzt auf '+_auswFmtH(e.gewertet)+'h')+
       ' - ueberlagert durch '+wer);
@@ -2329,7 +2320,7 @@ async function azPruefeBericht(b){
     });
   });
   const ziel={};
-  if(b.rolle==='va'&&Array.isArray(b.zeit_rows)&&b.zeit_rows.length){
+  if((b.rolle==='va'||b.rolle==='ws')&&Array.isArray(b.zeit_rows)&&b.zeit_rows.length){
     b.zeit_rows.forEach(function(z){
       if(!z||!z.name)return;
       const hit=_dfFindMA(z.name);
@@ -2626,11 +2617,13 @@ function auswAggregieren(rows){
   rows.forEach(b=>{
     const mk=(b.datum||'').slice(0,7);
     const zr=Array.isArray(b.zeit_rows)?b.zeit_rows.filter(t=>t&&t.name):[];
-    if(b.rolle==='va'&&zr.length){
+    if((b.rolle==='va'||b.rolle==='ws')&&zr.length){
       zr.forEach(t=>{
         const h=_auswNum((t.gesamt!=null&&t.gesamt!=='')?t.gesamt:t.nettoArbeit);
         const e=maEntry(t.name);
-        e.vaH+=h;if(b.datum)e.tage[b.datum]=1;
+        // Werkstatt-Bericht mit weiteren Mitarbeitern: die eigene Zeile bleibt "Eigene Ber."
+        if(b.rolle==='ws'&&_dfNorm(t.name)===_dfNorm(b.mitarbeiter_name||''))e.eigenH+=h;else e.vaH+=h;
+        if(b.datum)e.tage[b.datum]=1;
         const pe=projEntry(t.projektId||b.projekt_id||'');
         pe.persH+=h;pe.maSet[e.name]=1;
         kpi.persH+=h;if(mk)monat[mk]=(monat[mk]||0)+h;
@@ -2733,7 +2726,7 @@ function renderAuswMA(el){
     '<tr><th '+_AUSW_TH+'>Mitarbeiter</th><th '+_AUSW_THR+'>Tage</th><th '+_AUSW_THR+'>aus VA-Ber.</th><th '+_AUSW_THR+'>Eigene Ber.</th><th '+_AUSW_THR+'>Gesamt</th></tr>'+
     list.map(m=>'<tr><td '+_AUSW_TD+'>'+m.name+(m.nr?' <span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m)">#'+m.nr+'</span>':'')+'</td><td '+_AUSW_TDR+'>'+Object.keys(m.tage).length+'</td><td '+_AUSW_TDR+' ><span style="color:var(--earth)">'+_auswFmtH(m.vaH)+'</span></td><td '+_AUSW_TDR+'><span style="color:var(--sky)">'+_auswFmtH(m.eigenH)+'</span></td><td '+_AUSW_TDR+'><b>'+_auswFmtH(m.vaH+m.eigenH)+'</b></td></tr>').join('')+
   '</table></div>';
-  h+='<div style="font-size:10px;color:var(--m);line-height:1.5;margin-top:8px">Hinweis: "aus VA-Ber." = Stunden aus der Zeiterfassung in Vorarbeiter-Berichten. "Eigene Ber." = Stunden aus selbst geschriebenen Berichten (Arbeiter/Werkstatt bzw. VA ohne Zeiterfassung). Schreibt jemand einen eigenen Bericht UND steht am selben Tag in einer VA-Zeiterfassung, erscheinen die Stunden in beiden Spalten &#8211; die Spalte Gesamt kann dann doppelt zaehlen.</div>';
+  h+='<div style="font-size:10px;color:var(--m);line-height:1.5;margin-top:8px">Hinweis: "aus VA-Ber." = Stunden aus der Zeiterfassung in Vorarbeiter-Berichten (und weitere Mitarbeiter aus Werkstatt-Berichten). "Eigene Ber." = Stunden aus selbst geschriebenen Berichten (Arbeiter/Werkstatt bzw. VA ohne Zeiterfassung). Schreibt jemand einen eigenen Bericht UND steht am selben Tag in einer VA-Zeiterfassung, erscheinen die Stunden in beiden Spalten &#8211; die Spalte Gesamt kann dann doppelt zaehlen.</div>';
   el.innerHTML=h;
   _mkAuswChart('ausw-ch-ma',{type:'bar',data:{labels:top.map(m=>_auswLbl(m.name)),datasets:[
     {label:'aus VA-Berichten',data:top.map(m=>Math.round(m.vaH*100)/100),backgroundColor:_auswCss('--earth','#8a6d4a'),borderRadius:3},
@@ -2869,7 +2862,7 @@ async function ctrlLadeDaten(force){
     _ctrlLV=lvm;
     const bl=[];let bs=0;
     while(true){
-      const r=await sb.from('berichte').select('id,datum,projekt_id,projekt_nr,zeit_rows,mach_rows,steps').order('datum',{ascending:true}).order('id',{ascending:true}).range(bs,bs+999);
+      const r=await sb.from('berichte').select('id,datum,rolle,projekt_id,projekt_nr,zeit_rows,mach_rows,steps').order('datum',{ascending:true}).order('id',{ascending:true}).range(bs,bs+999);
       if(r.error)throw r.error;
       const d=r.data||[];
       for(let i=0;i<d.length;i++)bl.push(d[i]);
@@ -3061,7 +3054,7 @@ function _cockpitAgg(f){
     if(!_cpDateOk(b.datum,f))continue;
     const bpid=b.projekt_id;
     if(bpid){const ab=get(bpid);ab.berichte[b.id]=true;track(ab,b.datum);}
-    const z=b.zeit_rows||[];
+    const z=(b.rolle==='ws')?[]:(b.zeit_rows||[]); // Cockpit zaehlt bewusst nur die VA-Zeiterfassung
     for(let j=0;j<z.length;j++){
       const r=z[j];if(!r)continue;
       const pid=r.projektId||bpid;if(!pid)continue;
@@ -4237,6 +4230,11 @@ async function saveAndSendWS(){
     baustelle:fz?fz.kennzeichen+' - '+fz.typ:'',gesendet:false
   };
   if(!d.datum){toast('Datum erforderlich','err');return;}
+  // Weitere Mitarbeiter (optional): als zeit_rows speichern, Zeile 1 = Erfasser selbst
+  const wsMa=getWSMaRows();
+  const wsMaFehler=wsMaPruefe(wsMa,currentUser.name);
+  if(wsMaFehler){toast(wsMaFehler,'err');return;}
+  d.zeit_rows=wsBaueZeitRows(wsMa,{name:currentUser.name,qual:currentUser.qualifikation,von:d.von,bis:d.bis,pause:d.pause_min,netto:(document.getElementById('ws-netto')?.value||''),nr:currentUser.mitarbeiter_nr,projektNr:d.projekt_nr,projektId:projektId},_dfFindMA);
   const st=document.getElementById('ws-send-status');
   if(st){st.className='send-status show sending';st.textContent='Speichern...';}
   let savedId=currentId;
@@ -4546,6 +4544,10 @@ async function generatePDF(report){
   const LINE=(x1,y1,x2,y2,col,lw)=>{doc.setDrawColor(...(col||C.rahmen));doc.setLineWidth(lw||0.3);doc.line(x1,y1,x2,y2);};
   const RECT=(x,fy,w,h,fill)=>{if(fill){doc.setFillColor(...fill);doc.rect(x,fy,w,h,'F');}};
   const needPage=(h)=>{if(y+h>280){doc.addPage();y=M;}};
+  // Langer Text: Zeile fuer Zeile schreiben, damit er sauber auf die naechste Seite umbricht (y wird fortgeschrieben).
+  const WP=(txt,x,maxW,sz,col,lh,stil)=>{doc.setFontSize(sz||10);doc.setFont('helvetica',stil||'normal');const lines=doc.splitTextToSize(clean(txt),maxW);lines.forEach(function(ln){needPage(lh);doc.setFontSize(sz||10);doc.setFont('helvetica',stil||'normal');doc.setTextColor(...(col||C.dunkel));doc.text(ln,x,y);y+=lh;});return lines.length;};
+  // Tabellenzelle: Text auf die Spaltenbreite kuerzen, damit er nicht in die Nachbarspalte laeuft.
+  const FIT=(txt,maxW,sz,bold)=>{doc.setFontSize(sz||8);doc.setFont('helvetica',bold?'bold':'normal');let t=clean(txt);if(doc.getTextWidth(t)<=maxW)return t;while(t.length>1&&doc.getTextWidth(t+'..')>maxW)t=t.slice(0,-1);return t+'..';};
 
   // LOGO
   try{
@@ -4571,17 +4573,17 @@ async function generatePDF(report){
   const hCol=isWS?C.wsgrau:C.gruen;
   RECT(M,y,cw,9,hCol);
   doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...C.weiss);
-  doc.text(typ,M+4,y+6.2);doc.text(fmtD(report.datum),W-M-4,y+6.2,{align:'right'});
+  doc.text(typ,M+4,y+6.2);doc.text(fmtDWd(report.datum),W-M-4,y+6.2,{align:'right'});
   y+=14;
 
   if(report.role==='ar'||report.role==='ws'){
     doc.setFont('helvetica','bold');doc.setFontSize(16);doc.setTextColor(...C.dunkel);
-    doc.text(clean(report.name||report.mitarbeiter_name||'--'),M,y);y+=8;
+    doc.text(FIT(report.name||report.mitarbeiter_name||'--',cw,16,true),M,y);y+=8;
     LINE(M,y,W-M,y,C.rahmen);y+=6;
     const pLabel=getProjektLabel(report.projekt_id||report.projektNr||'');
     [[' Projekt',pLabel],['Qualifikation',currentUser?.qualifikation||'--'],['Wetter',report.wetter||'--']].forEach(([l,v],i)=>{
       const x=M+(i*62);doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...C.hellgrau);doc.text(l,x,y);
-      doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...C.dunkel);doc.text(clean(v),x,y+5);
+      const vFit=FIT(v,58,9,true);doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...C.dunkel);doc.text(vFit,x,y+5);
     });y+=14;
     if(report.taetigkeiten?.length){doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...C.hellgrau);doc.text('Taetigkeiten',M,y);doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...C.dunkel);const taeLines=doc.splitTextToSize(clean(report.taetigkeiten.join(' | ')),cw);doc.text(taeLines,M,y+5);y+=5+taeLines.length*5+4;}
     if(isWS&&report.baustelle){LINE(M,y,W-M,y,C.rahmen);y+=6;T('FAHRZEUG',M,y,9,true,C.wsgrau);y+=5;doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...C.dunkel);doc.text(clean(report.baustelle),M,y);y+=8;}
@@ -4607,14 +4609,28 @@ async function generatePDF(report){
       RECT(M,y,cw,7,C.heller);doc.setDrawColor(...flc);doc.setLineWidth(2);doc.line(M,y,M,y+7);doc.setLineWidth(0.3);
       doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...C.grau);doc.text(fahrtInfo,M+4,y+4.8);y+=11;
     }else y+=3;
+    // Werkstatt: weitere Mitarbeiter (optional erfasst)
+    const wsMaPdf=isWS?wsWeitereMA(report):[];
+    if(wsMaPdf.length){
+      needPage(22);LINE(M,y,W-M,y,C.rahmen);y+=7;
+      T('WEITERE MITARBEITER',M,y,9,true,hCol);y+=4;
+      RECT(M,y,cw,6,C.heller);LINE(M,y,W-M,y,C.rahmen);LINE(M,y+6,W-M,y+6,C.rahmen);
+      [['Name',0],['Von',70],['Bis',95],['Pause',120],['NETTO',150]].forEach(([h,ox])=>{doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...C.grau);doc.text(h,M+ox+1,y+4.3);});y+=7;
+      wsMaPdf.forEach((t,idx)=>{
+        needPage(8);if(idx%2===1)RECT(M,y-1,cw,7,C.heller);LINE(M,y+6,W-M,y+6,C.rahmen);
+        [[FIT(t.name,66,9,true),0,true,C.dunkel],[t.von||'--',70,false,C.dunkel],[t.bis||'--',95,false,C.dunkel],[(t.pause||0)+' min',120,false,C.grau],[(t.nettoArbeit||'--')+'h',150,true,C.wsgrau]
+        ].forEach(([v,ox,b,c])=>{doc.setFont('helvetica',b?'bold':'normal');doc.setFontSize(9);doc.setTextColor(...c);doc.text(clean(String(v)),M+ox+1,y+4.5);});
+        y+=7;
+      });y+=3;
+    }
     LINE(M,y,W-M,y,C.rahmen);y+=7;
-    if(report.taetigkeit_text){T(isWS?'ARBEITEN':'TAETIGKEITSBERICHT',M,y,9,true,hCol);y+=6;const tL=W2(report.taetigkeit_text,M,y,cw,10,C.dunkel);y+=tL*5+5;}
-    if(report.besonder){LINE(M,y,W-M,y,C.rahmen);y+=5;T(isWS?'MAENGEL':'BESONDERHEITEN',M,y,9,true,C.rot);y+=5;W2(report.besonder,M,y,cw,9,C.dunkel);y+=8;}
+    if(report.taetigkeit_text){needPage(16);T(isWS?'ARBEITEN':'TAETIGKEITSBERICHT',M,y,9,true,hCol);y+=6;WP(report.taetigkeit_text,M,cw,10,C.dunkel,5);y+=5;}
+    if(report.besonder){needPage(18);LINE(M,y,W-M,y,C.rahmen);y+=5;T(isWS?'MAENGEL':'BESONDERHEITEN',M,y,9,true,C.rot);y+=5;WP(report.besonder,M,cw,9,C.dunkel,4.5);y+=4;}
   }else{
     // VA
     const pLabel=getProjektLabel(report.projekt_id||report.projektNr||'');
-    doc.setFont('helvetica','bold');doc.setFontSize(16);doc.setTextColor(...C.dunkel);doc.text(clean(pLabel),M,y);y+=8;
-    if(report.baustelle){doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(...C.grau);doc.text(clean(report.baustelle),M,y);y+=6;}
+    const pLabelFit=FIT(pLabel,cw,16,true);doc.setFont('helvetica','bold');doc.setFontSize(16);doc.setTextColor(...C.dunkel);doc.text(pLabelFit,M,y);y+=8;
+    if(report.baustelle){const bsFit=FIT(report.baustelle,cw,10,false);doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(...C.grau);doc.text(bsFit,M,y);y+=6;}
 
     // ZUSATZ PROJEKTE im PDF
     const zp=report.zusatzProjekte||report.zusatz_projekte||[];
@@ -4630,12 +4646,12 @@ async function generatePDF(report){
     [['Bauherr',report.bauherr||'--'],['Bauleiter',report.bauleiter||'--'],['Projekt-Nr.',report.projektnr_intern||'--'],['Datum',fmtD(report.datum)]].forEach(([l,v],i)=>{
       const cx=M+(i%2)*(cw/2);const cy=y+Math.floor(i/2)*10;
       doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...C.hellgrau);doc.text(l,cx,cy);
-      doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...C.dunkel);doc.text(clean(v),cx,cy+5);
+      const vFit=FIT(v,cw/2-4,9,true);doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...C.dunkel);doc.text(vFit,cx,cy+5);
     });y+=22;
-    if(report.taetigkeiten?.length){RECT(M,y,cw,7,C.heller);LINE(M,y,W-M,y,C.rahmen);LINE(M,y+7,W-M,y+7,C.rahmen);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...C.grau);doc.text('Taetigkeiten: '+report.taetigkeiten.join(' | '),M+3,y+4.8);y+=11;}
+    if(report.taetigkeiten?.length){doc.setFont('helvetica','normal');doc.setFontSize(8);const taeL=doc.splitTextToSize(clean('Taetigkeiten: '+report.taetigkeiten.join(' | ')),cw-6);const taeH=3+taeL.length*4;RECT(M,y,cw,taeH,C.heller);LINE(M,y,W-M,y,C.rahmen);LINE(M,y+taeH,W-M,y+taeH,C.rahmen);doc.setTextColor(...C.grau);doc.text(taeL,M+3,y+4.8);y+=taeH+4;}
     RECT(M,y,cw,7,C.heller);LINE(M,y,W-M,y,C.rahmen);LINE(M,y+7,W-M,y+7,C.rahmen);
     doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...C.grau);
-    doc.text(clean((report.wetter||'--')+' - '+(report.temp||report.temperatur||'--')+'C - '+(report.nied||report.nied_mm||0)+'mm - Boden: '+(report.boden||'--')),M+3,y+4.8);y+=12;
+    doc.text(FIT((report.wetter||'--')+' - '+(report.temp||report.temperatur||'--')+'C - '+(report.nied||report.nied_mm||0)+'mm - Boden: '+(report.boden||'--'),cw-6,8,false),M+3,y+4.8);y+=12;
 
     const zRows=(report.zeitRows||report.zeit_rows||[]).filter(t=>t.name);
     if(zRows.length){
@@ -4645,16 +4661,17 @@ async function generatePDF(report){
       RECT(M,y,cw,6,C.heller);LINE(M,y,W-M,y,C.rahmen);LINE(M,y+6,W-M,y+6,C.rahmen);
       [['Name',0],['Qual.',26],['Von',45],['Bis',58],['Pause',71],['Arbeit',86],['Fahrt',103],['Fahrzt.',121],['Anteil',138],['GESAMT',158]].forEach(([h,ox])=>{doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...C.grau);doc.text(h,M+ox,y+4.2);});y+=7;
       zRows.forEach((t,idx)=>{
-        needPage(8);if(idx%2===0)RECT(M,y-1,cw,7,C.heller);LINE(M,y+6,W-M,y+6,C.rahmen);
+        const zrH=t.tae?10:7;
+        needPage(zrH+1);if(idx%2===0)RECT(M,y-1,cw,zrH,C.heller);LINE(M,y+zrH-1,W-M,y+zrH-1,C.rahmen);
         const fl2={'fahrer':'Fahrer','beifahrer':'Beifahrer','privat':'Privat'}[t.fahrt||'fahrer'];
         const fc={'fahrer':C.blau,'beifahrer':C.orange,'privat':C.hellgrau}[t.fahrt||'fahrer'];
-        [[t.name,0,true,C.dunkel],[t.qual||'',26,false,C.grau],[t.von||'',45],[t.bis||'',58],
+        [[FIT(t.name,25,8,true),0,true,C.dunkel],[FIT(t.qual||'',18,8,false),26,false,C.grau],[t.von||'',45],[t.bis||'',58],
          [(t.pause||30)+'min',71,false,C.grau],[(t.nettoArbeit||'--')+'h',86,true,C.dunkel],
          [fl2,103,false,fc],[(t.fahrzeitMin||0)+'min',121,false,C.grau],
          [(t.fahrtAnteil||'0,00')+'h',138,false,fc],[(t.gesamt||t.nettoArbeit||'--')+'h',158,true,C.gruen]
         ].forEach(([v,ox,b,c])=>{doc.setFont('helvetica',b?'bold':'normal');doc.setFontSize(8);doc.setTextColor(...(c||C.dunkel));doc.text(clean(String(v||'')),M+ox,y+4.5);});
-        if(t.tae){doc.setFont('helvetica','italic');doc.setFontSize(7);doc.setTextColor(...C.grau);doc.text(clean(t.tae),M+2,y+7);}
-        y+=t.tae?9:7;
+        if(t.tae){const taeFit=FIT(t.tae,cw-6,7,false);doc.setFont('helvetica','italic');doc.setFontSize(7);doc.setTextColor(...C.grau);doc.text(taeFit,M+2,y+7.6);}
+        y+=zrH;
       });y+=3;LINE(M,y,W-M,y,C.rahmen);y+=7;
     }
 
@@ -4684,13 +4701,13 @@ async function generatePDF(report){
         needPage(20);RECT(M,y,cw,7,C.heller);LINE(M,y,W-M,y,C.rahmen);
         doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...C.gruen);doc.text(String(i+1)+'.',M+2,y+5);
         const sLabel=getProjektLabel(s.projektId||s.projektNr||'');
-        if(sLabel!=='--'){doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...C.dunkel);doc.text(clean(sLabel),M+12,y+5);}
+        if(sLabel!=='--'){const sFit=FIT(sLabel,s.pos?84:(s.menge?120:cw-18),8,false);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...C.dunkel);doc.text(sFit,M+12,y+5);}
         if(s.pos){doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...C.blau);doc.text('Pos. '+clean(s.pos),M+100,y+5);}
         if(s.menge){doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...C.gruen);doc.text(clean(s.menge+' '+(s.eh||'')),W-M-4,y+5,{align:'right'});}
         LINE(M,y+7,W-M,y+7,C.rahmen);y+=10;
-        if(s.leistung){doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...C.gruen);doc.text('Leistung: '+clean(s.leistung),M+3,y);y+=5;}
-        const lines=W2(s.txt,M+3,y,cw-6,9,C.dunkel);y+=lines*5+3;
-        if(s.mitarbeiter?.length){doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...C.grau);const maText='Mitarbeiter: '+s.mitarbeiter.map(m=>clean(m.name)+(m.stunden?' ('+m.stunden+'h)':'')).join(', ');const maLines=doc.splitTextToSize(maText,cw-6);doc.text(maLines,M+3,y);y+=maLines.length*4+2;}
+        if(s.leistung){WP('Leistung: '+s.leistung,M+3,cw-6,8,C.gruen,4.5,'bold');y+=0.5;}
+        WP(s.txt,M+3,cw-6,9,C.dunkel,5);y+=3;
+        if(s.mitarbeiter?.length){const maText='Mitarbeiter: '+s.mitarbeiter.map(m=>clean(m.name)+(m.stunden?' ('+m.stunden+'h)':'')).join(', ');WP(maText,M+3,cw-6,8,C.grau,4);y+=2;}
         LINE(M,y,W-M,y,[220,220,220]);y+=5;
       });
     }
@@ -4702,9 +4719,10 @@ async function generatePDF(report){
       [['Lieferant',0],['Liefer-Nr.',40],['Material',68],['Menge',122],['Status',144]].forEach(([h,ox])=>{doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...C.grau);doc.text(h,M+ox,y+4.2);});y+=7;
       liefs.forEach((l,idx)=>{
         needPage(8);if(idx%2===0)RECT(M,y-1,cw,7,C.heller);LINE(M,y+6,W-M,y+6,C.rahmen);
-        doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...C.dunkel);doc.text(clean(l.firma||'--'),M,y+4.5);
-        doc.setFont('helvetica','normal');doc.setTextColor(...C.grau);doc.text(clean(l.ls||'--'),M+40,y+4.5);
-        doc.setTextColor(...C.dunkel);doc.text(clean(l.mat||'--'),M+68,y+4.5);
+        doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...C.dunkel);doc.text(FIT(l.firma||'--',38,8,true),M,y+4.5);
+        const lsFit=FIT(l.ls||'--',26,8,false),matFit=FIT(l.mat||'--',52,8,false);
+        doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...C.grau);doc.text(lsFit,M+40,y+4.5);
+        doc.setTextColor(...C.dunkel);doc.text(matFit,M+68,y+4.5);
         doc.setFont('helvetica','bold');doc.setTextColor(...C.gruen);doc.text(clean((l.menge||'--')+' '+(l.eh||'')),M+122,y+4.5);
         const okCol=l.ok?.toLowerCase().includes('ok')?C.gruen:C.rot;
         doc.setFont('helvetica','normal');doc.setTextColor(...okCol);doc.text(clean(l.ok||''),M+144,y+4.5);y+=7;
@@ -4715,9 +4733,9 @@ async function generatePDF(report){
     if(maengel.length){
       needPage(20);RECT(M,y,cw,8,[255,245,245]);doc.setDrawColor(...C.rot);doc.setLineWidth(2);doc.line(M,y,M,y+8);doc.setLineWidth(0.3);
       doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...C.rot);doc.text('MAENGEL ('+maengel.length+')',M+5,y+5.5);LINE(M,y+8,W-M,y+8,C.rahmen);y+=12;
-      maengel.forEach(m=>{needPage(15);doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...C.rot);doc.text(clean((m.schwere||'')+' - '+(m.typ||'')),M,y);y+=5;const lines=W2(m.txt,M+3,y,cw-6,9,C.dunkel);y+=lines*5+2;if(m.massnahme){doc.setFont('helvetica','italic');doc.setFontSize(8);doc.setTextColor(...C.orange);doc.text('Massnahme: '+clean(m.massnahme),M+3,y);y+=5;}LINE(M,y,W-M,y,[230,200,200]);y+=4;});
+      maengel.forEach(m=>{needPage(15);doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...C.rot);doc.text(clean((m.schwere||'')+' - '+(m.typ||'')),M,y);y+=5;WP(m.txt,M+3,cw-6,9,C.dunkel,5);y+=2;if(m.massnahme){WP('Massnahme: '+m.massnahme,M+3,cw-6,8,C.orange,4.5,'italic');y+=0.5;}LINE(M,y,W-M,y,[230,200,200]);y+=4;});
     }
-    if(report.naechstes){needPage(15);T('NAECHSTE SCHRITTE',M,y,10,true,C.gruen);y+=6;const lines=W2(report.naechstes,M,y,cw,9,C.dunkel);y+=lines*5+4;}
+    if(report.naechstes){needPage(15);T('NAECHSTE SCHRITTE',M,y,10,true,C.gruen);y+=6;WP(report.naechstes,M,cw,9,C.dunkel,5);y+=4;}
 
     const fotos=fotoDataUrls.filter(Boolean);
     if(fotos.length>0){
@@ -4730,8 +4748,13 @@ async function generatePDF(report){
         doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...C.grau);doc.text('Foto '+(i+1),fx,rowY+fH+5);
         col++;if(col>=2)col=0;
       });
+      y=rowY+fH+10; // Unterkante der letzten Fotoreihe inkl. Beschriftung
     }
   }
+
+  // Unterschriftsblock (Bild ab 253 mm, Linie bei 270 mm) darf nie auf Inhalt liegen:
+  // Reicht der Inhalt der letzten Seite in diesen Bereich, kommen die Unterschriften auf eine neue Seite.
+  if(y>250){doc.addPage();y=M;T('UNTERSCHRIFTEN',M,y+4,10,true,hCol);T(typ+' vom '+fmtDWd(report.datum),M,y+10,8,false,C.grau);}
 
   // FOOTER + UNTERSCHRIFT
   const pageCount=doc.getNumberOfPages();
@@ -4849,6 +4872,7 @@ function loadReport(id){
     const wk=document.getElementById('ws-kat');if(wk)wk.value=wKat;
     const wp=document.getElementById('ws-projekt');if(wp){wp.innerHTML=projektOptsByKat(wKat,r.projekt_id||'');wp.value=r.projekt_id||'';}
     const wp2=document.getElementById('ws-pause');if(wp2)wp2.value=r.pause_min||30;
+    clearWSMaRows();wsWeitereMA(r).forEach(function(t){addWSMaRow({name:t.name,von:t.von,bis:t.bis,pause:t.pause});});
     document.querySelectorAll('#ws-taetigkeiten-tags .tg').forEach(t=>t.classList.toggle('a',(r.taetigkeiten||[]).includes(t.textContent)));
     calcWS();showTab('quick');
   }else if(r.rolle==='ar'){
@@ -5126,6 +5150,8 @@ function getVATaetigkeiten(){return[...document.querySelectorAll('#va-taetigkeit
 function getWSTaetigkeiten(){return[...document.querySelectorAll('#ws-taetigkeiten-tags .tg.a')].map(t=>t.textContent);}
 function todayStr(){return new Date().toISOString().split('T')[0];}
 function fmtD(d){if(!d)return'--';const p=String(d).split('-');return p.length===3?p[2]+'.'+p[1]+'.'+p[0]:d;}
+// Datum mit Wochentag fuer den PDF-Kopf, z.B. "Montag, 05.10.2026". Faellt bei unbekanntem Format auf fmtD zurueck.
+function fmtDWd(d){if(!d)return'--';const p=String(d).substring(0,10).split('-');if(p.length!==3)return fmtD(d);const dt=new Date(parseInt(p[0],10),parseInt(p[1],10)-1,parseInt(p[2],10));if(isNaN(dt.getTime()))return fmtD(d);const WT=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];return WT[dt.getDay()]+', '+p[2]+'.'+p[1]+'.'+p[0];}
 function dlFile(name,content,type){const b=new Blob([content],{type});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=name;a.click();URL.revokeObjectURL(u);}
 function toast(msg,type='ok'){const el=document.getElementById('toast');el.textContent=msg;el.className='toast '+type+' show';setTimeout(()=>el.classList.remove('show'),3000);}
 function updateSBDate(){const el=document.getElementById('sb-date');if(el)el.textContent=new Date().toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});}
@@ -5156,27 +5182,7 @@ function handleFotos(input){
 function removeFoto(idx){fotoDataUrls[idx]=null;const p=document.getElementById('foto-prev-'+idx);if(p)p.remove();const c=fotoDataUrls.filter(Boolean).length;const el=document.getElementById('v-fotos-count');if(el)el.textContent=c>0?c+' Fotos':'Keine Fotos';}
 function clearFotos(){fotoDataUrls=[];const p=document.getElementById('v-fotos-preview');if(p)p.innerHTML='';const c=document.getElementById('v-fotos-count');if(c)c.textContent='Keine Fotos';const i=document.getElementById('v-fotos-input');if(i)i.value='';}
 
-// ══════ VOICE ══════
-function startVoice(targetId,label){
-  const el=document.getElementById(targetId);if(!el)return;
-  if(voiceActive&&voiceTarget===targetId){stopVoice();return;}
-  if(voiceActive)stopVoice();
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){toast('Spracheingabe: Chrome oder Safari 15+ noetig','err');return;}
-  voiceTarget=targetId;voiceActive=true;
-  recognition=new SR();recognition.lang='de-DE';recognition.continuous=true;recognition.interimResults=true;
-  const existing=el.value?el.value.trim()+' ':'';let addedFinal='',lastSaved='';
-  showVoiceBanner(label);highlightMicBtn(targetId,true);
-  recognition.onresult=(e)=>{let nf='',it='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)nf+=e.results[i][0].transcript+' ';else it+=e.results[i][0].transcript;}if(nf){addedFinal+=nf;lastSaved=addedFinal;}el.value=(existing+addedFinal+(it?'('+it+')':'')).trim();};
-  recognition.onend=()=>{el.value=(existing+(lastSaved||addedFinal)).trim();voiceActive=false;hideVoiceBanner();highlightMicBtn(targetId,false);recognition=null;};
-  recognition.onerror=(e)=>{if(e.error==='not-allowed')toast('Mikrofon verweigert','err');stopVoice();};
-  try{recognition.start();}catch(e){stopVoice();}
-}
-function stopVoice(){voiceActive=false;if(recognition){try{recognition.stop();}catch(e){}recognition=null;}hideVoiceBanner();document.querySelectorAll('.mic-btn').forEach(b=>b.classList.remove('on'));voiceTarget=null;}
-function showVoiceBanner(label){let bar=document.getElementById('vbar-global');if(!bar){bar=document.createElement('div');bar.id='vbar-global';bar.className='vbar';bar.innerHTML='<div class="vwave"><span></span><span></span><span></span><span></span><span></span></div><div class="vbar-lbl" id="vbar-lbl-text">Spracheingabe...</div><button class="vbar-stop" ontouchstart="stopVoice()" onclick="stopVoice()">STOP</button>';const content=document.getElementById('main-content');if(content)content.prepend(bar);}bar.classList.add('on');const lbl=document.getElementById('vbar-lbl-text');if(lbl)lbl.textContent=label+' - sprechen...';}
-function hideVoiceBanner(){const bar=document.getElementById('vbar-global');if(bar)bar.classList.remove('on');}
-function highlightMicBtn(targetId,on){document.querySelectorAll('.mic-btn').forEach(b=>b.classList.remove('on'));if(on){const btn=document.querySelector('[data-mic="'+targetId+'"]');if(btn)btn.classList.add('on');}}
-function mkMic(targetId,label){return'<button class="mic-btn" data-mic="'+targetId+'" ontouchstart="event.preventDefault();startVoice(\''+targetId+'\',\''+label+'\')" onclick="startVoice(\''+targetId+'\',\''+label+'\')">&#127908; '+label+'</button>';}
+// Spracheingabe entfernt (TEIL D Punkt 1): keine Web-Speech-API, kommt erst mit selbst gehostetem Whisper.
 
 // ══════ WERKSTATT-REDESIGN (wsd) ══════
 // Aktiviert das neue Werkstatt-Design ueber die Body-Klasse 'wsd'.
@@ -5278,24 +5284,115 @@ function buildWS(){
     '<div class="fg"><label>Ende</label><input type="time" id="ws-bis" value="16:30" oninput="calcWS()"></div>'+
     '<div class="fg"><label>Pause</label><select id="ws-pause" onchange="calcWS()">'+PAUSEN.map(p=>'<option value="'+p+'" '+(p===60?'selected':'')+'>'+p+' min</option>').join('')+'</select></div>'+
     '<div class="fg wsd-nettocol"><label>Netto gesamt</label><div class="wsd-nettobox"><input type="text" id="ws-netto" readonly><span>h</span></div></div>'+
-    '</div></div>'+
+    '</div>'+
+    '<div id="ws-ma-rows"></div>'+
+    '<div class="wsd-gap"><button class="btn" ontouchstart="addWSMaRowBtn()" onclick="addWSMaRowBtn()">+ Mitarbeiter hinzufuegen</button></div>'+
+    '<div class="wsd-mahint" id="ws-ma-hint" style="display:none">Die Zeiten oben gelten fuer dich selbst. Weitere Mitarbeiter in der Werkstatt hier mit ihren eigenen Zeiten eintragen.</div>'+
+    '</div>'+
     '<div class="qsec"><div class="wsd-trow"><div class="qsec-t">Taetigkeiten</div><span class="wsd-hint">Mehrfachauswahl</span></div>'+
     '<div class="tags" id="ws-taetigkeiten-tags">'+taetigkeitenTags([],TAETIGKEITEN_WS)+'</div></div>'+
     '<div class="qsec"><div class="qsec-t">Details</div>'+
     '<div class="fg"><label>Beschreibung der Arbeiten</label>'+
-    '<textarea id="ws-taetigkeit" placeholder="Was wurde gemacht?"></textarea></div>'+mkMic('ws-taetigkeit','Arbeiten')+
+    '<textarea id="ws-taetigkeit" placeholder="Was wurde gemacht?"></textarea></div>'+
     '<div class="fg wsd-gap"><label>Festgestellte Maengel</label>'+
-    '<input type="text" id="ws-maengel" placeholder="Optional"></div>'+mkMic('ws-maengel','Maengel')+
+    '<input type="text" id="ws-maengel" placeholder="Optional"></div>'+
     '</div>'+
     '<div class="wsd-footer"><div class="send-status" id="ws-send-status"></div><span class="wsd-fsp"></span>'+
     '<button class="btn" ontouchstart="clearWSForm()" onclick="clearWSForm()">Neu</button>'+
     '<button class="btn btn-p" ontouchstart="saveAndSendWS()" onclick="saveAndSendWS()">Speichern und PDF senden</button></div>'+
     '</div>';
 }
+// ── Werkstatt: weitere Mitarbeiter (optional) ──
+// Standard = keine Zeile. Erst "+ Mitarbeiter hinzufuegen" blendet eine Zeile ein.
+// Gespeichert wird in berichte.zeit_rows (wie beim VA): Zeile 1 = Erfasser selbst, danach die weiteren.
+let _wsMaTap=0;
+function addWSMaRowBtn(){
+  // ontouchstart + onclick feuern auf dem iPad beide -> zweiten Aufruf innerhalb 600 ms ignorieren
+  const jetzt=Date.now();if(jetzt-_wsMaTap<600)return;_wsMaTap=jetzt;
+  addWSMaRow();
+}
+function wsMaNetto(von,bis,pause){
+  if(!von||!bis||von.indexOf(':')<0||bis.indexOf(':')<0)return'';
+  const v=von.split(':').map(Number),b=bis.split(':').map(Number);
+  let wm=(b[0]*60+b[1])-(v[0]*60+v[1])-(parseFloat(pause)||0);
+  if(wm<0)wm+=1440;
+  return (wm/60).toFixed(2).replace('.',',');
+}
+function calcWSMaRow(el){
+  const row=el.closest('.wsd-marow');if(!row)return;
+  const n=row.querySelector('.wsm-netto');
+  if(n)n.value=wsMaNetto(row.querySelector('.wsm-von').value,row.querySelector('.wsm-bis').value,row.querySelector('.wsm-pause').value);
+}
+function addWSMaRow(data){
+  data=data||{};
+  const box=document.getElementById('ws-ma-rows');if(!box)return;
+  const gv=function(id,fb){const el=document.getElementById(id);return (el&&el.value)?el.value:fb;};
+  const von=data.von||gv('ws-von','06:30'),bis=data.bis||gv('ws-bis','16:30');
+  const pause=parseInt(data.pause!=null&&data.pause!==''?data.pause:gv('ws-pause','60'),10);
+  const div=document.createElement('div');div.className='wsd-marow';
+  div.innerHTML=
+    '<div class="fg"><label>Mitarbeiter</label><select class="wsm-name">'+maRowOpts(data.name||'')+'</select></div>'+
+    '<div class="fg"><label>Beginn</label><input type="time" class="wsm-von" value="'+_dfEsc(von)+'" oninput="calcWSMaRow(this)"></div>'+
+    '<div class="fg"><label>Ende</label><input type="time" class="wsm-bis" value="'+_dfEsc(bis)+'" oninput="calcWSMaRow(this)"></div>'+
+    '<div class="fg"><label>Pause</label><select class="wsm-pause" onchange="calcWSMaRow(this)">'+PAUSEN.map(function(p){return '<option value="'+p+'" '+(p===pause?'selected':'')+'>'+p+' min</option>';}).join('')+'</select></div>'+
+    '<div class="fg"><label>Netto (h)</label><input type="text" class="wsm-netto" readonly></div>'+
+    '<button class="btn" ontouchstart="removeWSMaRow(this)" onclick="removeWSMaRow(this)">Entfernen</button>';
+  box.appendChild(div);
+  calcWSMaRow(div.querySelector('.wsm-von'));
+  const hint=document.getElementById('ws-ma-hint');if(hint)hint.style.display='block';
+}
+function removeWSMaRow(btn){
+  const row=btn.closest('.wsd-marow');if(row&&row.parentNode)row.parentNode.removeChild(row);
+  const box=document.getElementById('ws-ma-rows');const hint=document.getElementById('ws-ma-hint');
+  if(hint&&box&&!box.children.length)hint.style.display='none';
+}
+function clearWSMaRows(){
+  const box=document.getElementById('ws-ma-rows');if(box)box.innerHTML='';
+  const hint=document.getElementById('ws-ma-hint');if(hint)hint.style.display='none';
+}
+function getWSMaRows(){
+  return [].slice.call(document.querySelectorAll('#ws-ma-rows .wsd-marow')).map(function(row){
+    return {name:row.querySelector('.wsm-name').value||'',von:row.querySelector('.wsm-von').value||'',bis:row.querySelector('.wsm-bis').value||'',
+      pause:row.querySelector('.wsm-pause').value||'0',netto:row.querySelector('.wsm-netto').value||''};
+  });
+}
+// Prueft die Zusatz-Zeilen. Liefert Fehlertext oder '' (reine Funktion, testbar).
+function wsMaPruefe(rows,eigenerName){
+  const gesehen={};
+  for(let i=0;i<rows.length;i++){
+    const r=rows[i];const key=_dfNorm(r.name);
+    if(!key)return 'Zeile '+(i+1)+': bitte Mitarbeiter auswaehlen oder die Zeile entfernen';
+    if(key===_dfNorm(eigenerName))return 'Zeile '+(i+1)+': du selbst bist schon ueber die Arbeitszeiten oben erfasst';
+    if(gesehen[key])return 'Zeile '+(i+1)+': '+r.name+' ist doppelt eingetragen';
+    gesehen[key]=true;
+    if(!r.von||!r.bis)return 'Zeile '+(i+1)+': Beginn und Ende fehlen';
+  }
+  return '';
+}
+// Baut zeit_rows fuer den Werkstatt-Bericht (reine Funktion, testbar). Ohne Zusatz-Zeilen: leeres Array.
+function wsBaueZeitRows(rows,eigen,findMA){
+  if(!rows.length)return [];
+  const mk=function(name,qual,von,bis,pause,netto,nr){
+    return {name:name,qual:qual||'',von:von,bis:bis,pause:String(pause),nettoArbeit:netto,fahrt:'fahrer',fahrzeitMin:'0',fahrtAnteil:'0,00',gesamt:netto,
+      projektNr:eigen.projektNr||'',projektId:eigen.projektId||'',tae:'',personalNr:(nr!=null?String(nr):'')};
+  };
+  const out=[mk(eigen.name,eigen.qual,eigen.von,eigen.bis,eigen.pause,eigen.netto,eigen.nr)];
+  rows.forEach(function(r){
+    const hit=findMA(r.name);
+    out.push(mk(r.name,hit?hit.qualifikation:'',r.von,r.bis,r.pause,r.netto,hit?hit.mitarbeiter_nr:null));
+  });
+  return out;
+}
+// Zusatz-Mitarbeiter eines gespeicherten Werkstatt-Berichts (alles ausser der eigenen Zeile).
+function wsWeitereMA(r){
+  const eig=_dfNorm(r.mitarbeiter_name||r.name||'');
+  const zr=r.zeitRows||r.zeit_rows;
+  return (Array.isArray(zr)?zr:[]).filter(function(t){return t&&t.name&&_dfNorm(t.name)!==eig;});
+}
 function initWSForm(){const nEl=document.getElementById('ws-name');if(nEl)nEl.value=currentUser.name;const dEl=document.getElementById('ws-datum');if(dEl)dEl.value=todayStr();calcWS();}
 function onWSKatChange(){const kat=document.getElementById('ws-kat')?.value||'bau';const sel=document.getElementById('ws-projekt');if(sel)sel.innerHTML=projektOptsByKat(kat,'');}
 function calcWS(){const v=document.getElementById('ws-von')?.value,b=document.getElementById('ws-bis')?.value,p=parseFloat(document.getElementById('ws-pause')?.value)||0;if(v&&b){const[vh,vm]=v.split(':').map(Number),[bh,bm]=b.split(':').map(Number);let wm=(bh*60+bm)-(vh*60+vm)-p;if(wm<0)wm+=1440;const el=document.getElementById('ws-netto');if(el)el.value=(wm/60).toFixed(2).replace('.',',');}}
-function clearWSForm(skipConfirm){if(!skipConfirm&&!confirm('Neuen Bericht beginnen? Nicht gespeicherte Eingaben gehen verloren.'))return;currentId=null;stopVoice();const dEl=document.getElementById('ws-datum');if(dEl)dEl.value=todayStr();['ws-taetigkeit','ws-maengel'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const netto=document.getElementById('ws-netto');if(netto)netto.value='';const fzSel=document.getElementById('ws-fahrzeug');if(fzSel)fzSel.value='';const st=document.getElementById('ws-send-status');if(st){st.className='send-status';st.textContent='';}const wli=document.getElementById('wsd-lastinfo');if(wli)wli.textContent='';document.querySelectorAll('#ws-taetigkeiten-tags .tg').forEach(t=>t.classList.remove('a'));document.getElementById('ws-von').value='06:30';document.getElementById('ws-bis').value='16:30';document.getElementById('ws-pause').value='60';calcWS();toast('Neuer Werkstatt-Bericht','ok');}
+function clearWSForm(skipConfirm){if(!skipConfirm&&!confirm('Neuen Bericht beginnen? Nicht gespeicherte Eingaben gehen verloren.'))return;currentId=null;const dEl=document.getElementById('ws-datum');if(dEl)dEl.value=todayStr();['ws-taetigkeit','ws-maengel'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const netto=document.getElementById('ws-netto');if(netto)netto.value='';const fzSel=document.getElementById('ws-fahrzeug');if(fzSel)fzSel.value='';const st=document.getElementById('ws-send-status');if(st){st.className='send-status';st.textContent='';}const wli=document.getElementById('wsd-lastinfo');if(wli)wli.textContent='';document.querySelectorAll('#ws-taetigkeiten-tags .tg').forEach(t=>t.classList.remove('a'));document.getElementById('ws-von').value='06:30';document.getElementById('ws-bis').value='16:30';document.getElementById('ws-pause').value='60';calcWS();clearWSMaRows();toast('Neuer Werkstatt-Bericht','ok');}
 
 function buildFZListe(){
   const el=document.getElementById('fzliste-content');if(!el)return;
@@ -5350,8 +5447,8 @@ function buildAR(){
     '<div class="sc"><div class="sv" id="a-h-monat">-</div><div class="sl">Monat</div></div>'+
     '</div></div>'+
     '<div class="qsec"><div class="qsec-t">Details (optional)</div>'+
-    '<textarea id="a-taetigkeit" placeholder="Weitere Details..." style="min-height:60px"></textarea>'+mkMic('a-taetigkeit','Details')+
-    '<div style="margin-top:8px"><input type="text" id="a-besonder" placeholder="Besonderheiten...">'+mkMic('a-besonder','Besonderheiten')+'</div></div>'+
+    '<textarea id="a-taetigkeit" placeholder="Weitere Details..." style="min-height:60px"></textarea>'+
+    '<div style="margin-top:8px"><input type="text" id="a-besonder" placeholder="Besonderheiten...">'+'</div></div>'+
     '<div class="send-status" id="ar-send-status"></div>'+
     '<div class="arow"><button class="btn btn-p" ontouchstart="saveAndSendAR()" onclick="saveAndSendAR()">Speichern und PDF senden</button>'+
     '<button class="btn" ontouchstart="clearARForm()" onclick="clearARForm()">Neu</button></div>';
@@ -5387,7 +5484,7 @@ function calcAR(){
     const mEl=document.getElementById('a-h-monat');if(mEl)mEl.textContent=hM.toFixed(1)+'h';
   }
 }
-function clearARForm(skipConfirm){if(!skipConfirm&&!confirm('Neuen Bericht beginnen? Nicht gespeicherte Eingaben gehen verloren.'))return;currentId=null;stopVoice();document.getElementById('a-datum').value=todayStr();document.getElementById('a-projekt').value='';document.getElementById('a-von').value='06:30';document.getElementById('a-bis').value='16:30';document.getElementById('a-pause').value='60';['a-netto-work','a-netto','a-taetigkeit','a-besonder'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const fa=document.getElementById('a-fahrzeit-anzeige');if(fa)fa.value='0 min';const fi=document.getElementById('fahrzeit-info');if(fi)fi.textContent='';const st=document.getElementById('ar-send-status');if(st){st.className='send-status';st.textContent='';}curFahrtStatus='fahrer';document.querySelectorAll('.fahrt-btn').forEach(b=>{b.classList.remove('fahrt-active');if(b.dataset.val==='fahrer')b.classList.add('fahrt-active');});document.querySelectorAll('#ar-taetigkeiten-tags .tg').forEach(t=>t.classList.remove('a'));toast('Neuer Bericht','ok');}
+function clearARForm(skipConfirm){if(!skipConfirm&&!confirm('Neuen Bericht beginnen? Nicht gespeicherte Eingaben gehen verloren.'))return;currentId=null;document.getElementById('a-datum').value=todayStr();document.getElementById('a-projekt').value='';document.getElementById('a-von').value='06:30';document.getElementById('a-bis').value='16:30';document.getElementById('a-pause').value='60';['a-netto-work','a-netto','a-taetigkeit','a-besonder'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const fa=document.getElementById('a-fahrzeit-anzeige');if(fa)fa.value='0 min';const fi=document.getElementById('fahrzeit-info');if(fi)fi.textContent='';const st=document.getElementById('ar-send-status');if(st){st.className='send-status';st.textContent='';}curFahrtStatus='fahrer';document.querySelectorAll('.fahrt-btn').forEach(b=>{b.classList.remove('fahrt-active');if(b.dataset.val==='fahrer')b.classList.add('fahrt-active');});document.querySelectorAll('#ar-taetigkeiten-tags .tg').forEach(t=>t.classList.remove('a'));toast('Neuer Bericht','ok');}
 
 // ══════ VA FORMS ══════
 function buildVABericht(){
@@ -5398,8 +5495,8 @@ function buildVABericht(){
     '<div class="fg w25"><label>Temperatur (C)</label><input type="number" id="v-temp" placeholder="18"></div>'+
     '<div class="fg w50"><label>Bereich</label>'+katSelectHTML('v-kat','onVAKatChange()','bau')+'</div>'+
     '<div class="fg w50"><label>Hauptprojekt / Baustelle</label><select id="v-projekt" onchange="onVAProjektChange()">'+projektOptsByKat('bau','')+'</select></div>'+
-    '<div class="fg w50"><label>Bereich / Detail</label><input type="text" id="v-baustelle" placeholder="z.B. Bereich Nord...">'+mkMic('v-baustelle','Baustelle')+'</div>'+
-    '<div class="fg w50"><label>Bauherr / AG</label><input type="text" id="v-bauherr" placeholder="Gemeinde...">'+mkMic('v-bauherr','Bauherr')+'</div>'+
+    '<div class="fg w50"><label>Bereich / Detail</label><input type="text" id="v-baustelle" placeholder="z.B. Bereich Nord...">'+'</div>'+
+    '<div class="fg w50"><label>Bauherr / AG</label><input type="text" id="v-bauherr" placeholder="Gemeinde...">'+'</div>'+
     '<div class="fg w33"><label>Niederschlag (mm)</label><input type="number" id="v-nied" placeholder="0"></div>'+
     '<div class="fg w33"><label>Besucher</label><input type="text" id="v-besucher"></div>'+
     '<div class="fg w33"><label>Bodenzustand</label><select id="v-boden"><option>Trocken</option><option>Feucht</option><option>Nass</option><option>Gefroren</option><option>Wassersaettigung</option></select></div>'+
@@ -5430,9 +5527,9 @@ function buildVABericht(){
     '<div id="mangel-con"></div>'+
     '<button class="btn btn-r" style="font-size:11px" ontouchstart="addMangel()" onclick="addMangel()">+ Mangel</button>'+
     '<div class="fg" style="margin-top:10px"><label>Naechste Schritte</label>'+
-    '<textarea id="v-naechstes" placeholder="Geplante Folgearbeiten..."></textarea>'+mkMic('v-naechstes','Naechste Schritte')+'</div>'+
+    '<textarea id="v-naechstes" placeholder="Geplante Folgearbeiten..."></textarea>'+'</div>'+
     '<div class="fg" style="margin-top:8px"><label>Bemerkungen</label>'+
-    '<textarea id="v-bemerkungen"></textarea>'+mkMic('v-bemerkungen','Bemerkungen')+'</div></div>'+
+    '<textarea id="v-bemerkungen"></textarea>'+'</div></div>'+
     '<div style="display:flex;align-items:center;gap:8px;margin:4px 2px"><span id="draft-indicator" style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);opacity:0.5;transition:opacity .3s">Entwurf wird automatisch gesichert</span></div>'+
     '<div class="send-status" id="va-send-status"></div>'+
     '<div class="arow">'+
@@ -5603,7 +5700,7 @@ function addStep(data={}){stepIdx++;const i=stepIdx;const maRows=getZeitRowsSimp
     '<select style="flex:1;min-width:140px;font-size:10px;background:var(--s3);border:1px solid var(--b);border-radius:3px;padding:3px 6px;color:var(--t)" id="st-pr-'+i+'" onchange="onStepProjektChange('+i+')">'+projektOptsByKat(stepKat,data.projektId||'')+'</select>'+
     '<input type="text" id="st-pos-'+i+'" placeholder="LV-Pos." style="flex:0 0 70px;font-size:10px" value="'+(data.pos||'')+'">'+
     '<button class="delbtn" ontouchstart="document.getElementById(\'step-'+i+'\').remove()" onclick="document.getElementById(\'step-'+i+'\').remove()">&#x2715;</button></div>'+
-    '<div id="st-lv-wrap-'+i+'"></div><div id="st-leist-wrap-'+i+'"></div><textarea id="st-txt-'+i+'" style="min-height:60px;margin-bottom:4px" placeholder="Taetigkeit beschreiben...">'+(data.txt||'')+'</textarea>'+mkMic('st-txt-'+i,'Schritt '+i)+'<div style="display:flex;gap:6px;margin-top:8px"><div class="fg"><label>Menge</label><input type="text" id="st-mg-'+i+'" value="'+(data.menge||'')+'" placeholder="200 m2"></div><div class="fg"><label>Einheit</label><input type="text" id="st-eh-'+i+'" value="'+(data.eh||'')+'" placeholder="m2, lfm"></div></div>'+maHtml;
+    '<div id="st-lv-wrap-'+i+'"></div><div id="st-leist-wrap-'+i+'"></div><textarea id="st-txt-'+i+'" style="min-height:60px;margin-bottom:4px" placeholder="Taetigkeit beschreiben...">'+(data.txt||'')+'</textarea>'+'<div style="display:flex;gap:6px;margin-top:8px"><div class="fg"><label>Menge</label><input type="text" id="st-mg-'+i+'" value="'+(data.menge||'')+'" placeholder="200 m2"></div><div class="fg"><label>Einheit</label><input type="text" id="st-eh-'+i+'" value="'+(data.eh||'')+'" placeholder="m2, lfm"></div></div>'+maHtml;
   document.getElementById('steps-con')?.appendChild(div);if(data.projektId)renderStepLeistung(i,data.leistung||'');renderStepLV(i,data.lvId||'',data.pos||'');updateMAOffen();}
 
 function onStepKatChange(i){const kat=document.getElementById('st-kat-'+i)?.value||'bau';const sel=document.getElementById('st-pr-'+i);if(sel)sel.innerHTML=projektOptsByKat(kat,'');const w=document.getElementById('st-leist-wrap-'+i);if(w)w.innerHTML='';const w3=document.getElementById('st-lv-wrap-'+i);if(w3)w3.innerHTML='';}
@@ -5715,13 +5812,13 @@ function updateMAOffen(){
 function refreshStepMAs(){const blocks=document.querySelectorAll('[id^="step-"]');if(!blocks.length)return;const maRows=getZeitRowsSimple();blocks.forEach(block=>{const idx=block.id.replace('step-','');let zone=block.querySelector('.ma-zuweisung');const noMA=block.querySelector('[data-no-ma]');const checked={};block.querySelectorAll('.ma-cb').forEach(cb=>{checked[cb.dataset.name]=cb.checked;});const stunden={};block.querySelectorAll('.ma-h').forEach(h=>{stunden[h.dataset.name]=h.value;});if(maRows.length===0){if(zone)zone.remove();if(!noMA){const msg=document.createElement('div');msg.setAttribute('data-no-ma','1');msg.style.cssText='font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-top:6px';msg.textContent='Erst Mitarbeiter im Tab Zeiten eintragen';block.appendChild(msg);}return;}if(noMA)noMA.remove();if(!zone){zone=document.createElement('div');zone.className='ma-zuweisung';block.appendChild(zone);}zone.innerHTML='<div class="ma-zuw-title">Mitarbeiter zuweisen</div>'+maRows.map(ma=>{const ic=checked[ma.name]||false;const h=stunden[ma.name]||'';return'<div class="ma-check-row"><input type="checkbox" class="ma-cb" data-name="'+ma.name+'" '+(ic?'checked':'')+' onchange="updateStepMA('+idx+')"><span class="ma-name-lbl">'+ma.name+'</span><span class="ma-budget" data-name="'+ma.name+'"></span><input type="number" class="ma-h" data-name="'+ma.name+'" value="'+h+'" placeholder="Std." min="0" step="0.5" style="opacity:'+(ic?'1':'0.4')+'" oninput="updateStepMA('+idx+')">';}).join('');});updateMAOffen();}
 function getStepMAs(idx){const block=document.getElementById('step-'+idx);if(!block)return[];const result=[];block.querySelectorAll('.ma-cb:checked').forEach(cb=>{const h=block.querySelector('.ma-h[data-name="'+cb.dataset.name+'"]');result.push({name:cb.dataset.name,stunden:h?.value||''});});return result;}
 function getSteps(){return[...document.querySelectorAll('[id^="step-"]')].filter(b=>b.id.match(/^step-\d+$/)).map(b=>{const i=b.id.replace('step-','');const pid=b.querySelector('#st-pr-'+i)?.value||'';return{txt:b.querySelector('#st-txt-'+i)?.value||'',projektId:pid,projektNr:PROJEKTE.find(p=>p.id===pid)?.nr||'',pos:b.querySelector('#st-pos-'+i)?.value||'',leistung:b.querySelector('#st-leist-'+i)?.value||'',menge:b.querySelector('#st-mg-'+i)?.value||'',eh:b.querySelector('#st-eh-'+i)?.value||'',lvId:b.querySelector('#st-lvid-'+i)?.value||'',mitarbeiter:getStepMAs(i)};}).filter(s=>s.txt||s.lvId);}
-function addLief(data={}){liefIdx++;const i=liefIdx;const div=document.createElement('div');div.className='lief-block';div.innerHTML='<div class="lief-head"><div class="lief-num" style="background:var(--earthg);border-color:var(--earth);color:var(--earth)">'+i+'</div><button class="delbtn" style="margin-left:auto" ontouchstart="this.closest(\'.lief-block\').remove()" onclick="this.closest(\'.lief-block\').remove()">&#x2715;</button></div><div class="row"><div class="fg w50"><label>Lieferant</label><input type="text" id="lf-firma-'+i+'" value="'+(data.firma||'')+'" placeholder="Muster GmbH..."></div><div class="fg w50"><label>Lieferschein-Nr.</label><input type="text" id="lf-ls-'+i+'" value="'+(data.ls||'')+'" placeholder="LS-001"></div><div class="fg w50"><label>Material</label><input type="text" id="lf-mat-'+i+'" placeholder="Rollrasen...">'+mkMic('lf-mat-'+i,'Material')+'</div><div class="fg w25"><label>Menge</label><input type="number" id="lf-mg-'+i+'" value="'+(data.menge||'')+'"></div><div class="fg w25"><label>Einheit</label><select id="lf-eh-'+i+'"><option>m2</option><option>m3</option><option>t</option><option>lfm</option><option>Stk</option><option>kg</option><option>l</option></select></div><div class="fg w50"><label>Status</label><select id="lf-ok-'+i+'"><option>OK</option><option>Teillieferung</option><option>Falsche Ware</option><option>Maengel</option><option>Verzug</option></select></div><div class="fg w50"><label>Bemerkung</label><input type="text" id="lf-bem-'+i+'" value="'+(data.bem||'')+'"></div></div>';document.getElementById('lief-con')?.appendChild(div);}
+function addLief(data={}){liefIdx++;const i=liefIdx;const div=document.createElement('div');div.className='lief-block';div.innerHTML='<div class="lief-head"><div class="lief-num" style="background:var(--earthg);border-color:var(--earth);color:var(--earth)">'+i+'</div><button class="delbtn" style="margin-left:auto" ontouchstart="this.closest(\'.lief-block\').remove()" onclick="this.closest(\'.lief-block\').remove()">&#x2715;</button></div><div class="row"><div class="fg w50"><label>Lieferant</label><input type="text" id="lf-firma-'+i+'" value="'+(data.firma||'')+'" placeholder="Muster GmbH..."></div><div class="fg w50"><label>Lieferschein-Nr.</label><input type="text" id="lf-ls-'+i+'" value="'+(data.ls||'')+'" placeholder="LS-001"></div><div class="fg w50"><label>Material</label><input type="text" id="lf-mat-'+i+'" placeholder="Rollrasen...">'+'</div><div class="fg w25"><label>Menge</label><input type="number" id="lf-mg-'+i+'" value="'+(data.menge||'')+'"></div><div class="fg w25"><label>Einheit</label><select id="lf-eh-'+i+'"><option>m2</option><option>m3</option><option>t</option><option>lfm</option><option>Stk</option><option>kg</option><option>l</option></select></div><div class="fg w50"><label>Status</label><select id="lf-ok-'+i+'"><option>OK</option><option>Teillieferung</option><option>Falsche Ware</option><option>Maengel</option><option>Verzug</option></select></div><div class="fg w50"><label>Bemerkung</label><input type="text" id="lf-bem-'+i+'" value="'+(data.bem||'')+'"></div></div>';document.getElementById('lief-con')?.appendChild(div);}
 function getLiefData(){return[...document.querySelectorAll('#lief-con .lief-block')].map((b,i)=>{const n=i+1;return{firma:b.querySelector('#lf-firma-'+n)?.value,ls:b.querySelector('#lf-ls-'+n)?.value,mat:b.querySelector('#lf-mat-'+n)?.value,menge:b.querySelector('#lf-mg-'+n)?.value,eh:b.querySelector('#lf-eh-'+n)?.value,ok:b.querySelector('#lf-ok-'+n)?.value,bem:b.querySelector('#lf-bem-'+n)?.value};}).filter(l=>l.firma||l.mat);}
 function addMenge(data={}){const div=document.createElement('div');div.className='lief-block';div.style.padding='8px';div.innerHTML='<div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap"><input type="text" placeholder="Bezeichnung" value="'+(data.bez||'')+'" style="flex:2;min-width:100px"><input type="number" placeholder="Menge" value="'+(data.menge||'')+'" style="flex:0 0 75px"><select style="flex:0 0 65px;font-size:10px"><option>m2</option><option>m3</option><option>t</option><option>lfm</option><option>Stk</option><option>kg</option></select><input type="text" placeholder="LV-Pos." value="'+(data.pos||'')+'" style="flex:0 0 80px;font-family:\'IBM Plex Mono\',monospace;font-size:10px"><button class="delbtn" ontouchstart="this.closest(\'.lief-block\').remove()" onclick="this.closest(\'.lief-block\').remove()">&#x2715;</button></div>';document.getElementById('mengen-con')?.appendChild(div);}
 function getMengen(){return[...document.querySelectorAll('#mengen-con .lief-block')].map(b=>{const is=b.querySelectorAll('input'),se=b.querySelector('select');return{bez:is[0]?.value,menge:is[1]?.value,eh:se?.value,pos:is[2]?.value};}).filter(m=>m.bez);}
 function addLVRow(data={}){const tbody=document.getElementById('lv-body');if(!tbody)return;const tr=document.createElement('tr');const rowKat=data.projektId?getProjektKat(data.projektId):currentVAKat();const prOpts=rowProjektOpts(rowKat,data.projektId||'');tr.innerHTML='<td><input type="text" value="'+(data.pos||'')+'" placeholder="03.02.01" style="width:75px;font-family:\'IBM Plex Mono\',monospace;font-size:10px"></td><td><input type="text" value="'+(data.bez||'')+'" placeholder="Bezeichnung" style="min-width:110px"></td><td><select style="font-size:10px"><option>m2</option><option>m3</option><option>t</option><option>lfm</option><option>Stk</option><option>h</option></select></td><td><input type="number" value="'+(data.soll||'')+'" placeholder="0" style="width:60px"></td><td><input type="number" value="'+(data.ist||'')+'" placeholder="0" style="width:60px;color:var(--gl);font-weight:700"></td><td><select class="row-pr" data-kat="'+rowKat+'" style="font-size:9px;min-width:70px">'+prOpts+'</select></td><td><button class="delbtn" ontouchstart="this.closest(\'tr\').remove()" onclick="this.closest(\'tr\').remove()">&#x2715;</button></td>';tbody.appendChild(tr);}
 function getLVRows(){return[...document.querySelectorAll('#lv-body tr')].map(tr=>{const is=tr.querySelectorAll('input'),ss=tr.querySelectorAll('select');return{pos:is[0]?.value,bez:is[1]?.value,eh:ss[0]?.value,soll:is[2]?.value,ist:is[3]?.value,projektId:ss[1]?.value};}).filter(r=>r.pos||r.bez);}
-function addMangel(data={}){mangelIdx++;const i=mangelIdx;const div=document.createElement('div');div.className='mangel-block';div.innerHTML='<div style="display:flex;gap:8px;align-items:flex-start"><div style="flex:1"><div style="display:flex;gap:5px;margin-bottom:6px"><select style="font-size:10px;border-color:rgba(196,72,40,.3);background:var(--s1)"><option>Mangel (Material)</option><option>Mangel (Ausfuehrung)</option><option>Behinderung</option><option>Lieferverzug</option><option>Sicherheit</option></select><select style="font-size:10px;border-color:rgba(196,72,40,.3);background:var(--s1)"><option>Mittel</option><option>Hoch</option><option>Niedrig</option></select></div><textarea id="mg-'+i+'" placeholder="Mangelbeschreibung..." style="min-height:50px;border-color:rgba(196,72,40,.25)">'+(data.txt||'')+'</textarea>'+mkMic('mg-'+i,'Mangel')+'<input type="text" placeholder="Massnahme / Verantwortlich" style="margin-top:6px;border-color:rgba(196,72,40,.2)" value="'+(data.massnahme||'')+'"></div><button class="delbtn" ontouchstart="this.closest(\'.mangel-block\').remove()" onclick="this.closest(\'.mangel-block\').remove()">&#x2715;</button></div>';document.getElementById('mangel-con')?.appendChild(div);}
+function addMangel(data={}){mangelIdx++;const i=mangelIdx;const div=document.createElement('div');div.className='mangel-block';div.innerHTML='<div style="display:flex;gap:8px;align-items:flex-start"><div style="flex:1"><div style="display:flex;gap:5px;margin-bottom:6px"><select style="font-size:10px;border-color:rgba(196,72,40,.3);background:var(--s1)"><option>Mangel (Material)</option><option>Mangel (Ausfuehrung)</option><option>Behinderung</option><option>Lieferverzug</option><option>Sicherheit</option></select><select style="font-size:10px;border-color:rgba(196,72,40,.3);background:var(--s1)"><option>Mittel</option><option>Hoch</option><option>Niedrig</option></select></div><textarea id="mg-'+i+'" placeholder="Mangelbeschreibung..." style="min-height:50px;border-color:rgba(196,72,40,.25)">'+(data.txt||'')+'</textarea>'+'<input type="text" placeholder="Massnahme / Verantwortlich" style="margin-top:6px;border-color:rgba(196,72,40,.2)" value="'+(data.massnahme||'')+'"></div><button class="delbtn" ontouchstart="this.closest(\'.mangel-block\').remove()" onclick="this.closest(\'.mangel-block\').remove()">&#x2715;</button></div>';document.getElementById('mangel-con')?.appendChild(div);}
 function getMangelData(){return[...document.querySelectorAll('.mangel-block')].map(b=>{const sels=b.querySelectorAll('select'),ta=b.querySelector('textarea'),m=b.querySelector('input[type=text]');return{typ:sels[0]?.value,schwere:sels[1]?.value,txt:ta?.value,massnahme:m?.value};}).filter(m=>m.txt);}
 
 // ══════ KALENDER ══════
@@ -5763,7 +5860,7 @@ function newReport(skipConfirm){
   // Sicherheitsabfrage nur bei manueller Ausloesung (Button) — nach erfolgreichem
   // Senden wird newReport(true) aufgerufen und leert ohne Nachfrage.
   if(!skipConfirm&&!confirm('Neuen Bericht beginnen? Nicht gespeicherte Eingaben gehen verloren.'))return;
-  currentId=null;stopVoice();
+  currentId=null;
   if(currentRole==='arbeiter'){clearARForm(true);return;}
   if(currentRole==='werkstatt'){clearWSForm(true);return;}
   stepIdx=0;liefIdx=0;mangelIdx=0;zusatzProjektIdx=0;
@@ -5795,7 +5892,7 @@ function showTab(name){
   if(name==='zeit')setTimeout(updateSplitInfo,100);
   if(name==='kalender'){kalMonat=new Date().getMonth();kalJahr=new Date().getFullYear();buildKalender();}
   if(name==='fzliste')buildFZListe();
-  stopVoice();
+  
 }
 
 // ════════════════════════════════════════════════════════════
