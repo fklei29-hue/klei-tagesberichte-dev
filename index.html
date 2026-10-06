@@ -51,6 +51,52 @@ body{background:var(--bg);color:var(--t);font-family:'IBM Plex Sans',sans-serif;
 .menu-tile:active{border-color:var(--g);}
 .menu-tile-name{font-size:16px;font-weight:700;color:var(--c);}
 .menu-tile-sub{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--m);margin-top:4px;}
+/* ══ Terra-Suite-Branding: Kopfleiste Hauptmenue + Admin ══ */
+.ts-head{background:#1e3317;border-bottom:1px solid #16240f;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.ts-logo{height:30px;background:#fff;border-radius:6px;padding:4px 7px;display:block;}
+.ts-word{font-family:'IBM Plex Sans',sans-serif;font-size:15px;font-weight:700;color:#fff;letter-spacing:.2px;white-space:nowrap;}
+.ts-bereich{font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500;color:#a8c49e;padding-left:10px;border-left:1px solid rgba(255,255,255,.22);white-space:nowrap;}
+.ts-head .admin-badge{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);color:#cfe0c8;}
+.ts-user{font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#a8c49e;}
+.ts-head .hbtn,.ts-head .theme-btn{background:none;border:1px solid rgba(255,255,255,.22);border-radius:8px;color:#cfe0c8;font-family:'IBM Plex Sans',sans-serif;font-size:11.5px;font-weight:600;padding:6px 11px;}
+.ts-head .theme-btn{font-size:14px;padding:5px 10px;}
+/* Bereichs-Umschalter im Admin */
+.ab-seg{display:flex;gap:6px;padding:10px 16px;background:var(--s1);border-bottom:1px solid var(--b);overflow-x:auto;}
+.ab-seg-btn{background:var(--s3);border:1px solid var(--b);border-radius:999px;padding:8px 16px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;color:var(--m);cursor:pointer;white-space:nowrap;}
+.ab-seg-btn.act{background:#1e3317;border-color:#1e3317;color:#fff;}
+body:not(.theme-light) .ab-seg-btn.act{background:var(--g);border-color:var(--g);color:#0e1209;}
+/* Hauptmenue: Kacheln */
+.mk-wrap{width:100%;max-width:780px;}
+.mk-hallo{font-size:24px;font-weight:700;color:var(--c);letter-spacing:-.2px;line-height:1.2;}
+.mk-hallo-sub{font-size:13px;color:var(--m);margin-top:4px;margin-bottom:26px;}
+.mk-gruppe{font-size:12px;font-weight:700;color:var(--m);margin:0 0 10px 2px;}
+.mk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-bottom:26px;}
+.mk{display:flex;align-items:flex-start;gap:14px;background:var(--s2);border:1px solid var(--b);border-radius:14px;padding:16px;cursor:pointer;min-height:96px;}
+.mk:active{border-color:var(--g);transform:translateY(1px);}
+.mk-ic{flex:none;width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;}
+.mk-ic svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.mk-ic.f-g{background:var(--gg);color:var(--g);}
+.mk-ic.f-sky{background:var(--skyg);color:var(--sky);}
+.mk-ic.f-earth{background:var(--earthg);color:var(--earth);}
+.mk-ic.f-o{background:rgba(212,120,42,.13);color:var(--o);}
+.mk-tx{flex:1;min-width:0;}
+.mk-name{font-size:16px;font-weight:700;color:var(--c);}
+.mk-sub{font-size:12px;color:var(--m);margin-top:4px;line-height:1.45;}
+.mk-chev{flex:none;align-self:center;font-size:22px;color:var(--b);line-height:1;}
+/* Ansicht wechseln (Vollzugriff) */
+.mr-card{background:var(--s2);border:1px solid var(--b);border-radius:14px;padding:16px;margin-bottom:12px;}
+.mr-title{font-size:14px;font-weight:700;color:var(--c);}
+.mr-hint{font-size:11.5px;color:var(--m);line-height:1.5;margin-top:10px;}
+.mr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:12px;}
+.mr-btn{text-align:left;background:var(--s3);border:1px solid var(--b);border-radius:10px;padding:10px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;color:var(--t);}
+.mr-btn.act{background:var(--gg);border:1.5px solid var(--g);padding:9.5px 11.5px;}
+.mr-btn-n{display:block;font-size:13px;font-weight:700;color:var(--c);}
+.mr-btn-s{display:block;font-size:11px;color:var(--m);margin-top:2px;}
+.mr-btn.act .mr-btn-s{color:var(--gl);font-weight:600;}
+.mr-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.mr-row .mr-btn{flex:1;min-width:140px;}
+.mr-btn.warn.act{background:var(--rg);border-color:var(--r);}
+.mr-btn.warn.act .mr-btn-s{color:var(--r);}
 .az-card{background:var(--s3);border:1px solid var(--b);border-radius:6px;padding:12px;margin-bottom:8px;}
 .az-card-title{font-size:13px;font-weight:600;color:var(--c);}
 .az-card-sub{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--m);margin-top:2px;}
@@ -487,29 +533,32 @@ body.wsd .content .et{font-family:'IBM Plex Sans',sans-serif;color:var(--zMut2);
 </div>
 
 <div id="admin-screen">
-  <div class="admin-header">
-    <img src="https://www.klei-sportplatzbau.de/images/logos/KLEI_LOGO_FARBIG_RGB_72DPI.png" style="height:24px" alt="KLEI" onerror="this.style.display='none'">
+  <div class="ts-head">
+    <img src="https://www.klei-sportplatzbau.de/images/logos/KLEI_LOGO_FARBIG_RGB_72DPI.png" class="ts-logo" alt="KLEI" onerror="this.style.display='none'">
+    <span class="ts-word">Terra Suite</span>
+    <span class="ts-bereich" id="admin-bereich-name">Tagesberichte</span>
     <span class="admin-badge badge-admin">Admin</span>
-    <span id="admin-user-name" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--m)"></span>
+    <span id="admin-user-name" class="ts-user"></span>
     <button class="theme-btn" style="margin-left:auto" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
     <button class="hbtn" ontouchstart="openProfil()" onclick="openProfil()">Profil</button>
     <button class="hbtn menu-hbtn" style="display:none" ontouchstart="zumMenue()" onclick="zumMenue()">Menue</button>
     <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
   </div>
+  <div class="ab-seg" id="admin-bereiche"></div>
   <div class="admin-tabs">
-    <div class="admin-tab act" id="atab-frei" ontouchstart="showAdminTab('frei')" onclick="showAdminTab('frei')">Freigabe</div>
-    <div class="admin-tab" id="atab-ma" ontouchstart="showAdminTab('ma')" onclick="showAdminTab('ma')">Mitarbeiter</div>
-    <div class="admin-tab" id="atab-proj" ontouchstart="showAdminTab('proj')" onclick="showAdminTab('proj')">Projekte</div>
-    <div class="admin-tab" id="atab-fz" ontouchstart="showAdminTab('fz')" onclick="showAdminTab('fz')">Fahrzeuge</div>
-    <div class="admin-tab" id="atab-email" ontouchstart="showAdminTab('email')" onclick="showAdminTab('email')">E-Mail</div>
-    <div class="admin-tab" id="atab-ber" ontouchstart="showAdminTab('ber')" onclick="showAdminTab('ber')">Berichte</div>
-    <div class="admin-tab" id="atab-abg" ontouchstart="showAdminTab('abg')" onclick="showAdminTab('abg')">Abgabe</div>
-    <div class="admin-tab" id="atab-ausw" ontouchstart="showAdminTab('ausw')" onclick="showAdminTab('ausw')">Auswertung</div>
-    <div class="admin-tab" id="atab-pfl" ontouchstart="showAdminTab('pfl')" onclick="showAdminTab('pfl')">Pflege</div>
-    <div class="admin-tab" id="atab-cock" ontouchstart="showAdminTab('cock')" onclick="showAdminTab('cock')">Cockpit</div>
-    <div class="admin-tab" id="atab-kalk" ontouchstart="showAdminTab('kalk')" onclick="showAdminTab('kalk')">Kalkulation</div>
-    <div class="admin-tab" id="atab-eint" ontouchstart="showAdminTab('eint')" onclick="showAdminTab('eint')">Einteilung</div>
-    <div class="admin-tab" id="atab-exp" ontouchstart="showAdminTab('exp')" onclick="showAdminTab('exp')">Export</div>
+    <div class="admin-tab act" id="atab-frei" ontouchstart="tsTap(event,this,function(){showAdminTab('frei')})" onclick="tsKlick(function(){showAdminTab('frei')})">Freigabe</div>
+    <div class="admin-tab" id="atab-ma" ontouchstart="tsTap(event,this,function(){showAdminTab('ma')})" onclick="tsKlick(function(){showAdminTab('ma')})">Mitarbeiter</div>
+    <div class="admin-tab" id="atab-proj" ontouchstart="tsTap(event,this,function(){showAdminTab('proj')})" onclick="tsKlick(function(){showAdminTab('proj')})">Projekte</div>
+    <div class="admin-tab" id="atab-fz" ontouchstart="tsTap(event,this,function(){showAdminTab('fz')})" onclick="tsKlick(function(){showAdminTab('fz')})">Fahrzeuge</div>
+    <div class="admin-tab" id="atab-email" ontouchstart="tsTap(event,this,function(){showAdminTab('email')})" onclick="tsKlick(function(){showAdminTab('email')})">E-Mail</div>
+    <div class="admin-tab" id="atab-ber" ontouchstart="tsTap(event,this,function(){showAdminTab('ber')})" onclick="tsKlick(function(){showAdminTab('ber')})">Berichte</div>
+    <div class="admin-tab" id="atab-abg" ontouchstart="tsTap(event,this,function(){showAdminTab('abg')})" onclick="tsKlick(function(){showAdminTab('abg')})">Abgabe</div>
+    <div class="admin-tab" id="atab-ausw" ontouchstart="tsTap(event,this,function(){showAdminTab('ausw')})" onclick="tsKlick(function(){showAdminTab('ausw')})">Auswertung</div>
+    <div class="admin-tab" id="atab-pfl" ontouchstart="tsTap(event,this,function(){showAdminTab('pfl')})" onclick="tsKlick(function(){showAdminTab('pfl')})">Pflege</div>
+    <div class="admin-tab" id="atab-cock" ontouchstart="tsTap(event,this,function(){showAdminTab('cock')})" onclick="tsKlick(function(){showAdminTab('cock')})">Cockpit</div>
+    <div class="admin-tab" id="atab-kalk" ontouchstart="tsTap(event,this,function(){showAdminTab('kalk')})" onclick="tsKlick(function(){showAdminTab('kalk')})">Kalkulation</div>
+    <div class="admin-tab" id="atab-eint" ontouchstart="tsTap(event,this,function(){showAdminTab('eint')})" onclick="tsKlick(function(){showAdminTab('eint')})">Einteilung</div>
+    <div class="admin-tab" id="atab-exp" ontouchstart="tsTap(event,this,function(){showAdminTab('exp')})" onclick="tsKlick(function(){showAdminTab('exp')})">Export</div>
   </div>
   <div class="admin-content">
     <div class="admin-panel act" id="apanel-frei"></div>
@@ -553,17 +602,20 @@ body.wsd .content .et{font-family:'IBM Plex Sans',sans-serif;color:var(--zMut2);
 </div>
 
 <div id="menu-screen">
-  <div class="admin-header">
-    <img src="https://www.klei-sportplatzbau.de/images/logos/KLEI_LOGO_FARBIG_RGB_72DPI.png" style="height:24px" alt="KLEI" onerror="this.style.display='none'">
-    <span class="admin-badge badge-admin">Hauptmenue</span>
-    <span id="menu-user-name" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--m)"></span>
+  <div class="ts-head">
+    <img src="https://www.klei-sportplatzbau.de/images/logos/KLEI_LOGO_FARBIG_RGB_72DPI.png" class="ts-logo" alt="KLEI" onerror="this.style.display='none'">
+    <span class="ts-word">Terra Suite</span>
+    <span id="menu-user-name" class="ts-user"></span>
     <button class="theme-btn" style="margin-left:auto" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
     <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
   </div>
   <div class="menu-wrap">
-    <div class="menu-title">Bereich auswaehlen</div>
-    <div id="menu-tiles" style="width:100%;max-width:460px"></div>
-    <div id="menu-master" style="width:100%;max-width:460px"></div>
+    <div class="mk-wrap">
+      <div class="mk-hallo" id="menu-hallo">Hallo</div>
+      <div class="mk-hallo-sub">Womit moechtest du arbeiten?</div>
+      <div id="menu-tiles"></div>
+      <div id="menu-master"></div>
+    </div>
   </div>
 </div>
 
@@ -983,8 +1035,9 @@ async function doLogin(){
     document.getElementById('login-screen').style.display='none';
     await loadProjekte();
     const mods=userModule(data);
-    document.querySelectorAll('.menu-hbtn').forEach(b=>b.style.display=mods.length>1?'':'none');
-    if(mods.length>1)openMenu();
+    const mitMenue=menuKacheln(data).length>1;
+    document.querySelectorAll('.menu-hbtn').forEach(b=>b.style.display=mitMenue?'':'none');
+    if(mitMenue)openMenu();
     else await openModul(mods[0]);
     setTimeout(()=>checkErstLogin(),400);
   }catch(e){errEl.textContent='Verbindungsfehler: '+e.message;btn.innerHTML='Anmelden';btn.disabled=false;}
@@ -1087,21 +1140,78 @@ async function clearSig(){
 }
 
 // ══════ ADMIN ══════
-function openAdmin(){
+// Der Admin ist in drei Bereiche gegliedert. Die Tabs selbst (und ihre Render-Funktionen) sind unveraendert,
+// es wird nur gesteuert, welche Tabs im jeweiligen Bereich sichtbar sind.
+const ADMIN_BEREICHE=[
+  {key:'tb',name:'Tagesberichte',tabs:['frei','ber','abg','eint','exp']},
+  {key:'ctrl',name:'Controlling',tabs:['ausw','pfl','cock','kalk']},
+  {key:'verw',name:'Verwaltung',tabs:['ma','proj','fz','email']}
+];
+const ADMIN_TABS_BUCHHALTUNG=['frei','abg'];
+let adminBereichAkt='tb';
+let _adminOpenTs=0;
+function adminBereichDef(key){
+  for(let i=0;i<ADMIN_BEREICHE.length;i++){if(ADMIN_BEREICHE[i].key===key)return ADMIN_BEREICHE[i];}
+  return ADMIN_BEREICHE[0];
+}
+function adminBereichVonTab(tab){
+  for(let i=0;i<ADMIN_BEREICHE.length;i++){if(ADMIN_BEREICHE[i].tabs.indexOf(tab)>=0)return ADMIN_BEREICHE[i].key;}
+  return null;
+}
+// Welche Tabs darf diese Rolle in diesem Bereich sehen? Buchhaltung: nur Freigabe + Abgabe.
+function adminSichtbareTabs(rolle,bereichKey){
+  if(rolle==='verwaltung')return ADMIN_TABS_BUCHHALTUNG.slice();
+  return adminBereichDef(bereichKey).tabs.slice();
+}
+function adminBereichAnwenden(){
+  const nurBuchhaltung=(currentUser.rolle==='verwaltung');
+  const sichtbar=adminSichtbareTabs(currentUser.rolle,adminBereichAkt);
+  ADMIN_BEREICHE.forEach(function(bd){
+    bd.tabs.forEach(function(t){
+      const el=document.getElementById('atab-'+t);
+      if(el)el.style.display=sichtbar.indexOf(t)>=0?'':'none';
+    });
+  });
+  const nameEl=document.getElementById('admin-bereich-name');
+  if(nameEl)nameEl.textContent=adminBereichDef(adminBereichAkt).name;
+  const seg=document.getElementById('admin-bereiche');
+  if(seg){
+    if(nurBuchhaltung){seg.style.display='none';seg.innerHTML='';}
+    else{
+      seg.style.display='';
+      seg.innerHTML=ADMIN_BEREICHE.map(function(bd){
+        return '<button class="ab-seg-btn'+(bd.key===adminBereichAkt?' act':'')+'" '+tsAttr('adminBereichSetze(\''+bd.key+'\')')+'>'+bd.name+'</button>';
+      }).join('');
+    }
+  }
+}
+function adminBereichSetze(key){
+  // Direkt nach dem Oeffnen ignorieren: der Finger liegt evtl. noch auf der Kachel des Hauptmenues (Geister-Klick iPad)
+  if(Date.now()-_adminOpenTs<450)return;
+  if(key===adminBereichAkt)return;
+  if(currentUser.rolle==='verwaltung')return;
+  adminBereichAkt=adminBereichDef(key).key;
+  adminBereichAnwenden();
+  showAdminTab(adminSichtbareTabs(currentUser.rolle,adminBereichAkt)[0]);
+}
+function openAdmin(bereich){
+  _adminOpenTs=Date.now();
   document.getElementById('admin-screen').style.display='flex';
   document.getElementById('admin-user-name').textContent=currentUser.name;
-  // Buchhaltung (verwaltung) sieht NUR den Freigabe-Tab; Admin sieht alles.
+  // Buchhaltung (verwaltung) sieht NUR Freigabe + Abgabe (Pruefliste + Sammelfreigabe); Admin sieht alles.
   const nurBuchhaltung=(currentUser.rolle==='verwaltung');
   const badge=document.querySelector('#admin-screen .admin-badge');
   if(badge)badge.textContent=nurBuchhaltung?'Buchhaltung':'Admin';
-  ['ma','proj','fz','email','ber','ausw','pfl','cock','kalk','eint','exp'].forEach(t=>{
-    const el=document.getElementById('atab-'+t);if(el)el.style.display=nurBuchhaltung?'none':'';
-  });
-  // Abgabe-Uebersicht sieht auch die Buchhaltung: Pruefliste + Sammelfreigabe.
-  const abgTab=document.getElementById('atab-abg');if(abgTab)abgTab.style.display='';
-  showAdminTab('frei');
+  adminBereichAkt=nurBuchhaltung?'tb':adminBereichDef(bereich||'tb').key;
+  adminBereichAnwenden();
+  showAdminTab(adminSichtbareTabs(currentUser.rolle,adminBereichAkt)[0]);
 }
 function showAdminTab(name){
+  // Liegt der Tab in einem anderen Bereich, wird der Bereich mit umgeschaltet (sonst waere der Tab-Reiter unsichtbar)
+  const zielBereich=adminBereichVonTab(name);
+  if(currentUser&&currentUser.rolle!=='verwaltung'&&zielBereich&&zielBereich!==adminBereichAkt){
+    adminBereichAkt=zielBereich;adminBereichAnwenden();
+  }
   document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('act'));
   document.querySelectorAll('#admin-screen .admin-panel').forEach(p=>p.classList.remove('act'));
   document.getElementById('atab-'+name).classList.add('act');document.getElementById('apanel-'+name).classList.add('act');
@@ -1187,7 +1297,9 @@ function toggleFreiGroup(idx){const el=document.getElementById('freigroup-'+idx)
 function freiBerichtCard(b){
   const bl=b.abgenommen;const bh=b.bh_freigegeben;
   const pLabel=getProjektLabel(b.projekt_id||b.projekt_nr||'');
-  return '<div style="background:var(--s3);border:1px solid '+(bh?'var(--gd)':'var(--b)')+';border-radius:var(--rad);padding:10px;margin-bottom:6px">'+
+  const fw=fahrerWiderspruch(b.zeit_rows,b.mach_rows);
+  return '<div style="background:var(--s3);border:1px solid '+(fw?'var(--r)':(bh?'var(--gd)':'var(--b)'))+';border-radius:var(--rad);padding:10px;margin-bottom:6px">'+
+    (fw?'<div style="font-size:11.5px;font-weight:600;color:var(--r);line-height:1.45;margin-bottom:6px">Pruefen: '+_dfEsc(fw.text)+'</div>':'')+
     '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">'+
     '<div style="flex:1;min-width:140px">'+
     '<div style="font-size:12px;font-weight:600;color:var(--c)">'+pLabel+'</div>'+
@@ -2386,50 +2498,326 @@ function azConfirmText(liste,datum){
 
 async function renderAdminExp(){
   const el=document.getElementById('apanel-exp');
+  const heute=new Date();
+  const monat=heute.getFullYear()+'-'+('0'+(heute.getMonth()+1)).slice(-2);
+  const mg=expMonatsGrenzen(monat);
   el.innerHTML='<div class="a-sec"><div class="a-sec-title">Buchhaltungs-Export</div>'+
-    '<div class="row"><div class="fg w50"><label>Von</label><input type="date" id="exp-von"></div>'+
-    '<div class="fg w50"><label>Bis</label><input type="date" id="exp-bis"></div></div>'+
-    '<label style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--c);margin-bottom:10px;cursor:pointer"><input type="checkbox" id="exp-nur-frei" checked style="width:16px;height:16px"> Nur von der Buchhaltung freigegebene Berichte exportieren</label>'+
+    '<div class="row"><div class="fg w33"><label>Monat</label><input type="month" id="exp-monat" value="'+monat+'" onchange="expMonatSetzen()"></div>'+
+    '<div class="fg w33"><label>Von</label><input type="date" id="exp-von" value="'+mg.von+'" onchange="expZeitraumGeaendert()"></div>'+
+    '<div class="fg w33"><label>Bis</label><input type="date" id="exp-bis" value="'+mg.bis+'" onchange="expZeitraumGeaendert()"></div></div>'+
+    '<div class="row"><div class="fg w50"><label>Projekt</label><select id="exp-f-proj" onchange="expAufstellungRender()"><option value="">Alle Projekte</option></select></div>'+
+    '<div class="fg w50"><label>Mitarbeiter</label><select id="exp-f-ma" onchange="expAufstellungRender()"><option value="">Alle Mitarbeiter</option></select></div></div>'+
+    '<label style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--c);margin-bottom:10px;cursor:pointer"><input type="checkbox" id="exp-nur-frei" checked style="width:16px;height:16px" onchange="expZeitraumGeaendert()"> Nur von der Buchhaltung freigegebene Berichte exportieren</label>'+
     '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
     '<button class="btn btn-sky" ontouchstart="expBuchhaltungCSV()" onclick="expBuchhaltungCSV()">CSV Buchhaltung</button>'+
     '<button class="btn btn-e" ontouchstart="expDFCSVAdmin()" onclick="expDFCSVAdmin()">Dataflor CSV</button>'+
     '<button class="btn btn-sky" ontouchstart="expNKImport()" onclick="expNKImport()">DATAflor NK-Import (XML)</button></div>'+
+    '<div style="font-size:10px;color:var(--m);line-height:1.5;margin-top:6px">CSV Buchhaltung: eine Zeile je Mitarbeiter, Tag und Projekt (aus den Zeiten der Vorarbeiter-Berichte plus eigene Berichte), mit Fahrzeit. Die Filter Projekt und Mitarbeiter gelten fuer die Aufstellung unten, die CSV Buchhaltung und die Dataflor CSV, nicht fuer den NK-Import.</div>'+
     '<div class="row" style="margin-top:8px"><div class="fg w50"><label>Standard-Lohnart (DATAflor)</label><input id="exp-lohnart" inputmode="numeric" value="1" placeholder="z.B. 1"></div>'+
     '<div class="fg w50" style="display:flex;align-items:flex-end"><label style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--c);margin:0;cursor:pointer"><input type="checkbox" id="exp-nk-zeiten" checked style="width:16px;height:16px"> Von/Bis-Zeiten ausgeben</label></div></div>'+
     '<div style="font-size:10px;color:var(--m);line-height:1.5;margin-top:6px">NK-Import erzeugt eine schema-valide XML (DFNKImport) fuer den Digitalen Posteingang. Nur Berichte mit LV-Nummer werden verbucht; Zeilen mit Position gehen auf die Position, sonst als Taglohn. Lohnart und Personalnummern muessen im DATAflor BUSINESS existieren.</div></div>'+
-    '<div class="a-sec"><div class="a-sec-title">Statistik</div><div id="exp-stats"><div class="empty"><div class="spin"></div></div></div></div>';
-  loadExpStats();
+    '<div class="a-sec"><div class="a-sec-title">Aufstellung Stunden je Monat, Mitarbeiter und Projekt</div><div id="exp-stats"><div class="empty"><div class="spin"></div></div></div></div>';
+  expAufstellungLaden();
 }
 
-async function loadExpStats(){
-  const{data}=await sb.from(tblBerichte()).select('mitarbeiter_name,mitarbeiter_nr,netto_gesamt_h,netto_arbeit_h,datum,rolle').order('datum',{ascending:false}).limit(500);
-  if(!data){document.getElementById('exp-stats').innerHTML='<div style="color:var(--m);font-size:10px;padding:8px">Keine Daten</div>';return;}
-  const totalH=data.reduce((s,b)=>s+(parseFloat(b.netto_gesamt_h||b.netto_arbeit_h||0)),0);
-  const maMap={};
-  data.forEach(b=>{const key=b.mitarbeiter_name+(b.mitarbeiter_nr?' #'+b.mitarbeiter_nr:'');if(!maMap[key])maMap[key]=0;maMap[key]+=(parseFloat(b.netto_gesamt_h||b.netto_arbeit_h||0));});
-  document.getElementById('exp-stats').innerHTML=
-    '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px">'+
-    '<div class="sc"><div class="sv">'+data.length+'</div><div class="sl">Berichte</div></div>'+
-    '<div class="sc"><div class="sv">'+totalH.toFixed(0)+'h</div><div class="sl">Stunden</div></div></div>'+
-    Object.entries(maMap).sort((a,b)=>b[1]-a[1]).map(([name,h])=>
-      '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--b)">'+
-      '<span style="font-size:12px;color:var(--c)">'+name+'</span>'+
-      '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:var(--gl)">'+h.toFixed(1)+'h</span></div>'
-    ).join('');
+// ══════ BUCHHALTUNGS-EXPORT: Zeilen je Mitarbeiter (nicht je Bericht) ══════
+let _expZeilen=null;   // geladene Detailzeilen fuer den aktuellen Zeitraum
+let _expKey='';        // Zeitraum/Freigabe/Testmodus, zu dem _expZeilen gehoert
+let _expBusy=false;
+let _expLetzterExport=0;
+function expNorm(s){return String(s==null?'':s).toLowerCase().replace(/\s+/g,' ').trim();}
+function expZahl(n){n=Math.round((parseFloat(n)||0)*100)/100;return n.toFixed(2).replace('.',',');}
+function expCsvFeld(v){v=String(v==null?'':v).replace(/\r?\n/g,' ');if(/[;"]/.test(v))v='"'+v.replace(/"/g,'""')+'"';return v;}
+function expMonatsGrenzen(monat){
+  const m=String(monat||'').match(/^(\d{4})-(\d{2})$/);
+  if(!m)return null;
+  const j=parseInt(m[1],10),mo=parseInt(m[2],10);
+  if(mo<1||mo>12)return null;
+  const letzter=new Date(j,mo,0).getDate();
+  return {von:m[1]+'-'+m[2]+'-01',bis:m[1]+'-'+m[2]+'-'+('0'+letzter).slice(-2)};
 }
-
-async function expBuchhaltungCSV(){
+// Macht aus Berichten Abrechnungszeilen: je Mitarbeiter, Tag und Projekt eine Zeile.
+// VA-Berichte: jede Zeile der Zeiterfassung (zeit_rows) = ein Mitarbeiter, Fahrzeit steht in der Zeile.
+// Eigene Berichte (AR/WS, VA ohne Zeiten): eine Zeile aus dem Bericht, Fahrzeit aus fahrzeit_min + fahrt_status.
+function expLohnZeilen(berichte,maListe,projekte){
+  const nrNachName={};
+  (maListe||[]).forEach(function(m){const k=expNorm(m.name);if(k&&m.mitarbeiter_nr!=null&&m.mitarbeiter_nr!=='')nrNachName[k]=String(m.mitarbeiter_nr);});
+  function projName(id,nr){
+    const l=projekte||[];
+    for(let i=0;i<l.length;i++){if((id&&l[i].id===id)||(nr&&l[i].nr===nr))return l[i].name||'';}
+    return '';
+  }
+  const SATZ={fahrer:1,beifahrer:0.5,privat:0};
+  const zeilen=[];const inVA={};const vaTag={};
+  (berichte||[]).forEach(function(b){
+    let zr=b.zeit_rows;
+    if(typeof zr==='string'){try{zr=JSON.parse(zr);}catch(e){console.error('Export: zeit_rows nicht lesbar, Bericht '+b.id,e);zr=[];}}
+    zr=Array.isArray(zr)?zr.filter(function(t){return t&&t.name;}):[];
+    const monat=String(b.datum||'').substring(0,7);
+    if(zr.length){
+      const vk=String(b.datum)+'|'+expNorm(b.mitarbeiter_name);
+      if(!vaTag[vk])vaTag[vk]={zeit:[],mach:[]};
+      let mr0=b.mach_rows;
+      if(typeof mr0==='string'){try{mr0=JSON.parse(mr0);}catch(e){console.error('Export: mach_rows nicht lesbar, Bericht '+b.id,e);mr0=[];}}
+      vaTag[vk].zeit=vaTag[vk].zeit.concat(zr);
+      vaTag[vk].mach=vaTag[vk].mach.concat(Array.isArray(mr0)?mr0:[]);
+      zr.forEach(function(t){
+        const k=expNorm(t.name);
+        let nr=(t.personalNr!=null&&t.personalNr!=='')?String(t.personalNr):(nrNachName[k]||'');
+        if(!nr&&k===expNorm(b.mitarbeiter_name)&&b.mitarbeiter_nr)nr=String(b.mitarbeiter_nr);
+        const art=t.fahrt||'fahrer';
+        const fzMin=nkNum(t.fahrzeitMin);
+        const arbeit=nkNum(t.nettoArbeit);
+        let fahrtH=(t.fahrtAnteil!=null&&t.fahrtAnteil!=='')?nkNum(t.fahrtAnteil):(fzMin/60)*(SATZ[art]!=null?SATZ[art]:1);
+        let gesamt=(t.gesamt!=null&&t.gesamt!=='')?nkNum(t.gesamt):(arbeit+fahrtH);
+        const pid=t.projektId||b.projekt_id||'';
+        const pnr=t.projektNr||b.projekt_nr||'';
+        inVA[String(b.datum)+'|'+k]=true;
+        zeilen.push({monat:monat,datum:b.datum,name:String(t.name).trim(),maNr:nr,projektId:pid,projektNr:pnr,projektName:projName(pid,pnr),
+          von:t.von||'',bis:t.bis||'',pauseMin:nkNum(t.pause),arbeitH:arbeit,fahrtArt:art,fahrzeitMin:fzMin,fahrtH:fahrtH,gesamtH:gesamt,
+          rolle:b.rolle||'',erfasstVon:b.mitarbeiter_name||'',eigen:false,vaKey:vk,hinweis:nr?'':'MA-Nr fehlt (Name nicht in Stammdaten)',
+          wetter:b.wetter||'',tae:t.tae||''});
+      });
+    }else{
+      const art=b.fahrt_status||'fahrer';
+      const fzMin=nkNum(b.fahrzeit_min);
+      const arbeit=nkNum(b.netto_arbeit_h);
+      const fahrtH=(fzMin/60)*(SATZ[art]!=null?SATZ[art]:1);
+      const g=nkNum(b.netto_gesamt_h);
+      zeilen.push({monat:monat,datum:b.datum,name:String(b.mitarbeiter_name||'').trim(),maNr:b.mitarbeiter_nr?String(b.mitarbeiter_nr):(nrNachName[expNorm(b.mitarbeiter_name)]||''),
+        projektId:b.projekt_id||'',projektNr:b.projekt_nr||'',projektName:projName(b.projekt_id,b.projekt_nr),
+        von:b.von||'',bis:b.bis||'',pauseMin:nkNum(b.pause_min),arbeitH:arbeit,fahrtArt:art,fahrzeitMin:fzMin,fahrtH:fahrtH,gesamtH:g>0?g:(arbeit+fahrtH),
+        rolle:b.rolle||'',erfasstVon:b.mitarbeiter_name||'',eigen:true,hinweis:'',
+        wetter:b.wetter||'',tae:Array.isArray(b.taetigkeiten)?b.taetigkeiten.join('|'):''});
+    }
+  });
+  // Doppelzaehlung sichtbar machen: eigener Bericht UND am selben Tag in einem VA-Bericht erfasst
+  zeilen.forEach(function(z){
+    if(z.eigen&&inVA[String(z.datum)+'|'+expNorm(z.name)])z.hinweis='Auch in VA-Bericht erfasst - Doppelzaehlung pruefen';
+    else if(z.eigen&&!z.maNr)z.hinweis='MA-Nr fehlt';
+  });
+  // Fahrer-Widerspruch je Vorarbeiter und Tag: alle betroffenen Fahrer-Zeilen markieren
+  const fw={};
+  Object.keys(vaTag).forEach(function(vk){const w=fahrerWiderspruch(vaTag[vk].zeit,vaTag[vk].mach);if(w)fw[vk]=w;});
+  zeilen.forEach(function(z){
+    if(z.eigen||!z.vaKey||!fw[z.vaKey])return;
+    if(z.fahrtArt!=='fahrer'||z.fahrzeitMin<=0)return;
+    const txt='Fahrer-Widerspruch: '+fw[z.vaKey].text;
+    z.hinweis=z.hinweis?(z.hinweis+' | '+txt):txt;
+    z.fahrerFall=fw[z.vaKey].text;
+  });
+  zeilen.sort(function(a,b){
+    return String(a.datum).localeCompare(String(b.datum))||expNorm(a.name).localeCompare(expNorm(b.name))||String(a.projektNr).localeCompare(String(b.projektNr));
+  });
+  return zeilen;
+}
+// ══════ PLAUSIBILITAET: mehr Fahrer als Fahrzeuge ══════
+// Fahrer bekommen die volle Fahrzeit, Beifahrer die halbe. Stehen in einem Bericht mehr Personen als "Fahrer"
+// (mit Fahrzeit > 0) als Fahrzeuge unter Maschinen/Geraete, ist das ein Widerspruch, der geprueft werden muss.
+// Als Fahrzeug zaehlen: PKW (1055), LKW (1018, 1019), Transporter (2000).
+const FAHRZEUG_GERAETE=['1055','1018','1019','2000'];
+function fahrerWiderspruch(zeitRows,machRows){
+  let zr=zeitRows,mr=machRows;
+  if(typeof zr==='string'){try{zr=JSON.parse(zr);}catch(e){console.error('Fahrer-Pruefung: zeit_rows nicht lesbar',e);zr=[];}}
+  if(typeof mr==='string'){try{mr=JSON.parse(mr);}catch(e){console.error('Fahrer-Pruefung: mach_rows nicht lesbar',e);mr=[];}}
+  zr=Array.isArray(zr)?zr:[];mr=Array.isArray(mr)?mr:[];
+  const gesehen={};const fahrer=[];
+  zr.forEach(function(t){
+    if(!t||!t.name)return;
+    if((t.fahrt||'fahrer')!=='fahrer')return;
+    if(nkNum(t.fahrzeitMin)<=0)return;
+    const k=expNorm(t.name);
+    if(!gesehen[k]){gesehen[k]=true;fahrer.push(String(t.name).trim());}
+  });
+  let fzg=0;
+  mr.forEach(function(m){if(m&&FAHRZEUG_GERAETE.indexOf(String(m.geraetNr||''))>=0)fzg++;});
+  if(fahrer.length>=2&&fahrer.length>fzg)return {fahrer:fahrer,fahrzeuge:fzg,text:fahrer.length+' Fahrer ('+fahrer.join(', ')+'), aber '+(fzg===0?'kein Fahrzeug':(fzg+' Fahrzeug'+(fzg>1?'e':'')))+' im Bericht'};
+  return null;
+}
+function expFilterZeilen(zeilen,projKey,maKey){
+  return (zeilen||[]).filter(function(z){
+    if(projKey&&(z.projektId||('nr:'+z.projektNr))!==projKey)return false;
+    if(maKey&&expNorm(z.name)!==maKey)return false;
+    return true;
+  });
+}
+// Summen je Monat + Mitarbeiter + Projekt
+function expSummen(zeilen){
+  const map={};const liste=[];
+  (zeilen||[]).forEach(function(z){
+    const k=z.monat+'|'+expNorm(z.name)+'|'+(z.projektId||('nr:'+z.projektNr));
+    let g=map[k];
+    if(!g){g=map[k]={monat:z.monat,name:z.name,maNr:z.maNr,projektNr:z.projektNr,projektName:z.projektName,tage:{},arbeitH:0,fahrtH:0,gesamtH:0};liste.push(g);}
+    if(!g.maNr&&z.maNr)g.maNr=z.maNr;
+    g.tage[z.datum]=true;g.arbeitH+=z.arbeitH;g.fahrtH+=z.fahrtH;g.gesamtH+=z.gesamtH;
+  });
+  liste.forEach(function(g){g.anzTage=Object.keys(g.tage).length;});
+  liste.sort(function(a,b){return a.monat.localeCompare(b.monat)||expNorm(a.name).localeCompare(expNorm(b.name))||String(a.projektNr).localeCompare(String(b.projektNr));});
+  return liste;
+}
+async function expLadeBerichte(von,bis,nurFrei){
+  const alle=[];
+  for(let start=0;;start+=1000){
+    let q=sb.from(tblBerichte()).select('id,datum,rolle,mitarbeiter_name,mitarbeiter_nr,projekt_id,projekt_nr,von,bis,pause_min,netto_arbeit_h,netto_gesamt_h,fahrzeit_min,fahrt_status,zeit_rows,mach_rows,wetter,taetigkeiten')
+      .order('datum',{ascending:true}).order('id',{ascending:true});
+    if(von)q=q.gte('datum',von);
+    if(bis)q=q.lte('datum',bis);
+    if(nurFrei)q=q.eq('bh_freigegeben',true);
+    const r=await q.range(start,start+999);
+    if(r.error)throw new Error(r.error.message||'Unbekannter Datenbankfehler');
+    const d=r.data||[];
+    for(let i=0;i<d.length;i++)alle.push(d[i]);
+    if(d.length<1000)break;
+  }
+  return alle;
+}
+// Liefert die Detailzeilen zum eingestellten Zeitraum (laedt nur neu, wenn sich Zeitraum/Freigabe geaendert hat)
+async function expHoleZeilen(){
   const von=document.getElementById('exp-von').value,bis=document.getElementById('exp-bis').value;
-  const nurFrei=document.getElementById('exp-nur-frei')?.checked;
-  let q=sb.from(tblBerichte()).select('*').order('datum').order('mitarbeiter_name');
-  if(von)q=q.gte('datum',von);if(bis)q=q.lte('datum',bis);
-  if(nurFrei!==false)q=q.eq('bh_freigegeben',true);
-  const{data}=await q;
-  if(!data?.length){toast(nurFrei!==false?'Keine FREIGEGEBENEN Berichte im Zeitraum':'Keine Daten','err');return;}
-  const hdr='Datum;Mitarbeiter;MA-Nr;Projekt-Nr;Projekt-Name;Von;Bis;Pause-min;Netto-h;Fahrzeit-min;Gesamt-h;Wetter;Taetigkeiten;Rolle';
-  const rows=data.map(b=>{const proj=PROJEKTE.find(p=>p.id===b.projekt_id);return[b.datum,b.mitarbeiter_name,b.mitarbeiter_nr||'--',b.projekt_nr,proj?.name||'',b.von||'',b.bis||'',b.pause_min||30,b.netto_arbeit_h||'0',b.fahrzeit_min||0,b.netto_gesamt_h||b.netto_arbeit_h||'0',b.wetter||'',(b.taetigkeiten||[]).join('|'),b.rolle].join(';');});
-  dlFile('KLEI_Buchhaltung_'+(von||'')+'_'+(bis||new Date().toISOString().split('T')[0])+'.csv',[hdr,...rows].join('\n'),'text/csv;charset=utf-8');
-  toast('CSV exportiert - '+data.length+' Eintraege'+(nurFrei!==false?' (nur freigegebene)':''),'ok');
+  const nfEl=document.getElementById('exp-nur-frei');
+  const nurFrei=nfEl?nfEl.checked:true;
+  if(von&&bis&&von>bis)throw new Error('"Von" liegt nach "Bis"');
+  const key=von+'|'+bis+'|'+(nurFrei?1:0)+'|'+(TESTMODUS?1:0);
+  if(_expZeilen&&_expKey===key)return _expZeilen;
+  const ber=await expLadeBerichte(von,bis,nurFrei);
+  const mr=await sb.from('mitarbeiter').select('name,mitarbeiter_nr');
+  if(mr.error){console.error('Export: Mitarbeiter-Stammdaten nicht ladbar:',mr.error);toast('Mitarbeiternummern konnten nicht geladen werden: '+(mr.error.message||''),'err');}
+  _expZeilen=expLohnZeilen(ber,mr.data||[],PROJEKTE);
+  _expKey=key;
+  return _expZeilen;
+}
+function expMonatSetzen(){
+  const g=expMonatsGrenzen(document.getElementById('exp-monat').value);
+  if(!g){toast('Bitte einen Monat waehlen (Format JJJJ-MM)','err');return;}
+  document.getElementById('exp-von').value=g.von;
+  document.getElementById('exp-bis').value=g.bis;
+  expAufstellungLaden();
+}
+function expZeitraumGeaendert(){
+  // Von/Bis von Hand geaendert: Monatsfeld nur stehen lassen, wenn es noch genau passt
+  const mEl=document.getElementById('exp-monat');
+  const g=mEl?expMonatsGrenzen(mEl.value):null;
+  if(mEl&&g&&(g.von!==document.getElementById('exp-von').value||g.bis!==document.getElementById('exp-bis').value))mEl.value='';
+  expAufstellungLaden();
+}
+async function expAufstellungLaden(){
+  const ziel=document.getElementById('exp-stats');
+  if(!ziel)return;
+  if(_expBusy)return;
+  _expBusy=true;
+  ziel.innerHTML='<div class="empty"><div class="spin"></div></div>';
+  try{
+    await expHoleZeilen();
+    expFilterOptionen();
+    expAufstellungRender();
+  }catch(e){
+    console.error('Export-Aufstellung fehlgeschlagen:',e);
+    const z2=document.getElementById('exp-stats')||ziel; // Panel kann inzwischen neu aufgebaut sein
+    z2.innerHTML='<div style="color:var(--r);font-size:12px;padding:8px">Aufstellung konnte nicht geladen werden: '+_dfEsc(e.message||String(e))+'</div>';
+    toast('Aufstellung konnte nicht geladen werden: '+(e.message||String(e)),'err');
+  }finally{_expBusy=false;}
+}
+// Auswahllisten aus den tatsaechlich vorhandenen Zeilen aufbauen (so fehlen auch inaktive Projekte nicht)
+function expFilterOptionen(){
+  const pSel=document.getElementById('exp-f-proj'),mSel=document.getElementById('exp-f-ma');
+  if(!pSel||!mSel)return;
+  const pAlt=pSel.value,mAlt=mSel.value;
+  const pMap={},mMap={};
+  (_expZeilen||[]).forEach(function(z){
+    const pk=z.projektId||('nr:'+z.projektNr);
+    if(!pMap[pk])pMap[pk]=(z.projektNr?z.projektNr+' - ':'')+(z.projektName||(z.projektNr?'':'ohne Projekt'));
+    const mk=expNorm(z.name);
+    if(mk&&!mMap[mk])mMap[mk]=z.name+(z.maNr?' #'+z.maNr:'');
+  });
+  function opts(map,leer){
+    const keys=Object.keys(map).sort(function(a,b){return map[a].localeCompare(map[b]);});
+    return '<option value="">'+leer+'</option>'+keys.map(function(k){return '<option value="'+_dfEsc(k)+'">'+_dfEsc(map[k])+'</option>';}).join('');
+  }
+  pSel.innerHTML=opts(pMap,'Alle Projekte');
+  mSel.innerHTML=opts(mMap,'Alle Mitarbeiter');
+  if(pAlt&&pMap[pAlt])pSel.value=pAlt;
+  if(mAlt&&mMap[mAlt])mSel.value=mAlt;
+}
+function expAktFilter(){
+  const pSel=document.getElementById('exp-f-proj'),mSel=document.getElementById('exp-f-ma');
+  return expFilterZeilen(_expZeilen||[],pSel?pSel.value:'',mSel?mSel.value:'');
+}
+function expAufstellungRender(){
+  const ziel=document.getElementById('exp-stats');
+  if(!ziel)return;
+  if(!_expZeilen){ziel.innerHTML='<div style="color:var(--m);font-size:12px;padding:8px">Noch nichts geladen</div>';return;}
+  const z=expAktFilter();
+  if(!z.length){ziel.innerHTML='<div style="color:var(--m);font-size:12px;padding:8px">Keine Zeiten im Zeitraum mit diesen Filtern'+(document.getElementById('exp-nur-frei').checked?' (nur freigegebene Berichte)':'')+'</div>';return;}
+  const sum=expSummen(z);
+  let a=0,f=0,g=0;const ma={};let doppelt=0,ohneNr=0;const fFaelle={};const fListe=[];
+  z.forEach(function(x){
+    a+=x.arbeitH;f+=x.fahrtH;g+=x.gesamtH;ma[expNorm(x.name)]=true;
+    if(x.hinweis.indexOf('Doppel')>=0)doppelt++;
+    if(x.hinweis.indexOf('MA-Nr fehlt')>=0)ohneNr++;
+    if(x.fahrerFall&&!fFaelle[x.vaKey]){fFaelle[x.vaKey]=true;fListe.push(fmtD(x.datum)+' - Bericht von '+x.erfasstVon+': '+x.fahrerFall);}
+  });
+  const mono='font-family:\'IBM Plex Mono\',monospace;';
+  let html='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">'+
+    '<div class="sc"><div class="sv">'+Object.keys(ma).length+'</div><div class="sl">Mitarbeiter</div></div>'+
+    '<div class="sc"><div class="sv">'+expZahl(a)+'</div><div class="sl">Arbeit h</div></div>'+
+    '<div class="sc"><div class="sv">'+expZahl(f)+'</div><div class="sl">Fahrt h</div></div>'+
+    '<div class="sc"><div class="sv">'+expZahl(g)+'</div><div class="sl">Gesamt h</div></div></div>';
+  if(fListe.length){
+    html+='<div style="background:var(--rg);border:1px solid var(--r);border-radius:var(--rad);padding:10px;margin-bottom:10px">'+
+      '<div style="font-size:12px;font-weight:700;color:var(--r);margin-bottom:4px">'+fListe.length+' Bericht(e) mit mehr Fahrern als Fahrzeugen - bitte pruefen</div>'+
+      fListe.map(function(t){return '<div style="font-size:11.5px;color:var(--c);line-height:1.5">'+_dfEsc(t)+'</div>';}).join('')+
+      '<div style="font-size:10.5px;color:var(--m);line-height:1.5;margin-top:4px">Fahrer bekommen die volle Fahrzeit, Beifahrer die halbe. Die Zeilen sind in der CSV in der Spalte "Hinweis" markiert.</div></div>';
+  }
+  if(doppelt||ohneNr){
+    html+='<div style="font-size:11px;color:var(--r);line-height:1.5;margin-bottom:10px">'+
+      (doppelt?doppelt+' Zeile(n): Mitarbeiter hat einen eigenen Bericht UND steht am selben Tag in einem Vorarbeiter-Bericht - bitte auf Doppelzaehlung pruefen. ':'')+
+      (ohneNr?ohneNr+' Zeile(n) ohne Mitarbeiternummer (Name nicht in den Stammdaten gefunden). ':'')+
+      'Die betroffenen Zeilen sind in der CSV in der Spalte "Hinweis" markiert.</div>';
+  }
+  const th='text-align:left;font-size:10px;color:var(--m);padding:6px 8px;border-bottom:1px solid var(--b);white-space:nowrap;';
+  const td='font-size:12px;color:var(--c);padding:6px 8px;border-bottom:1px solid var(--b);';
+  const tdn=td+mono+'text-align:right;white-space:nowrap;';
+  html+='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="width:100%;border-collapse:collapse">'+
+    '<tr><th style="'+th+'">Monat</th><th style="'+th+'">Mitarbeiter</th><th style="'+th+'">MA-Nr</th><th style="'+th+'">Projekt</th>'+
+    '<th style="'+th+'text-align:right">Tage</th><th style="'+th+'text-align:right">Arbeit h</th><th style="'+th+'text-align:right">Fahrt h</th><th style="'+th+'text-align:right">Gesamt h</th></tr>';
+  sum.forEach(function(s){
+    html+='<tr><td style="'+td+mono+'white-space:nowrap">'+_dfEsc(s.monat)+'</td><td style="'+td+'">'+_dfEsc(s.name)+'</td><td style="'+td+mono+'">'+_dfEsc(s.maNr||'--')+'</td>'+
+      '<td style="'+td+'">'+_dfEsc((s.projektNr?s.projektNr+' ':'')+(s.projektName||''))+'</td>'+
+      '<td style="'+tdn+'">'+s.anzTage+'</td><td style="'+tdn+'">'+expZahl(s.arbeitH)+'</td><td style="'+tdn+'">'+expZahl(s.fahrtH)+'</td><td style="'+tdn+'font-weight:600">'+expZahl(s.gesamtH)+'</td></tr>';
+  });
+  html+='<tr><td colspan="5" style="'+td+'font-weight:700">Summe</td><td style="'+tdn+'font-weight:700">'+expZahl(a)+'</td><td style="'+tdn+'font-weight:700">'+expZahl(f)+'</td><td style="'+tdn+'font-weight:700">'+expZahl(g)+'</td></tr>';
+  html+='</table></div>';
+  ziel.innerHTML=html;
+}
+function expBuchhaltungCsvText(zeilen){
+  const hdr='Monat;Datum;Mitarbeiter;MA-Nr;Projekt-Nr;Projekt-Name;Von;Bis;Pause-min;Arbeit-h;Fahrt-Art;Fahrzeit-min;Fahrt-h;Gesamt-h;Rolle;Erfasst-von;Wetter;Taetigkeit;Hinweis';
+  const rows=zeilen.map(function(z){
+    return [z.monat,z.datum,z.name,z.maNr,z.projektNr,z.projektName,z.von,z.bis,Math.round(z.pauseMin),expZahl(z.arbeitH),z.fahrtArt,Math.round(z.fahrzeitMin),expZahl(z.fahrtH),expZahl(z.gesamtH),z.rolle,z.erfasstVon,z.wetter,z.tae,z.hinweis].map(expCsvFeld).join(';');
+  });
+  return [hdr].concat(rows).join('\r\n');
+}
+async function expBuchhaltungCSV(){
+  // ontouchstart + onclick feuern auf dem iPad beide - sonst entstuenden zwei Downloads
+  if(_expBusy||Date.now()-_expLetzterExport<1500)return;
+  _expLetzterExport=Date.now();
+  _expBusy=true;
+  try{
+    await expHoleZeilen();
+    expFilterOptionen();
+    const z=expAktFilter();
+    const nurFrei=document.getElementById('exp-nur-frei').checked;
+    if(!z.length){toast(nurFrei?'Keine FREIGEGEBENEN Zeiten im Zeitraum mit diesen Filtern':'Keine Daten im Zeitraum mit diesen Filtern','err');return;}
+    const von=document.getElementById('exp-von').value,bis=document.getElementById('exp-bis').value;
+    // BOM vorneweg, damit Excel Umlaute in Namen richtig liest
+    dlFile('KLEI_Buchhaltung_'+(von||'alle')+'_'+(bis||new Date().toISOString().split('T')[0])+'.csv','\ufeff'+expBuchhaltungCsvText(z),'text/csv;charset=utf-8');
+    toast('CSV exportiert - '+z.length+' Zeilen (je Mitarbeiter und Tag)'+(nurFrei?', nur freigegebene':''),'ok');
+  }catch(e){
+    console.error('CSV Buchhaltung fehlgeschlagen:',e);
+    toast('CSV-Export fehlgeschlagen: '+(e.message||String(e)),'err');
+  }finally{
+    _expBusy=false;
+    expAufstellungRender();
+  }
 }
 
 // DATAflor NK-Import (schema-valide gegen DFNKImport.xsd)
@@ -2466,13 +2854,24 @@ async function expNKImport(){
   if(res.error){toast('Fehler beim Laden: '+res.error.message,'err');return;}
   var data=res.data||[];
   if(!data.length){toast(nurFrei?'Keine FREIGEGEBENEN Berichte im Zeitraum':'Keine Daten','err');return;}
+  if(data.length>=1000){toast('Zu viele Berichte im Zeitraum (1000 oder mehr) - bitte Zeitraum verkleinern, sonst fehlen Buchungen','err');return;}
+  var maRes=await sb.from('mitarbeiter').select('name,mitarbeiter_nr');
+  if(maRes.error){toast('Mitarbeiternummern konnten nicht geladen werden: '+maRes.error.message,'err');return;}
+  var nkNrNachName={};
+  (maRes.data||[]).forEach(function(m){var k=expNorm(m.name);if(k&&m.mitarbeiter_nr!=null&&m.mitarbeiter_nr!=='')nkNrNachName[k]=String(m.mitarbeiter_nr);});
   var lohn=[],uebersprungen=0;
   data.forEach(function(b){
     var zr=b.zeit_rows||[];
     var quelle=zr.length?zr:[null];
     quelle.forEach(function(t){
       var lvNr=(t&&t.projektNr)?t.projektNr:b.projekt_nr;
-      var persNr=(t&&t.personalNr)?t.personalNr:(b.mitarbeiter_nr||'');
+      // Zeile aus der Zeiterfassung: eigene Nummer des Mitarbeiters (Zeile -> Stammdaten). Die Nummer des
+      // Vorarbeiters gilt nur fuer seine eigene Zeile - sonst wuerden fremde Stunden auf ihn gebucht.
+      var persNr='';
+      if(t){
+        persNr=t.personalNr?String(t.personalNr):(nkNrNachName[expNorm(t.name)]||'');
+        if(!persNr&&expNorm(t.name)===expNorm(b.mitarbeiter_name))persNr=b.mitarbeiter_nr||'';
+      }else{persNr=b.mitarbeiter_nr||'';}
       if(!lvNr||!persNr){uebersprungen++;return;}
       var stunden=t?nkNum(t.nettoArbeit):nkNum(b.netto_arbeit_h);
       if(stunden<=0)return;
@@ -2490,18 +2889,31 @@ async function expNKImport(){
 }
 
 async function expDFCSVAdmin(){
-  const von=document.getElementById('exp-von').value,bis=document.getElementById('exp-bis').value;
-  const nurFrei=document.getElementById('exp-nur-frei')?.checked;
-  let q=sb.from(tblBerichte()).select('*').order('datum');
-  if(von)q=q.gte('datum',von);if(bis)q=q.lte('datum',bis);
-  if(nurFrei!==false)q=q.eq('bh_freigegeben',true); // Standard: nur von der Buchhaltung freigegebene
-  const{data}=await q;
-  if(!data?.length){toast(nurFrei!==false?'Keine FREIGEGEBENEN Berichte im Zeitraum':'Keine Daten','err');return;}
-  const hdr='Mandant;Datum;Projekt;Name;MA-Nr;Von;Bis;Arbeit_h;Fahrt;Fahrzeit_min;Gesamt_h';
-  const rows=[];
-  data.forEach(b=>{const zr=b.zeit_rows||[];if(zr.length){zr.forEach(t=>{if(t.name)rows.push(['001',b.datum,b.projekt_nr,t.name,b.mitarbeiter_nr||'',t.von||'',t.bis||'',(t.nettoArbeit||'0').replace(',','.'),t.fahrt||'fahrer',t.fahrzeitMin||0,(t.gesamt||'0').replace(',','.')].join(';'));});}else{rows.push(['001',b.datum,b.projekt_nr,b.mitarbeiter_name,b.mitarbeiter_nr||'',b.von||'',b.bis||'',b.netto_arbeit_h||'0','fahrer',b.fahrzeit_min||0,b.netto_gesamt_h||'0'].join(';'));}});
-  dlFile('KLEI_Dataflor_'+new Date().toISOString().split('T')[0]+'.csv',[hdr,...rows].join('\n'),'text/csv;charset=utf-8');
-  toast(rows.length+' Zeilen exportiert'+(nurFrei!==false?' (nur freigegebene)':''),'ok');
+  // Gleiche Zeilen wie die CSV Buchhaltung (je Mitarbeiter, Tag, Projekt) im bisherigen Dataflor-Spaltenformat.
+  // Vorher stand bei jedem Mitarbeiter die Nummer des Vorarbeiters und immer das Hauptprojekt.
+  if(_expBusy||Date.now()-_expLetzterExport<1500)return;
+  _expLetzterExport=Date.now();
+  _expBusy=true;
+  try{
+    await expHoleZeilen();
+    expFilterOptionen();
+    const z=expAktFilter();
+    const nurFrei=document.getElementById('exp-nur-frei').checked;
+    if(!z.length){toast(nurFrei?'Keine FREIGEGEBENEN Zeiten im Zeitraum mit diesen Filtern':'Keine Daten im Zeitraum mit diesen Filtern','err');return;}
+    const ohneNr=z.filter(function(x){return !x.maNr;}).length;
+    const hdr='Mandant;Datum;Projekt;Name;MA-Nr;Von;Bis;Arbeit_h;Fahrt;Fahrzeit_min;Gesamt_h';
+    const rows=z.map(function(x){
+      return ['001',x.datum,x.projektNr,x.name,x.maNr,x.von,x.bis,x.arbeitH.toFixed(2),x.fahrtArt,Math.round(x.fahrzeitMin),x.gesamtH.toFixed(2)].map(expCsvFeld).join(';');
+    });
+    dlFile('KLEI_Dataflor_'+new Date().toISOString().split('T')[0]+'.csv',[hdr].concat(rows).join('\n'),'text/csv;charset=utf-8');
+    toast(rows.length+' Zeilen exportiert'+(nurFrei?' (nur freigegebene)':'')+(ohneNr?' - ACHTUNG: '+ohneNr+' Zeile(n) ohne MA-Nr':''),ohneNr?'err':'ok');
+  }catch(e){
+    console.error('Dataflor CSV fehlgeschlagen:',e);
+    toast('Dataflor-Export fehlgeschlagen: '+(e.message||String(e)),'err');
+  }finally{
+    _expBusy=false;
+    expAufstellungRender();
+  }
 }
 
 // ══════ AUSWERTUNG (Admin) ══════
@@ -5973,31 +6385,44 @@ async function masterSetzeRolle(r){
     openMenu();
   }
 }
+const MASTER_ROLLEN_SUB={
+  admin:'Alle Bereiche',
+  verwaltung:'Freigabe und Abgabe',
+  projektleiter:'Berichte abnehmen',
+  vorarbeiter:'Kolonnenbericht',
+  arbeiter:'Eigener Tagesbericht',
+  werkstatt:'Werkstattbericht'
+};
 function masterPanelHTML(){
   const akt=currentUser?currentUser.rolle:'';
-  return '<div style="margin-top:18px;padding:12px;border:1px solid var(--b);border-radius:var(--rad)">'+
-    '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--m);margin-bottom:8px">Ansicht wechseln &middot; Vollzugriff #'+MASTER_NR+'</div>'+
-    '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
+  return '<div class="mk-gruppe">Vollzugriff #'+MASTER_NR+'</div>'+
+    '<div class="mr-card">'+
+    '<div class="mr-title">Ansicht wechseln</div>'+
+    '<div class="mr-grid">'+
     MASTER_ROLLEN.map(function(r){
       const an=(r.key===akt);
-      return '<button class="btn'+(an?' btn-sky':'')+'" style="font-size:11px;padding:5px 10px" ontouchstart="masterSetzeRolle(\''+r.key+'\')" onclick="masterSetzeRolle(\''+r.key+'\')">'+
-        r.name+(an?' &#x2713;':'')+'</button>';
+      return '<button class="mr-btn'+(an?' act':'')+'" '+tsAttr('masterSetzeRolle(\''+r.key+'\')')+'>'+
+        '<span class="mr-btn-n">'+r.name+'</span>'+
+        '<span class="mr-btn-s">'+(an?'&#x2713; aktiv':(MASTER_ROLLEN_SUB[r.key]||''))+'</span></button>';
     }).join('')+'</div>'+
-    '<div style="font-size:10px;color:var(--m);margin-top:8px;line-height:1.5">'+
+    '<div class="mr-hint">'+
     'Gilt nur fuer diese Sitzung, in den Stammdaten bleibst du '+_dfEsc(masterEchteRolle||'--')+'. '+
     'Was du in einer Ansicht schreibst oder freigibst, sind echte Datensaetze unter deinem Namen - ausser im Testmodus. '+
-    'Die Azubi-Sicht der Ausbildung erscheint, sobald Vorarbeiter, Arbeiter oder Werkstatt aktiv ist.</div>'+
-    '<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--b)">'+
-    '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--m);margin-bottom:8px">Testmodus</div>'+
-    '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
-    '<button class="btn'+(TESTMODUS?' btn-sky':'')+'" style="font-size:11px;padding:5px 10px" ontouchstart="testmodusSetze(true)" onclick="testmodusSetze(true)">Testmodus EIN'+(TESTMODUS?' &#x2713;':'')+'</button>'+
-    '<button class="btn'+(TESTMODUS?'':' btn-sky')+'" style="font-size:11px;padding:5px 10px" ontouchstart="testmodusSetze(false)" onclick="testmodusSetze(false)">Testmodus AUS'+(TESTMODUS?'':' &#x2713;')+'</button>'+
+    'Die Azubi-Sicht der Ausbildung erscheint, sobald Vorarbeiter, Arbeiter oder Werkstatt aktiv ist. '+
+    'Controlling und Verwaltung gibt es nur in der Admin-Ansicht.</div>'+
     '</div>'+
-    '<div style="font-size:10px;color:var(--m);margin-top:8px;line-height:1.5">'+
+    '<div class="mr-card">'+
+    '<div class="mr-title">Testmodus</div>'+
+    '<div class="mr-row">'+
+    '<button class="mr-btn warn'+(TESTMODUS?' act':'')+'" '+tsAttr('testmodusSetze(true)')+'>'+
+      '<span class="mr-btn-n">Testmodus EIN</span><span class="mr-btn-s">'+(TESTMODUS?'&#x2713; aktiv':'Test-Tabelle, Test-Mail')+'</span></button>'+
+    '<button class="mr-btn'+(TESTMODUS?'':' act')+'" '+tsAttr('testmodusSetze(false)')+'>'+
+      '<span class="mr-btn-n">Testmodus AUS</span><span class="mr-btn-s">'+(TESTMODUS?'Echte Daten':'&#x2713; aktiv')+'</span></button>'+
+    '</div>'+
+    '<div class="mr-hint">'+
     'Im Testmodus landen alle Berichte, Abnahmen und Freigaben in einer eigenen Test-Tabelle. Auswertung, Abgabe, Cockpit und Export zeigen dann nur Testdaten. '+
     'Mails gehen nur an '+_dfEsc(TEST_MAIL)+'. Stammdaten (Mitarbeiter, Projekte, Fahrzeuge) bleiben die echten - Aenderungen daran sind auch im Testmodus echt. '+
     'Der Testmodus endet beim Abmelden.</div>'+
-    '</div>'+
     '</div>';
 }
 // Testmodus ein-/ausschalten. Nur Vollzugriff. Bewusst zwei Buttons (EIN/AUS) statt Umschalter,
@@ -6074,27 +6499,110 @@ function modCheckboxLesen(prefix){
   MODULE_DEFS.forEach(d=>{const c=document.getElementById(prefix+'-'+d.key);if(c&&c.checked)module.push(d.key);});
   return module.length?module:['tagesberichte'];
 }
+// ══════ Antippen ohne Fehlausloesung beim Scrollen ══════
+// Bisher loeste ontouchstart sofort aus - also auch, wenn man nur scrollen wollte.
+// tsTap merkt sich die erste Beruehrung und loest erst beim Loslassen aus, und nur wenn der Finger
+// sich kaum bewegt hat. tsKlick ist der onclick-Teil (Maus) und ignoriert den Klick, den das iPad
+// nach einem Tipp zusaetzlich schickt - so wird nichts doppelt ausgefuehrt.
+let _tsLetzterTap=0;
+function tsTap(ev,el,fn){
+  const t0=ev&&ev.touches&&ev.touches[0];
+  if(!t0||!el)return;
+  const x=t0.clientX,y=t0.clientY;
+  let ok=true;
+  function bewegt(e){const t=e.touches&&e.touches[0];if(t&&(Math.abs(t.clientX-x)>10||Math.abs(t.clientY-y)>10))ok=false;}
+  function aufraeumen(){el.removeEventListener('touchmove',bewegt);el.removeEventListener('touchend',ende);el.removeEventListener('touchcancel',abbruch);}
+  function abbruch(){ok=false;aufraeumen();}
+  function ende(e){
+    aufraeumen();
+    if(!ok)return;
+    _tsLetzterTap=Date.now();
+    if(e&&e.cancelable)e.preventDefault();
+    fn();
+  }
+  el.addEventListener('touchmove',bewegt,{passive:true});
+  el.addEventListener('touchend',ende);
+  el.addEventListener('touchcancel',abbruch);
+}
+function tsKlick(fn){
+  if(Date.now()-_tsLetzterTap<700)return;
+  fn();
+}
+function tsAttr(aufruf){
+  return 'ontouchstart="tsTap(event,this,function(){'+aufruf+'})" onclick="tsKlick(function(){'+aufruf+'})"';
+}
+// Kacheln des Hauptmenues. Die Module (MODULE_DEFS, Freigabe je Mitarbeiter) bleiben unveraendert;
+// Controlling und Verwaltung sind KEINE eigenen Module, sondern Bereiche des Admin und haengen an der Rolle admin.
+const MENU_ICONS={
+  tagesberichte:'<svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9z"/><path d="M8.5 11.5h7M8.5 15.5h5"/></svg>',
+  controlling:'<svg viewBox="0 0 24 24"><path d="M4 20h16"/><path d="M7 20v-6M12 20V6M17 20v-9"/></svg>',
+  verwaltung:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c.6-3 2.8-4.5 5.5-4.5s4.9 1.5 5.5 4.5"/><path d="M16 5.5h4.5M16 9h4.5M17.5 12.5h3"/></svg>',
+  ausbildung:'<svg viewBox="0 0 24 24"><path d="M4 5.5c2.5-1 5.5-1 8 .5 2.5-1.5 5.5-1.5 8-.5V19c-2.5-1-5.5-1-8 .5-2.5-1.5-5.5-1.5-8-.5z"/><path d="M12 6v13.5"/></svg>',
+  baurechner:'<svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8.5 7.5h7"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 16h.01M12 16h.01M15.5 16h.01"/></svg>'
+};
+function menuKacheln(u){
+  const mods=userModule(u);
+  const istAdmin=!!(u&&u.rolle==='admin');
+  const istBuch=!!(u&&u.rolle==='verwaltung');
+  const liste=[];
+  mods.forEach(function(k){
+    const d=MODULE_DEFS.find(function(x){return x.key===k;});if(!d)return;
+    let sub=d.sub;let farbe='g';
+    if(k==='tagesberichte'){
+      if(istAdmin)sub='Freigabe, Berichte, Abgabe, Einteilung, Export';
+      else if(istBuch)sub='Freigabe und Abgabe-Uebersicht';
+    }
+    if(k==='baurechner')farbe='o';
+    liste.push({key:k,name:d.name,sub:sub,farbe:farbe,gruppe:'module'});
+    if(k==='tagesberichte'&&istAdmin){
+      liste.push({key:'controlling',name:'Controlling',sub:'Auswertung, Pflege, Cockpit, Kalkulation',farbe:'sky',gruppe:'buero'});
+      liste.push({key:'verwaltung',name:'Verwaltung',sub:'Mitarbeiter, Projekte, Fahrzeuge, E-Mail',farbe:'earth',gruppe:'buero'});
+    }
+  });
+  return liste;
+}
+function menuKachelHTML(k){
+  return '<div class="mk" '+tsAttr('openModul(\''+k.key+'\')')+'>'+
+    '<div class="mk-ic f-'+k.farbe+'">'+(MENU_ICONS[k.key]||'')+'</div>'+
+    '<div class="mk-tx"><div class="mk-name">'+k.name+'</div><div class="mk-sub">'+k.sub+'</div></div>'+
+    '<div class="mk-chev">&#8250;</div></div>';
+}
 function openMenu(){
   ['admin-screen','pl-screen','ausb-screen','br-screen'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
   document.getElementById('menu-user-name').textContent=currentUser.name;
-  const mods=userModule(currentUser);
+  const hallo=document.getElementById('menu-hallo');
+  if(hallo){
+    const vor=String(currentUser.name||'').trim().split(/\s+/)[0]||'';
+    hallo.textContent=vor?'Hallo '+vor:'Hallo';
+  }
+  const kacheln=menuKacheln(currentUser);
+  const mod=kacheln.filter(function(k){return k.gruppe==='module';});
+  const buero=kacheln.filter(function(k){return k.gruppe==='buero';});
   let html='';
-  mods.forEach(k=>{
-    const d=MODULE_DEFS.find(x=>x.key===k);if(!d)return;
-    html+='<div class="menu-tile" ontouchstart="openModul(\''+k+'\')" onclick="openModul(\''+k+'\')">'+
-      '<div class="menu-tile-name">'+d.name+'</div><div class="menu-tile-sub">'+d.sub+'</div></div>';
-  });
+  if(buero.length)html+='<div class="mk-gruppe">Module</div>';
+  html+='<div class="mk-grid">'+mod.map(menuKachelHTML).join('')+'</div>';
+  if(buero.length){
+    html+='<div class="mk-gruppe">Auswertung und Stammdaten</div>'+
+      '<div class="mk-grid">'+buero.map(menuKachelHTML).join('')+'</div>';
+  }
   document.getElementById('menu-tiles').innerHTML=html;
   const mm=document.getElementById('menu-master');
   if(mm)mm.innerHTML=istMasterUser?masterPanelHTML():'';
   document.getElementById('menu-screen').style.display='flex';
 }
 async function openModul(k){
+  // Controlling/Verwaltung sind Admin-Bereiche: nur mit Rolle admin, sonst sichtbar ablehnen
+  if(k==='controlling'||k==='verwaltung'){
+    if(!currentUser||currentUser.rolle!=='admin'){toast('Dieser Bereich ist nur fuer Admins freigegeben','err');return;}
+    document.getElementById('menu-screen').style.display='none';
+    openAdmin(k==='controlling'?'ctrl':'verw');
+    return;
+  }
   document.getElementById('menu-screen').style.display='none';
   if(k==='ausbildung'){openAusb();return;}
   if(k==='baurechner'){openBaurechner();return;}
   // Modul Tagesberichte: bisheriges Rollen-Routing bleibt unveraendert
-  if(currentUser.rolle==='admin'||currentUser.rolle==='verwaltung')openAdmin();
+  if(currentUser.rolle==='admin'||currentUser.rolle==='verwaltung')openAdmin('tb');
   else if(currentUser.rolle==='projektleiter')openPL();
   else await initApp();
 }
