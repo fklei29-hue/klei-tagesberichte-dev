@@ -97,6 +97,23 @@ body:not(.theme-light) .ab-seg-btn.act{background:var(--g);border-color:var(--g)
 .mr-row .mr-btn{flex:1;min-width:140px;}
 .mr-btn.warn.act{background:var(--rg);border-color:var(--r);}
 .mr-btn.warn.act .mr-btn-s{color:var(--r);}
+/* ══ Posteingang / Rueckfragen ══ */
+.ib-btn{position:relative;}
+.ib-badge{display:none;position:absolute;top:-7px;right:-7px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--r);color:#fff;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;line-height:18px;text-align:center;}
+.ib-badge.on{display:inline-block;}
+.mk-badge{display:none;margin-left:8px;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--r);color:#fff;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;line-height:20px;text-align:center;vertical-align:middle;}
+.mk-badge.on{display:inline-block;}
+.ib-item{background:var(--s3);border:1px solid var(--b);border-left:4px solid var(--o);border-radius:var(--rad);padding:10px 12px;margin-bottom:8px;}
+.ib-item.korrektur{border-left-color:var(--r);}
+.ib-item.antwort,.ib-item.korrigiert{border-left-color:var(--sky);}
+.ib-typ{font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--o);}
+.ib-item.korrektur .ib-typ{color:var(--r);}
+.ib-item.antwort .ib-typ,.ib-item.korrigiert .ib-typ{color:var(--sky);}
+.ib-meta{font-size:11px;color:var(--m);margin-top:3px;line-height:1.5;}
+.ib-text{font-size:13px;color:var(--c);line-height:1.5;margin-top:6px;white-space:pre-wrap;}
+.ib-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.ib-row .btn{font-size:11px;padding:7px 11px;}
+.rf-login{background:var(--rg);border:1px solid var(--r);border-radius:var(--rad);padding:8px 12px;margin:0 0 10px;font-size:12px;color:var(--r);font-weight:600;cursor:pointer;}
 .az-card{background:var(--s3);border:1px solid var(--b);border-radius:6px;padding:12px;margin-bottom:8px;}
 .az-card-title{font-size:13px;font-weight:600;color:var(--c);}
 .az-card-sub{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--m);margin-top:2px;}
@@ -516,6 +533,131 @@ body.wsd .content .et{font-family:'IBM Plex Sans',sans-serif;color:var(--zMut2);
 /* Anpassung schmale Breiten (iPad hochkant) */
 @media(max-width:1020px){body.wsd .app{grid-template-columns:240px 1fr;}body.wsd .content{padding:20px 18px 24px;}}
 @media(max-width:760px){body.wsd .wsd-grid2{grid-template-columns:1fr;}body.wsd .wsd-zeitgrid{grid-template-columns:1fr 1fr;}body.wsd .wsd-nettocol{align-items:flex-start;}body.wsd .wsd-nettocol label{text-align:left;}body.wsd #wsd-tabslot{margin-left:0;order:10;flex-basis:100%;}}
+
+/* ══════ LAYOUT-KORREKTUREN + BRANDING MITARBEITER-ANSICHT (Okt 2026) ══════ */
+/* Kopfzeile darf umbrechen: Seite als Spalte, App fuellt den Rest (vorher feste 46px) */
+body{display:flex;flex-direction:column;}
+.app{flex:1;height:auto;min-height:0;}
+header{flex:none;height:auto;min-height:50px;padding:8px 12px;flex-wrap:wrap;row-gap:6px;background:#1e3317;border-bottom:1px solid #16240f;}
+header .h-logo{height:30px;background:#fff;border-radius:6px;padding:3px 6px;}
+.h-word{font-family:'IBM Plex Sans',sans-serif;font-size:15px;font-weight:700;color:#fff;letter-spacing:.2px;white-space:nowrap;}
+body.wsd .h-word{display:none;}
+header .h-divider{background:rgba(255,255,255,.22);}
+header .h-user{font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#a8c49e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+header .role-badge,header .role-badge.arbeiter,header .role-badge.vorarbeiter,header .role-badge.werkstatt{font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:0;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);color:#cfe0c8;}
+header .hbtn,header .theme-btn{background:none;border:1px solid rgba(255,255,255,.22);border-radius:8px;color:#cfe0c8;font-family:'IBM Plex Sans',sans-serif;font-size:11.5px;font-weight:600;padding:6px 11px;}
+header .theme-btn{font-size:14px;padding:5px 10px;}
+header .h-right{flex-wrap:wrap;justify-content:flex-end;}
+/* iOS: Datum-/Zeitfelder sind sonst breiter als ihre Spalte und ueberlappen das Nachbarfeld */
+.fg{min-width:0;}
+input[type=date],input[type=time],input[type=month]{-webkit-appearance:none;appearance:none;display:block;width:100%;min-width:0;max-width:100%;min-height:36px;}
+input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and-time-value,input[type=month]::-webkit-date-and-time-value{text-align:left;margin:0;}
+/* Speichern/Senden: schwebt unten rechts statt als Balken ueber dem Formular */
+.content{padding-bottom:104px;}
+.arow.arow-fab{position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));left:auto;margin:0;padding:8px;gap:8px;border:1px solid var(--b);border-radius:14px;background:var(--s1);box-shadow:0 8px 28px rgba(0,0,0,.22);z-index:60;flex-wrap:nowrap;max-width:calc(100vw - 28px);}
+.arow.arow-fab .btn{white-space:nowrap;}
+.lbl-s{display:none;}
+.toast{bottom:96px;}
+/* Mitarbeiter zuweisen (Arbeitsschritte): Zeile bricht sauber um */
+.ma-check-row{flex-wrap:wrap;row-gap:4px;}
+.ma-name-lbl{min-width:0;}
+@media(max-width:680px){
+  .ts-head{padding:8px 10px;gap:8px;row-gap:6px;}
+  .ts-head .ts-word{font-size:14px;}
+  .ts-head .ts-user,.ts-head .ib-txt,.ts-head .admin-badge{display:none;}
+  .ts-head .hbtn,.ts-head .theme-btn{padding:6px 9px;}
+  #brpanel-kalk .a-sec,#apanel-kalk .a-sec{padding-left:6px;padding-right:6px;}
+  /* Werkstatt-Design: Seitenleiste ist ausgeblendet, der Inhalt sass trotzdem in der schmalen Spalte */
+  body.wsd .app{grid-template-columns:1fr;}
+  body.wsd .content{padding:14px 12px 28px;}
+  header{padding:8px 10px;}
+  .h-word{display:none;}
+  header .h-user{max-width:44vw;}
+  header .h-right{width:100%;}
+  body.wsd header .h-right{width:auto;}
+  .arow.arow-fab{right:10px;max-width:calc(100vw - 20px);}
+  .arow.arow-fab .lbl-l{display:none;}
+  .arow.arow-fab .lbl-s{display:inline;}
+  .arow.arow-fab .btn{padding:11px 16px;font-size:13px;}
+  .fg.fg-fahrt{flex:1 1 100%;}
+  /* Kopfzeile eines Arbeitsschritts: Projekt-Auswahl in eigene Zeile */
+  .lief-head{flex-wrap:wrap;row-gap:6px;}
+  .lief-head select[id^="st-kat-"]{flex:1 1 90px!important;}
+  .lief-head select[id^="st-pr-"]{order:9;flex:1 1 100%!important;min-width:0!important;}
+  .ma-check-row .ma-name-lbl{flex:1 1 0;}
+  .ma-check-row .ma-h{order:2;}
+  .ma-check-row .ma-budget{order:3;flex:1 1 100%;text-align:left;margin:0 0 0 26px;white-space:normal;}
+}
+
+/* ══ Cockpit: Liste + Detailansicht ══ */
+.cp-list{border:1px solid var(--b);border-radius:10px;background:var(--s2);overflow:hidden;}
+.cp-row{display:grid;grid-template-columns:minmax(0,1fr) 64px 92px 98px 92px 86px 80px 54px 16px;gap:10px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--b);font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t);text-align:right;}
+.cp-row:last-child{border-bottom:none;}
+.cp-row.cp-head{background:var(--s3);font-size:9px;letter-spacing:.8px;text-transform:uppercase;color:var(--m);padding:9px 14px;}
+.cp-row.cp-item{cursor:pointer;}
+.cp-row.cp-item:hover{background:var(--s3);}
+.cp-row .cp-c-name{text-align:left;font-family:'IBM Plex Sans',sans-serif;min-width:0;}
+.cp-row .ct-pname{font-weight:600;color:var(--c);font-size:13px;}
+.cp-row .cp-c-ges{color:var(--c);font-weight:700;}
+.cp-row .cp-c-chev{color:var(--m);font-size:18px;line-height:1;font-family:'IBM Plex Sans',sans-serif;}
+.cp-row .ct-plan{width:100%;}
+.cp-ber-m{display:none;}
+.cp-det-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+.cp-det-title{font-size:16px;font-weight:700;color:var(--c);flex:1;min-width:200px;line-height:1.3;}
+.cp-det-title .ct-pnr{margin-right:8px;}
+.cp-det-plan{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;background:var(--s2);border:1px solid var(--b);border-radius:10px;padding:12px 14px;margin-bottom:8px;}
+.cp-det-kv{display:flex;flex-direction:column;gap:4px;font-family:'IBM Plex Mono',monospace;min-width:70px;padding-bottom:7px;}
+.cp-det-kv span{font-size:9px;letter-spacing:.8px;text-transform:uppercase;color:var(--m);}
+.cp-det-kv b{font-size:14px;color:var(--c);}
+.cp-det-treffer{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--m);min-height:14px;margin-bottom:6px;}
+.cp-det-body{background:var(--s2);border:1px solid var(--b);border-radius:10px;padding:14px;overflow-x:auto;}
+@media(max-width:860px){
+  .cp-row.cp-head{display:none;}
+  .cp-row{grid-template-columns:1fr 1fr 1fr;row-gap:8px;column-gap:8px;padding:12px;text-align:left;}
+  .cp-row .cp-c-name{grid-column:1/-1;}
+  .cp-row .cp-c-ber,.cp-row .cp-c-chev{display:none;}
+  .cp-ber-m{display:block;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--m);font-weight:400;margin-top:3px;}
+  .cp-row [data-l]{display:flex;flex-direction:column;gap:2px;font-size:13px;min-width:0;}
+  .cp-row [data-l]::before{content:attr(data-l);font-size:8.5px;letter-spacing:.7px;text-transform:uppercase;color:var(--m);}
+  .cp-det-title{font-size:15px;min-width:0;flex-basis:100%;}
+  .cp-det-body{padding:10px;}
+}
+
+/* ══ Uebersicht (Mitarbeiter) ══ */
+.ue-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;}
+.ue-nav .btn{font-size:18px;line-height:1;padding:8px 16px;}
+.ue-monat{font-size:17px;font-weight:700;color:var(--c);min-width:170px;text-align:center;}
+.ue-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.ue-titel{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--m);margin:0 0 8px 2px;}
+.ue-woche{background:var(--s2);border:1px solid var(--b);border-radius:10px;margin-bottom:8px;overflow:hidden;}
+.ue-woche-kopf{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;flex-wrap:wrap;}
+.ue-woche.offen .ue-woche-kopf{border-bottom:1px solid var(--b);background:var(--s3);}
+.ue-chev{color:var(--m);font-size:12px;width:12px;}
+.ue-kw{font-weight:700;color:var(--c);font-size:13px;}
+.ue-zr{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--m);}
+.ue-wsum{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--m);}
+.ue-wsum b{color:var(--c);}
+.ue-ber{display:grid;grid-template-columns:78px minmax(0,1fr) 70px auto;gap:10px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--b);}
+.ue-ber:last-child{border-bottom:none;}
+.ue-ber-d{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--g);white-space:nowrap;}
+.ue-ber-p{font-size:13px;font-weight:600;color:var(--c);overflow-wrap:anywhere;}
+.ue-ber-s{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--m);margin-top:3px;}
+.ue-ber-h{font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--c);text-align:right;white-space:nowrap;}
+.ue-ber-a{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
+.ue-ber-a .btn{font-size:11px;padding:7px 10px;}
+.ue-chip{display:inline-block;padding:1px 6px;border-radius:8px;background:var(--s3);border:1px solid var(--b);color:var(--m);margin-left:4px;}
+.ue-chip.ok{background:var(--gg);border-color:var(--gd);color:var(--gl);}
+.ue-chip.mid{background:var(--skyg);border-color:var(--sky);color:var(--sky);}
+.ue-chip.warn{background:var(--rg);border-color:var(--r);color:var(--r);}
+@media(max-width:680px){
+  .ue-ber{grid-template-columns:minmax(0,1fr) auto;row-gap:6px;}
+  .ue-ber-d{grid-column:1;}
+  .ue-ber-h{grid-column:2;grid-row:1;}
+  .ue-ber-n{grid-column:1/-1;}
+  .ue-ber-a{grid-column:1/-1;justify-content:flex-start;}
+  .ue-wsum{flex-basis:100%;margin-left:22px;}
+  .ue-monat{min-width:0;flex:1;}
+}
 </style>
 </head>
 <body class="theme-light">
@@ -539,6 +681,7 @@ body.wsd .content .et{font-family:'IBM Plex Sans',sans-serif;color:var(--zMut2);
     <span class="ts-bereich" id="admin-bereich-name">Tagesberichte</span>
     <span class="admin-badge badge-admin">Admin</span>
     <span id="admin-user-name" class="ts-user"></span>
+    <button class="hbtn ib-btn" id="inbox-btn-admin" ontouchstart="inboxOeffnen()" onclick="inboxOeffnen()" title="Posteingang">&#9993;<span class="ib-txt"> Posteingang</span><span class="ib-badge" id="inbox-badge-admin"></span></button>
     <button class="theme-btn" style="margin-left:auto" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
     <button class="hbtn" ontouchstart="openProfil()" onclick="openProfil()">Profil</button>
     <button class="hbtn menu-hbtn" style="display:none" ontouchstart="zumMenue()" onclick="zumMenue()">Menue</button>
@@ -578,10 +721,13 @@ body.wsd .content .et{font-family:'IBM Plex Sans',sans-serif;color:var(--zMut2);
 </div>
 
 <div id="pl-screen">
-  <div class="admin-header">
-    <img src="https://www.klei-sportplatzbau.de/images/logos/KLEI_LOGO_FARBIG_RGB_72DPI.png" style="height:24px" alt="KLEI" onerror="this.style.display='none'">
+  <div class="ts-head">
+    <img src="https://www.klei-sportplatzbau.de/images/logos/KLEI_LOGO_FARBIG_RGB_72DPI.png" class="ts-logo" alt="KLEI" onerror="this.style.display='none'">
+    <span class="ts-word">Terra Suite</span>
+    <span class="ts-bereich">Tagesberichte</span>
     <span class="admin-badge badge-pl">Projektleiter</span>
-    <span id="pl-user-name" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--m)"></span>
+    <span id="pl-user-name" class="ts-user"></span>
+    <button class="hbtn ib-btn" id="inbox-btn-pl" ontouchstart="inboxOeffnen()" onclick="inboxOeffnen()" title="Posteingang">&#9993;<span class="ib-txt"> Posteingang</span><span class="ib-badge" id="inbox-badge-pl"></span></button>
     <button class="theme-btn" style="margin-left:auto" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
     <button class="hbtn" ontouchstart="openProfil()" onclick="openProfil()">Profil</button>
     <button class="hbtn menu-hbtn" style="display:none" ontouchstart="zumMenue()" onclick="zumMenue()">Menue</button>
@@ -620,10 +766,12 @@ body.wsd .content .et{font-family:'IBM Plex Sans',sans-serif;color:var(--zMut2);
 </div>
 
 <div id="ausb-screen">
-  <div class="admin-header">
-    <img src="https://www.klei-sportplatzbau.de/images/logos/KLEI_LOGO_FARBIG_RGB_72DPI.png" style="height:24px" alt="KLEI" onerror="this.style.display='none'">
+  <div class="ts-head">
+    <img src="https://www.klei-sportplatzbau.de/images/logos/KLEI_LOGO_FARBIG_RGB_72DPI.png" class="ts-logo" alt="KLEI" onerror="this.style.display='none'">
+    <span class="ts-word">Terra Suite</span>
+    <span class="ts-bereich">Ausbildung</span>
     <span class="admin-badge badge-azubi" id="ausb-badge">Azubi</span>
-    <span id="ausb-user-name" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--m)"></span>
+    <span id="ausb-user-name" class="ts-user"></span>
     <button class="theme-btn" style="margin-left:auto" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
     <button class="hbtn menu-hbtn" style="display:none" ontouchstart="zumMenue()" onclick="zumMenue()">Menue</button>
     <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
@@ -645,10 +793,11 @@ body.wsd .content .et{font-family:'IBM Plex Sans',sans-serif;color:var(--zMut2);
 </div>
 
 <div id="br-screen">
-  <div class="admin-header">
-    <img src="https://www.klei-sportplatzbau.de/images/logos/KLEI_LOGO_FARBIG_RGB_72DPI.png" style="height:24px" alt="KLEI" onerror="this.style.display='none'">
-    <span class="admin-badge badge-admin">Baurechner</span>
-    <span id="br-user-name" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--m)"></span>
+  <div class="ts-head">
+    <img src="https://www.klei-sportplatzbau.de/images/logos/KLEI_LOGO_FARBIG_RGB_72DPI.png" class="ts-logo" alt="KLEI" onerror="this.style.display='none'">
+    <span class="ts-word">Terra Suite</span>
+    <span class="ts-bereich">Baurechner</span>
+    <span id="br-user-name" class="ts-user"></span>
     <button class="theme-btn" style="margin-left:auto" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
     <button class="hbtn menu-hbtn" style="display:none" ontouchstart="zumMenue()" onclick="zumMenue()">Menue</button>
     <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
@@ -660,6 +809,7 @@ body.wsd .content .et{font-family:'IBM Plex Sans',sans-serif;color:var(--zMut2);
 
 <header>
   <img src="https://www.klei-sportplatzbau.de/images/logos/KLEI_LOGO_FARBIG_RGB_72DPI.png" class="h-logo" alt="KLEI" onerror="this.style.display='none'">
+  <span class="h-word">Terra Suite</span>
   <div class="wsd-only wsd-htitle"><div class="wsd-ht1">KLEI Tagesberichte</div><div class="wsd-ht2" id="wsd-sub"></div></div>
   <div class="wsd-only" id="wsd-tabslot"></div>
   <div class="h-divider"></div>
@@ -667,6 +817,7 @@ body.wsd .content .et{font-family:'IBM Plex Sans',sans-serif;color:var(--zMut2);
   <span class="h-user" id="h-user-name"></span>
   <div class="h-right">
     <span class="wsd-only wsd-hdate" id="wsd-hdate"></span>
+    <button class="hbtn ib-btn" id="inbox-btn-app" ontouchstart="inboxOeffnen()" onclick="inboxOeffnen()" title="Posteingang">&#9993;<span class="ib-badge" id="inbox-badge-app"></span></button>
     <button class="theme-btn" id="theme-btn" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
     <button class="hbtn" id="profil-btn" ontouchstart="openProfil()" onclick="openProfil()">Profil</button>
     <button class="hbtn menu-hbtn" style="display:none" ontouchstart="zumMenue()" onclick="zumMenue()">Menue</button>
@@ -741,6 +892,43 @@ body.wsd .content .et{font-family:'IBM Plex Sans',sans-serif;color:var(--zMut2);
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn btn-p" style="flex:1;min-width:140px;padding:13px" ontouchstart="restoreVADraft()" onclick="restoreVADraft()">Weitermachen</button>
       <button class="btn btn-r" style="flex:1;min-width:120px;padding:13px" ontouchstart="discardVADraft()" onclick="discardVADraft()">Verwerfen</button>
+    </div>
+  </div>
+</div>
+
+<div id="mo-rueckfrage" style="position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:10020;display:none;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--s1);border:2px solid var(--o);border-radius:8px;padding:22px;width:min(480px,95vw);max-height:88vh;overflow-y:auto">
+    <div style="font-weight:700;font-size:16px;color:var(--c);margin-bottom:4px">Rueckfrage zum Bericht</div>
+    <div id="rf-bericht-info" style="font-size:12px;color:var(--m);line-height:1.5;margin-bottom:12px"></div>
+    <div class="fg"><label>Art</label><select id="rf-typ"><option value="frage">Frage (Bericht bleibt wie er ist)</option><option value="korrektur">Zur Korrektur zurueckgeben (Mitarbeiter muss aendern und neu senden)</option></select></div>
+    <div class="fg" style="margin-top:8px"><label>Text an den Mitarbeiter</label><textarea id="rf-text" rows="4" placeholder="z.B. Fahrzeit fuer Max fehlt, bitte ergaenzen"></textarea></div>
+    <div style="font-size:11px;color:var(--m);line-height:1.5;margin:8px 0 14px">Der Mitarbeiter sieht das in seinem Posteingang. Bei "zur Korrektur" ist der Bericht bis zur Korrektur fuer die Freigabe gesperrt.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-p" style="flex:1;min-width:140px;padding:13px" ontouchstart="rueckfrageSenden()" onclick="rueckfrageSenden()">Absenden</button>
+      <button class="btn" style="flex:1;min-width:120px;padding:13px" ontouchstart="rueckfrageSchliessen()" onclick="rueckfrageSchliessen()">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<div id="mo-inbox" style="position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:10019;display:none;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--s1);border:2px solid var(--gd);border-radius:8px;padding:22px;width:min(560px,95vw);max-height:88vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="font-weight:700;font-size:16px;color:var(--c)">Posteingang</div>
+      <button class="btn" style="font-size:11px;padding:6px 10px" ontouchstart="inboxSchliessen()" onclick="inboxSchliessen()">Schliessen</button>
+    </div>
+    <div id="inbox-list"></div>
+  </div>
+</div>
+
+<div id="mo-fahrer" style="position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:695;display:none;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--s1);border:2px solid var(--r);border-radius:8px;padding:22px;width:min(480px,95vw);max-height:88vh;overflow-y:auto">
+    <div style="font-weight:700;font-size:16px;color:var(--r);margin-bottom:6px">Mehr Fahrer als Fahrzeuge</div>
+    <div id="fahrer-text" style="font-size:13px;line-height:1.6;color:var(--t);margin-bottom:10px"></div>
+    <div style="font-size:12px;line-height:1.5;color:var(--m);margin-bottom:10px">Fahrer bekommen die volle Fahrzeit, Beifahrer die halbe. Entweder korrigierst du die Zeiten oder das Fahrzeug, oder du begruendest kurz, warum das so richtig ist. Die Begruendung steht im Bericht und bei der Freigabe.</div>
+    <div class="fg"><label>Begruendung (Pflicht)</label><textarea id="fahrer-begr" rows="3" placeholder="z.B. zweiter PKW privat, nicht als Geraet erfasst"></textarea></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+      <button class="btn" style="flex:1;min-width:120px;padding:13px" ontouchstart="fahrerBegruendungAbbrechen()" onclick="fahrerBegruendungAbbrechen()">Korrigieren</button>
+      <button class="btn btn-p" style="flex:1;min-width:160px;padding:13px" ontouchstart="fahrerBegruendungSenden()" onclick="fahrerBegruendungSenden()">Mit Begruendung senden</button>
     </div>
   </div>
 </div>
@@ -1047,7 +1235,7 @@ document.getElementById('login-nr').addEventListener('keydown',e=>{if(e.key==='E
 
 function doLogout(){
   stopVAAutoSave();
-  currentUser=null;reports=[];currentId=null;currentRole=null;unterschriftData=null;
+  currentUser=null;reports=[];currentId=null;currentRole=null;unterschriftData=null;_inbox=[];_inboxAnzahl=0;_inboxGemeldet=false;inboxBadges();
   istMasterUser=false;masterEchteRolle=null;
   TESTMODUS=false;_testGasOk=false;testmodusBanner();
   laufTest=null;tEdit=null;matEditId=null;bhEditId=null;bhArbeit=null;AUSB_MAT=[];AUSB_TESTS=[];AUSB_ABG=[];AUSB_BH=[];
@@ -1080,6 +1268,7 @@ async function initApp(){
   document.querySelectorAll('.va-only').forEach(el=>el.style.display=currentRole==='vorarbeiter'?'':'none');
   if(currentRole==='werkstatt')document.getElementById('btn-new-bericht').className='btn-new ws';
   buildUI();renderSB();updateSBDate();
+  inboxLaden();
   if(reports.length)loadReport(reports[0].id);
   else if(currentRole==='arbeiter'||currentRole==='werkstatt')setTimeout(()=>initARForm(),200);
 }
@@ -1196,6 +1385,7 @@ function adminBereichSetze(key){
 }
 function openAdmin(bereich){
   _adminOpenTs=Date.now();
+  inboxLaden();
   document.getElementById('admin-screen').style.display='flex';
   document.getElementById('admin-user-name').textContent=currentUser.name;
   // Buchhaltung (verwaltung) sieht NUR Freigabe + Abgabe (Pruefliste + Sammelfreigabe); Admin sieht alles.
@@ -1300,6 +1490,7 @@ function freiBerichtCard(b){
   const fw=fahrerWiderspruch(b.zeit_rows,b.mach_rows);
   return '<div style="background:var(--s3);border:1px solid '+(fw?'var(--r)':(bh?'var(--gd)':'var(--b)'))+';border-radius:var(--rad);padding:10px;margin-bottom:6px">'+
     (fw?'<div style="font-size:11.5px;font-weight:600;color:var(--r);line-height:1.45;margin-bottom:6px">Pruefen: '+_dfEsc(fw.text)+'</div>':'')+
+    (b.fahrer_begruendung?'<div style="font-size:11px;color:var(--c);line-height:1.45;margin-bottom:6px"><b>Begruendung VA:</b> '+_dfEsc(b.fahrer_begruendung)+'</div>':'')+
     '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">'+
     '<div style="flex:1;min-width:140px">'+
     '<div style="font-size:12px;font-weight:600;color:var(--c)">'+pLabel+'</div>'+
@@ -1307,9 +1498,11 @@ function freiBerichtCard(b){
     '<div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap">'+
     '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;padding:2px 7px;border-radius:8px;'+(bl?'background:var(--earthg);color:var(--earth)':'background:var(--s2);color:var(--m)')+'">'+(bl?'BL abgenommen ✓ ('+(b.abgenommen_von||'')+')':'BL offen')+'</span>'+
     '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;padding:2px 7px;border-radius:8px;'+(bh?'background:var(--gg);color:var(--gl)':'background:var(--rg);color:var(--r)')+'">'+(bh?'BH freigegeben ✓ ('+(b.bh_freigegeben_von||'')+')':'BH offen')+'</span>'+
+    (b.rueckfrage_offen?'<span style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;padding:2px 7px;border-radius:8px;background:rgba(212,120,42,.15);color:var(--o)">Rueckfrage offen</span>':'')+
     '</div></div>'+
     '<div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end">'+
     '<button class="btn" style="font-size:10px;padding:5px 9px" ontouchstart="freigabeAnsehen(\''+b.id+'\')" onclick="freigabeAnsehen(\''+b.id+'\')">Ansehen (PDF)</button>'+
+    '<button class="btn" style="font-size:10px;padding:5px 9px" ontouchstart="rueckfrageOeffnen(\''+b.id+'\')" onclick="rueckfrageOeffnen(\''+b.id+'\')">Rueckfrage</button>'+
     (bh?
       '<button class="btn btn-r" style="font-size:10px;padding:5px 9px" ontouchstart="freigabeZurueck(\''+b.id+'\')" onclick="freigabeZurueck(\''+b.id+'\')">Freigabe zurueck</button>':
       '<button class="btn btn-p" style="font-size:10px;padding:5px 9px" ontouchstart="freigabeErteilen(\''+b.id+'\')" onclick="freigabeErteilen(\''+b.id+'\')">Freigeben &#x2713;</button>'
@@ -1337,6 +1530,7 @@ async function freigabeErteilen(id){
   if(!unterschriftData){toast('Bitte zuerst Ihre Unterschrift im Profil zeichnen','err');openProfil();return;}
   const{data}=await sb.from(tblBerichte()).select('*').eq('id',id).single();
   if(!data){toast('Bericht nicht gefunden','err');return;}
+  if(data.rueckfrage_offen){toast('Freigabe nicht moeglich: Rueckfrage oder Korrektur zu diesem Bericht ist noch offen','err');return;}
   // Arbeitszeitgesetz-Pruefung: Hinweis im Bestaetigungsdialog, blockiert nicht.
   let azTxt='';
   try{
@@ -1698,6 +1892,8 @@ async function filterBer(){
     '<div style="flex:1;min-width:100px"><div style="font-size:12px;font-weight:600;color:var(--c)">'+b.mitarbeiter_name+' <span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m)">#'+(b.mitarbeiter_nr||'--')+'</span></div>'+
     '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m)">'+b.projekt_nr+' · '+(b.netto_gesamt_h||b.netto_arbeit_h||'--')+'h</div></div>'+
     (b.pdf_url?'<a href="'+b.pdf_url+'" target="_blank" style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--sky);text-decoration:none;padding:3px 7px;border:1px solid rgba(61,143,168,.3);border-radius:4px" ontouchstart="event.stopPropagation()" onclick="event.stopPropagation()">Drive</a>':'')+
+    (b.rueckfrage_offen?'<span style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;padding:2px 7px;border-radius:8px;background:rgba(212,120,42,.15);color:var(--o)">Rueckfrage offen</span>':'')+
+    '<button class="btn" style="font-size:9px;padding:3px 7px" ontouchstart="event.stopPropagation();rueckfrageOeffnen(\''+b.id+'\')" onclick="event.stopPropagation();rueckfrageOeffnen(\''+b.id+'\')">Rueckfrage</button>'+
     '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--sky)">PDF &#x2193;</span></div>'
   ).join('');
 }
@@ -2575,7 +2771,7 @@ function expLohnZeilen(berichte,maListe,projekte){
         inVA[String(b.datum)+'|'+k]=true;
         zeilen.push({monat:monat,datum:b.datum,name:String(t.name).trim(),maNr:nr,projektId:pid,projektNr:pnr,projektName:projName(pid,pnr),
           von:t.von||'',bis:t.bis||'',pauseMin:nkNum(t.pause),arbeitH:arbeit,fahrtArt:art,fahrzeitMin:fzMin,fahrtH:fahrtH,gesamtH:gesamt,
-          rolle:b.rolle||'',erfasstVon:b.mitarbeiter_name||'',eigen:false,vaKey:vk,hinweis:nr?'':'MA-Nr fehlt (Name nicht in Stammdaten)',
+          rolle:b.rolle||'',erfasstVon:b.mitarbeiter_name||'',eigen:false,vaKey:vk,fahrerBegr:b.fahrer_begruendung||'',hinweis:nr?'':'MA-Nr fehlt (Name nicht in Stammdaten)',
           wetter:b.wetter||'',tae:t.tae||''});
       });
     }else{
@@ -2602,7 +2798,7 @@ function expLohnZeilen(berichte,maListe,projekte){
   zeilen.forEach(function(z){
     if(z.eigen||!z.vaKey||!fw[z.vaKey])return;
     if(z.fahrtArt!=='fahrer'||z.fahrzeitMin<=0)return;
-    const txt='Fahrer-Widerspruch: '+fw[z.vaKey].text;
+    const txt='Fahrer-Widerspruch: '+fw[z.vaKey].text+(z.fahrerBegr?' - Begruendung VA: '+z.fahrerBegr:' - OHNE Begruendung');
     z.hinweis=z.hinweis?(z.hinweis+' | '+txt):txt;
     z.fahrerFall=fw[z.vaKey].text;
   });
@@ -2658,7 +2854,7 @@ function expSummen(zeilen){
 async function expLadeBerichte(von,bis,nurFrei){
   const alle=[];
   for(let start=0;;start+=1000){
-    let q=sb.from(tblBerichte()).select('id,datum,rolle,mitarbeiter_name,mitarbeiter_nr,projekt_id,projekt_nr,von,bis,pause_min,netto_arbeit_h,netto_gesamt_h,fahrzeit_min,fahrt_status,zeit_rows,mach_rows,wetter,taetigkeiten')
+    let q=sb.from(tblBerichte()).select('id,datum,rolle,mitarbeiter_name,mitarbeiter_nr,projekt_id,projekt_nr,von,bis,pause_min,netto_arbeit_h,netto_gesamt_h,fahrzeit_min,fahrt_status,zeit_rows,mach_rows,wetter,taetigkeiten,fahrer_begruendung')
       .order('datum',{ascending:true}).order('id',{ascending:true});
     if(von)q=q.gte('datum',von);
     if(bis)q=q.lte('datum',bis);
@@ -2754,7 +2950,7 @@ function expAufstellungRender(){
     a+=x.arbeitH;f+=x.fahrtH;g+=x.gesamtH;ma[expNorm(x.name)]=true;
     if(x.hinweis.indexOf('Doppel')>=0)doppelt++;
     if(x.hinweis.indexOf('MA-Nr fehlt')>=0)ohneNr++;
-    if(x.fahrerFall&&!fFaelle[x.vaKey]){fFaelle[x.vaKey]=true;fListe.push(fmtD(x.datum)+' - Bericht von '+x.erfasstVon+': '+x.fahrerFall);}
+    if(x.fahrerFall&&!fFaelle[x.vaKey]){fFaelle[x.vaKey]=true;fListe.push(fmtD(x.datum)+' - Bericht von '+x.erfasstVon+': '+x.fahrerFall+(x.fahrerBegr?' - Begruendung: '+x.fahrerBegr:' - ohne Begruendung'));}
   });
   const mono='font-family:\'IBM Plex Mono\',monospace;';
   let html='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">'+
@@ -3556,13 +3752,11 @@ function setPlanH(id,val){
   renderCockpitListe();
 }
 
-function renderCockpitListe(){
-  const body=document.getElementById('cock-body');if(!body)return;
-  if(!_ctrlBerichte||!_ctrlProjekte)return;
-  const f=_cpFilter();
-  const agg=_cockpitAgg(f);
-  _cpAggCache=agg;
-  const list=[];let sumP=0,sumM=0;
+// Cockpit: Liste aller Baustellen ODER Detailansicht einer Baustelle (_cpOffen). Die Details klappen
+// nicht mehr in der Liste auf, sondern oeffnen als eigene Ansicht mit Zurueck-Button.
+let _cpOffen=null,_cpScroll=0;
+function _cpListe(agg,f){
+  const list=[];
   for(const pid in agg){
     if(!Object.prototype.hasOwnProperty.call(agg,pid))continue;
     const a=agg[pid];
@@ -3572,46 +3766,119 @@ function renderCockpitListe(){
     const pkat=p?(p.kategorie||'bau'):'bau';
     if(f.kat&&pkat!==f.kat)continue;
     if(f.q&&name.toLowerCase().indexOf(f.q)<0&&String(nr).toLowerCase().indexOf(f.q)<0)continue;
-    const gesamt=a.personal+a.maschine;
-    sumP+=a.personal;sumM+=a.maschine;
-    list.push({pid:pid,nr:nr,name:name,kat:pkat,personal:a.personal,maschine:a.maschine,gesamt:gesamt,berichte:Object.keys(a.berichte).length});
+    list.push({pid:pid,nr:nr,name:name,kat:pkat,personal:a.personal,maschine:a.maschine,gesamt:a.personal+a.maschine,berichte:Object.keys(a.berichte).length});
   }
   list.sort((x,y)=>y.gesamt-x.gesamt);
+  return list;
+}
+function _cpPlanTexte(it){
+  const plan=getPlanH(it.pid);
+  let rest='<span style="color:var(--m)">--</span>',pct='<span style="color:var(--m)">--</span>';
+  if(plan>0){
+    const r=plan-it.gesamt;
+    const pc=Math.round(it.gesamt/plan*100);
+    const col=pc>100?'var(--r)':(pc>90?'var(--o)':'var(--g)');
+    rest='<span style="color:'+(r<0?'var(--r)':'var(--t)')+'">'+_auswFmtH(r)+'</span>';
+    pct='<span style="color:'+col+';font-weight:600">'+pc+'%</span>';
+  }
+  return {plan:plan,rest:rest,pct:pct};
+}
+function _cpScroller(){const b=document.getElementById('cock-body');return b?b.closest('.admin-content'):null;}
+function cpOeffne(pid){
+  const sc=_cpScroller();_cpScroll=sc?sc.scrollTop:0;
+  _cpOffen=pid;
+  renderCockpitListe();
+  const k=document.getElementById('cock-kpis');
+  if(k)k.scrollIntoView();
+}
+function cpZurueck(){
+  _cpOffen=null;
+  renderCockpitListe();
+  const sc=_cpScroller();if(sc)sc.scrollTop=_cpScroll;
+}
+// Suche innerhalb der Detailansicht: blendet Tabellenzeilen aus, die den Text nicht enthalten
+function cpDetFilter(){
+  const q=(document.getElementById('cp-det-suche')?.value||'').toLowerCase().trim();
+  const body=document.getElementById('cp-det-body');if(!body)return;
+  let sichtbar=0,gesamt=0;
+  body.querySelectorAll('table.ct-dtbl').forEach(function(t){
+    const rows=t.querySelectorAll('tr');
+    for(let i=0;i<rows.length;i++){
+      if(i===0&&rows[i].textContent.trim().length<60&&t.querySelectorAll('tr').length>1&&/Datum|Pos/.test(rows[i].textContent)){continue;} // Kopfzeile
+      gesamt++;
+      const ok=!q||rows[i].textContent.toLowerCase().indexOf(q)>=0;
+      rows[i].style.display=ok?'':'none';
+      if(ok)sichtbar++;
+    }
+  });
+  const info=document.getElementById('cp-det-treffer');
+  if(info)info.textContent=q?(sichtbar+' von '+gesamt+' Zeilen'):'';
+}
+function renderCockpitListe(){
+  const body=document.getElementById('cock-body');if(!body)return;
+  if(!_ctrlBerichte||!_ctrlProjekte)return;
+  const f=_cpFilter();
+  const agg=_cockpitAgg(f);
+  _cpAggCache=agg;
   const kEl=document.getElementById('cock-kpis');
+  // ---------- Detailansicht einer Baustelle ----------
+  if(_cpOffen&&agg[_cpOffen]){
+    const alle=_cpListe(agg,{kat:'',q:''});
+    let it=null;for(let i=0;i<alle.length;i++){if(alle[i].pid===_cpOffen){it=alle[i];break;}}
+    if(it){
+      const pt=_cpPlanTexte(it);
+      const badge='<span class="ct-badge '+(it.kat==='pflege'?'ct-badge-p':'ct-badge-b')+'">'+(it.kat==='pflege'?'PFLEGE':'BAU')+'</span>';
+      if(kEl)kEl.innerHTML=
+        '<div class="sc"><div class="sv">'+it.berichte+'</div><div class="sl">Berichte</div></div>'+
+        '<div class="sc"><div class="sv">'+_auswFmtH(it.personal)+'</div><div class="sl">Personal-Std.</div></div>'+
+        '<div class="sc"><div class="sv">'+_auswFmtH(it.maschine)+'</div><div class="sl">Maschinen-Std.</div></div>'+
+        '<div class="sc"><div class="sv" style="color:var(--g)">'+_auswFmtH(it.gesamt)+'</div><div class="sl">Gesamt-Std.</div></div>';
+      body.innerHTML='<div class="cp-det">'+
+        '<div class="cp-det-head">'+
+        '<button class="btn" ontouchstart="cpZurueck()" onclick="cpZurueck()">&#8592; Alle Baustellen</button>'+
+        '<div class="cp-det-title"><span class="ct-pnr">'+_dfEsc(it.nr||'--')+'</span>'+_dfEsc(it.name)+' '+badge+'</div>'+
+        '</div>'+
+        '<div class="cp-det-plan">'+
+        '<div class="fg" style="flex:0 0 130px"><label>Plan-Stunden</label><input class="ct-plan" style="width:100%" type="number" min="0" step="1" value="'+(pt.plan>0?pt.plan:'')+'" placeholder="--" onchange="setPlanH(\''+it.pid+'\',this.value)"></div>'+
+        '<div class="cp-det-kv"><span>Rest</span><b>'+pt.rest+'</b></div>'+
+        '<div class="cp-det-kv"><span>Auslastung</span><b>'+pt.pct+'</b></div>'+
+        '<div class="fg" style="flex:1;min-width:180px"><label>Suche in den Arbeiten</label><input id="cp-det-suche" placeholder="z.B. Tragschicht, Pos. 01.02, Datum" oninput="cpDetFilter()"></div>'+
+        '</div>'+
+        '<div id="cp-det-treffer" class="cp-det-treffer"></div>'+
+        '<div id="cp-det-body" class="cp-det-body">'+_cpDetailHtml(it.pid)+'</div>'+
+        '</div>';
+      return;
+    }
+  }
+  _cpOffen=null;
+  // ---------- Liste ----------
+  const list=_cpListe(agg,f);
+  let sumP=0,sumM=0;
+  for(let i=0;i<list.length;i++){sumP+=list[i].personal;sumM+=list[i].maschine;}
   if(!list.length){
     body.innerHTML='<div style="color:var(--m);font-size:12px;padding:16px;text-align:center">Keine Stunden fuer diese Auswahl.</div>';
     if(kEl)kEl.innerHTML='';
     return;
   }
-  let h='<div class="ct-tblwrap"><table class="ct-tbl"><thead><tr>'+
-    '<th class="ct-l">Baustelle</th><th>Berichte</th><th>Personal-h</th><th>Maschinen-h</th><th>Gesamt-h</th><th>Plan-h</th><th>Rest</th><th>%</th>'+
-    '</tr></thead><tbody>';
+  let h='<div class="cp-list"><div class="cp-row cp-head">'+
+    '<div class="cp-c-name">Baustelle</div><div class="cp-c-ber">Berichte</div><div>Personal-h</div><div>Maschinen-h</div><div>Gesamt-h</div><div>Plan-h</div><div>Rest</div><div>%</div><div class="cp-c-chev"></div></div>';
   for(let r=0;r<list.length;r++){
     const it=list[r];
-    const plan=getPlanH(it.pid);
-    let restTxt='<span style="color:var(--m)">--</span>';
-    let pctTxt='<span style="color:var(--m)">--</span>';
-    if(plan>0){
-      const rest=plan-it.gesamt;
-      const pct=Math.round(it.gesamt/plan*100);
-      const col=pct>100?'var(--r)':(pct>90?'var(--o)':'var(--g)');
-      restTxt='<span style="color:'+(rest<0?'var(--r)':'var(--t)')+'">'+_auswFmtH(rest)+'</span>';
-      pctTxt='<span style="color:'+col+';font-weight:600">'+pct+'%</span>';
-    }
+    const pt=_cpPlanTexte(it);
     const badge='<span class="ct-badge '+(it.kat==='pflege'?'ct-badge-p':'ct-badge-b')+'">'+(it.kat==='pflege'?'PFLEGE':'BAU')+'</span>';
-    h+='<tr class="ct-main" ontouchstart="toggleCpDet(\''+it.pid+'\')" onclick="toggleCpDet(\''+it.pid+'\')">'+
-      '<td class="ct-l"><span class="ct-pnr">'+_dfEsc(it.nr||'--')+'</span><span class="ct-pname">'+_dfEsc(it.name)+'</span> '+badge+'</td>'+
-      '<td>'+it.berichte+'</td>'+
-      '<td>'+_auswFmtH(it.personal)+'</td>'+
-      '<td>'+_auswFmtH(it.maschine)+'</td>'+
-      '<td style="color:var(--c);font-weight:700">'+_auswFmtH(it.gesamt)+'</td>'+
-      '<td><input class="ct-plan" type="number" min="0" step="1" value="'+(plan>0?plan:'')+'" placeholder="--" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()" onchange="setPlanH(\''+it.pid+'\',this.value)"></td>'+
-      '<td>'+restTxt+'</td>'+
-      '<td>'+pctTxt+'</td>'+
-      '</tr>';
-    h+='<tr class="ct-det" id="ct-det-'+it.pid+'" style="display:none"><td colspan="8">'+_cpDetailHtml(it.pid)+'</td></tr>';
+    h+='<div class="cp-row cp-item" '+tsAttr('cpOeffne(\''+it.pid+'\')')+'>'+
+      '<div class="cp-c-name"><span class="ct-pnr">'+_dfEsc(it.nr||'--')+'</span><span class="ct-pname">'+_dfEsc(it.name)+'</span> '+badge+'<span class="cp-ber-m">'+it.berichte+' Berichte</span></div>'+
+      '<div class="cp-c-ber">'+it.berichte+'</div>'+
+      '<div data-l="Personal">'+_auswFmtH(it.personal)+'</div>'+
+      '<div data-l="Maschinen">'+_auswFmtH(it.maschine)+'</div>'+
+      '<div data-l="Gesamt" class="cp-c-ges">'+_auswFmtH(it.gesamt)+'</div>'+
+      '<div data-l="Plan-h"><input class="ct-plan" type="number" min="0" step="1" value="'+(pt.plan>0?pt.plan:'')+'" placeholder="--" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()" onchange="setPlanH(\''+it.pid+'\',this.value)"></div>'+
+      '<div data-l="Rest">'+pt.rest+'</div>'+
+      '<div data-l="Auslastung">'+pt.pct+'</div>'+
+      '<div class="cp-c-chev">&#8250;</div>'+
+      '</div>';
   }
-  h+='</tbody></table></div>';
+  h+='</div>';
   body.innerHTML=h;
   if(kEl)kEl.innerHTML=
     '<div class="sc"><div class="sv">'+list.length+'</div><div class="sl">Baustellen</div></div>'+
@@ -4492,7 +4759,7 @@ function renderKalkPanel(panelId){
   });
 }
 
-function openPL(){document.getElementById('pl-screen').style.display='flex';document.getElementById('pl-user-name').textContent=currentUser.name;showPLTab('ber');}
+function openPL(){inboxLaden();document.getElementById('pl-screen').style.display='flex';document.getElementById('pl-user-name').textContent=currentUser.name;showPLTab('ber');}
 function showPLTab(name){
   document.querySelectorAll('#pl-screen .admin-tab').forEach(t=>t.classList.remove('act'));
   document.querySelectorAll('#pl-screen .admin-panel').forEach(p=>p.classList.remove('act'));
@@ -4533,6 +4800,8 @@ async function filterPLBer(){
     '<div class="pl-check '+(b.abgenommen?'done':'')+'" ontouchstart="event.stopPropagation();plToggleAbnahme(\''+b.id+'\','+b.abgenommen+')" onclick="event.stopPropagation();plToggleAbnahme(\''+b.id+'\','+b.abgenommen+')">'+(b.abgenommen?'&#x2713;':'')+'</div>'+
     (b.abgenommen?'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;color:var(--g)">'+b.abgenommen_von+'</div>':'')+
     (b.bh_freigegeben?'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;padding:1px 6px;border-radius:7px;background:var(--gg);color:var(--gl)">BH frei ✓</div>':'')+
+    (b.rueckfrage_offen?'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;padding:1px 6px;border-radius:7px;background:rgba(212,120,42,.15);color:var(--o)">Rueckfrage offen</div>':'')+
+    '<button class="btn" style="font-size:9px;padding:3px 7px" ontouchstart="event.stopPropagation();rueckfrageOeffnen(\''+b.id+'\')" onclick="event.stopPropagation();rueckfrageOeffnen(\''+b.id+'\')">Rueckfrage</button>'+
     (b.pdf_url?'<a href="'+b.pdf_url+'" target="_blank" style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;color:var(--sky);text-decoration:none" ontouchstart="event.stopPropagation()" onclick="event.stopPropagation()">Drive &#x279A;</a>':'')+
     '</div></div>'+(b.pl_notiz?'<div style="font-size:11px;color:var(--m);margin-top:6px;padding-top:6px;border-top:1px solid var(--b)">'+b.pl_notiz+'</div>':'')+
     '</div>'
@@ -4660,9 +4929,12 @@ async function saveAndSendWS(){
   const st=document.getElementById('ws-send-status');
   if(st){st.className='send-status show sending';st.textContent='Speichern...';}
   let savedId=currentId;
+  _sendeKorrektur=!!currentId;
   if(currentId){
+    Object.assign(d,korrekturFelder());
     const{error}=await sb.from(tblBerichte()).update(d).eq('id',currentId);
     if(error){toast('Fehler: '+error.message,'err');return;}
+    await rueckfrageKorrigiert(currentId);
   }else{
     const{data:ins,error}=await sb.from(tblBerichte()).insert(d).select().single();
     if(error){toast('Fehler: '+error.message,'err');return;}
@@ -4707,9 +4979,12 @@ async function saveAndSendAR(){
   const st=document.getElementById('ar-send-status');
   if(st){st.className='send-status show sending';st.textContent='Speichern...';}
   let savedId=currentId;
+  _sendeKorrektur=!!currentId;
   if(currentId){
+    Object.assign(d,korrekturFelder());
     const{error}=await sb.from(tblBerichte()).update(d).eq('id',currentId);
     if(error){toast('Fehler: '+error.message,'err');return;}
+    await rueckfrageKorrigiert(currentId);
   }else{
     const{data,error}=await sb.from(tblBerichte()).insert(d).select().single();
     if(error){toast('Fehler: '+error.message,'err');return;}
@@ -4767,6 +5042,11 @@ async function saveAndSendVA(){
     zusatz_projekte:zusatzProjekte,gesendet:false
   };
   if(!d.datum||!d.projekt_id){toast('Datum und Projekt erforderlich','err');return;}
+  // Mehr Fahrer als Fahrzeuge: ohne Begruendung kein Versand (Dialog), mit Begruendung wird sie gespeichert
+  const fwSend=fahrerWiderspruch(zeitRows,d.mach_rows);
+  if(fwSend&&!_fahrerBegruendung){fahrerBegruendungDialog(fwSend);return;}
+  if(fwSend)d.fahrer_begruendung=_fahrerBegruendung;
+  else if(currentId&&_fahrerBegruendungAlt)d.fahrer_begruendung=null; // Widerspruch wurde behoben
 
   // Welche verschiedenen Projekte kommen in den Zeit-Zeilen vor?
   // (leere projektId -> Hauptprojekt zugeordnet). Aufteilung NUR bei neuem Bericht.
@@ -4794,9 +5074,12 @@ async function saveAndSendVA(){
   const st=document.getElementById('va-send-status');
   if(st){st.className='send-status show sending';st.textContent='Speichern...';}
   let savedId=currentId;
+  _sendeKorrektur=!!currentId;
   if(currentId){
+    Object.assign(d,korrekturFelder());
     const{error}=await sb.from(tblBerichte()).update(d).eq('id',currentId);
     if(error){toast('Fehler: '+error.message,'err');return;}
+    await rueckfrageKorrigiert(currentId);
   }else{
     const{data,error}=await sb.from(tblBerichte()).insert(d).select().single();
     if(error){toast('Fehler: '+error.message,'err');return;}
@@ -5158,6 +5441,7 @@ async function generatePDF(report){
       maengel.forEach(m=>{needPage(15);doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...C.rot);doc.text(clean((m.schwere||'')+' - '+(m.typ||'')),M,y);y+=5;WP(m.txt,M+3,cw-6,9,C.dunkel,5);y+=2;if(m.massnahme){WP('Massnahme: '+m.massnahme,M+3,cw-6,8,C.orange,4.5,'italic');y+=0.5;}LINE(M,y,W-M,y,[230,200,200]);y+=4;});
     }
     if(report.naechstes){needPage(15);T('NAECHSTE SCHRITTE',M,y,10,true,C.gruen);y+=6;WP(report.naechstes,M,cw,9,C.dunkel,5);y+=4;}
+    if(report.fahrer_begruendung){needPage(15);T('FAHRER-BEGRUENDUNG (mehr Fahrer als Fahrzeuge)',M,y,10,true,C.orange);y+=6;WP(report.fahrer_begruendung,M,cw,9,C.dunkel,5);y+=4;}
 
     const fotos=fotoDataUrls.filter(Boolean);
     if(fotos.length>0){
@@ -5234,7 +5518,7 @@ async function sendPDFMail(report,statusElId){
     const payload={
       empfaenger:to.join(','),
       cc:cc.join(','),
-      betreff:(TESTMODUS?'[TEST] ':'')+'KLEI Tagesbericht '+fmtD(report.datum)+' - '+(report.role==='ar'||report.role==='ws'?report.name||report.mitarbeiter_name:pLabel),
+      betreff:(TESTMODUS?'[TEST] ':'')+(_sendeKorrektur?'KORREKTUR - ':'')+'KLEI Tagesbericht '+fmtD(report.datum)+' - '+(report.role==='ar'||report.role==='ws'?report.name||report.mitarbeiter_name:pLabel),
       rolle:report.role||'ar',
       name:report.name||report.mitarbeiter_name||'',
       datum:report.datum,
@@ -5333,6 +5617,7 @@ function loadReport(id){
 }
 
 function loadVAForm(r){
+  _fahrerBegruendung='';_fahrerBegruendungAlt=r.fahrer_begruendung||'';
   const sv=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
   sv('v-datum',r.datum);sv('v-baustelle',r.baustelle);sv('v-bauherr',r.bauherr);sv('v-projektnr',r.projektnr_intern);sv('v-bauleiter',r.bauleiter);sv('v-temp',r.temperatur||r.temp);sv('v-nied',r.nied_mm||r.nied);sv('v-besucher',r.besucher);sv('v-naechstes',r.naechstes);sv('v-bemerkungen',r.bemerkungen);
   const vKat=r.projekt_id?getProjektKat(r.projekt_id):'bau';
@@ -5445,22 +5730,170 @@ function renderSB(){
   if(wsd)wsdFilterSB();
 }
 
+// ══════ UEBERSICHT (Mitarbeiter): Monat + Berichte nach Kalenderwochen + "Als Vorlage" ══════
+let _ueMonat='',_ueDaten=null,_ueOffen={},_ueLaedt=false;
+const UE_MONATE=['Januar','Februar','Maerz','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const UE_TAGE=['So','Mo','Di','Mi','Do','Fr','Sa'];
+function ueHeuteIso(){const d=new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function ueH(n){n=Math.round((parseFloat(n)||0)*100)/100;return n.toFixed(2).replace('.',',').replace(/,00$/,'').replace(/(,\d)0$/,'$1');}
+function ueMonatPlus(monat,delta){
+  const m=String(monat).match(/^(\d{4})-(\d{2})$/);if(!m)return monat;
+  const d=new Date(parseInt(m[1],10),parseInt(m[2],10)-1+delta,1);
+  return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2);
+}
+// ISO-Kalenderwoche (Montag bis Sonntag) zu einem Datum JJJJ-MM-TT
+function ueKW(datum){
+  const p=String(datum).substring(0,10).split('-');
+  const d=new Date(Date.UTC(parseInt(p[0],10),parseInt(p[1],10)-1,parseInt(p[2],10)));
+  const wt=d.getUTCDay()||7;
+  const mo=new Date(d);mo.setUTCDate(d.getUTCDate()-wt+1);
+  const so=new Date(mo);so.setUTCDate(mo.getUTCDate()+6);
+  const don=new Date(d);don.setUTCDate(d.getUTCDate()+4-wt);
+  const j1=new Date(Date.UTC(don.getUTCFullYear(),0,1));
+  const kw=Math.ceil(((don-j1)/86400000+1)/7);
+  const iso=function(x){return x.toISOString().substring(0,10);};
+  return {key:don.getUTCFullYear()+'-W'+('0'+kw).slice(-2),kw:kw,von:iso(mo),bis:iso(so)};
+}
+// Eigene Stunden eines Berichts: beim VA-Bericht nur die eigene Zeile der Zeiterfassung (nicht die ganze Kolonne)
+function ueEigeneStd(r,name){
+  if(r.rolle==='va'){
+    let zr=r.zeit_rows;
+    if(typeof zr==='string'){try{zr=JSON.parse(zr);}catch(e){console.error('Uebersicht: zeit_rows nicht lesbar',e);zr=[];}}
+    zr=Array.isArray(zr)?zr:[];
+    if(zr.length){
+      let sum=0;
+      zr.forEach(function(t){if(t&&expNorm(t.name)===expNorm(name))sum+=nkNum(t.gesamt);});
+      return sum;
+    }
+  }
+  return parseFloat(r.netto_gesamt_h||r.netto_arbeit_h||0)||0;
+}
+function ueGruppiere(liste,name){
+  const map={};const wochen=[];
+  (liste||[]).forEach(function(r){
+    const w=ueKW(r.datum);
+    if(!map[w.key]){map[w.key]={key:w.key,kw:w.kw,von:w.von,bis:w.bis,berichte:[],std:0};wochen.push(map[w.key]);}
+    const h=ueEigeneStd(r,name);
+    map[w.key].berichte.push({r:r,std:h});
+    map[w.key].std+=h;
+  });
+  wochen.sort(function(a,b){return a.von<b.von?1:(a.von>b.von?-1:0);});
+  wochen.forEach(function(w){w.berichte.sort(function(a,b){return a.r.datum<b.r.datum?1:(a.r.datum>b.r.datum?-1:0);});});
+  return wochen;
+}
 function buildUE(){
   const el=document.getElementById('ue-content');if(!el)return;
-  const meineReports=reports.filter(r=>r.mitarbeiter_id===currentUser.id);
-  const totalH=meineReports.reduce((s,r)=>s+(parseFloat(r.netto_gesamt_h||r.netto_arbeit_h||0)),0);
-  el.innerHTML='<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px">'+
-    '<div class="sc"><div class="sv">'+meineReports.length+'</div><div class="sl">Berichte</div></div>'+
-    '<div class="sc"><div class="sv">'+totalH.toFixed(0)+'h</div><div class="sl">Stunden</div></div></div>'+
-    meineReports.slice(0,20).map(r=>{const h=parseFloat(r.netto_gesamt_h||r.netto_arbeit_h||0);return'<div class="ib" style="cursor:pointer" ontouchstart="loadReport(\''+r.id+'\')" onclick="loadReport(\''+r.id+'\')">'+
-      '<div style="display:flex;justify-content:space-between;align-items:center">'+
-      '<div><div style="font-size:12px;font-weight:600;color:var(--c)">'+(r.rolle==='va'?getProjektLabel(r.projekt_id||''):r.mitarbeiter_name)+'</div>'+
-      '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--g)">'+fmtD(r.datum)+' - '+(r.rolle||'ar').toUpperCase()+'</div></div>'+
-      '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:16px;color:var(--c)">'+h.toFixed(1)+'h</div></div></div>';
-    }).join('');
+  if(!_ueMonat)_ueMonat=ueHeuteIso().substring(0,7);
+  ueLade();
+}
+function ueMonatWechsel(delta){_ueMonat=ueMonatPlus(_ueMonat,delta);_ueOffen={};ueLade();}
+async function ueLade(){
+  const el=document.getElementById('ue-content');if(!el||_ueLaedt)return;
+  _ueLaedt=true;
+  el.innerHTML='<div class="empty"><div class="spin"></div></div>';
+  try{
+    const g=expMonatsGrenzen(_ueMonat);
+    const q=await sb.from(tblBerichte()).select('id,datum,rolle,projekt_id,projekt_nr,mitarbeiter_name,netto_gesamt_h,netto_arbeit_h,zeit_rows,gesendet,abgenommen,bh_freigegeben')
+      .eq('mitarbeiter_id',currentUser.id).gte('datum',g.von).lte('datum',g.bis).order('datum',{ascending:false}).range(0,999);
+    if(q.error)throw new Error(q.error.message||'Unbekannter Datenbankfehler');
+    _ueDaten=q.data||[];
+    ueRender();
+  }catch(e){
+    console.error('Uebersicht konnte nicht geladen werden:',e);
+    el.innerHTML='<div style="color:var(--r);font-size:12px;padding:10px">Uebersicht konnte nicht geladen werden: '+_dfEsc(e.message||String(e))+'</div>';
+    toast('Uebersicht konnte nicht geladen werden: '+(e.message||String(e)),'err');
+  }finally{_ueLaedt=false;}
+}
+function ueWocheToggle(key){_ueOffen[key]=!_ueOffen[key];ueRender();}
+function ueRender(){
+  const el=document.getElementById('ue-content');if(!el)return;
+  const liste=_ueDaten||[];
+  const wochen=ueGruppiere(liste,currentUser.name);
+  let std=0;const tage={};
+  wochen.forEach(function(w){std+=w.std;w.berichte.forEach(function(x){tage[x.r.datum]=true;});});
+  const m=_ueMonat.split('-');
+  const heuteKW=ueKW(ueHeuteIso()).key;
+  let h='<div class="ue-nav">'+
+    '<button class="btn" '+tsAttr('ueMonatWechsel(-1)')+'>&#8249;</button>'+
+    '<div class="ue-monat">'+UE_MONATE[parseInt(m[1],10)-1]+' '+m[0]+'</div>'+
+    '<button class="btn" '+tsAttr('ueMonatWechsel(1)')+'>&#8250;</button></div>'+
+    '<div class="ue-kpis">'+
+    '<div class="sc"><div class="sv">'+ueH(std)+' h</div><div class="sl">Meine Stunden</div></div>'+
+    '<div class="sc"><div class="sv">'+Object.keys(tage).length+'</div><div class="sl">Arbeitstage</div></div>'+
+    '<div class="sc"><div class="sv">'+liste.length+'</div><div class="sl">Berichte</div></div></div>';
+  if(!wochen.length){
+    el.innerHTML=h+'<div style="color:var(--m);font-size:12px;padding:18px;text-align:center">Keine Berichte in diesem Monat</div>';
+    return;
+  }
+  h+='<div class="ue-titel">Berichte nach Kalenderwoche</div>';
+  wochen.forEach(function(w){
+    const offen=(_ueOffen[w.key]===undefined)?(w.key===heuteKW||wochen.length===1):!!_ueOffen[w.key];
+    _ueOffen[w.key]=offen;
+    h+='<div class="ue-woche'+(offen?' offen':'')+'">'+
+      '<div class="ue-woche-kopf" '+tsAttr('ueWocheToggle(\''+w.key+'\')')+'>'+
+      '<span class="ue-chev">'+(offen?'&#9662;':'&#9656;')+'</span>'+
+      '<span class="ue-kw">KW '+w.kw+'</span>'+
+      '<span class="ue-zr">'+fmtD(w.von).substring(0,6)+' - '+fmtD(w.bis)+'</span>'+
+      '<span class="ue-wsum">'+w.berichte.length+' Bericht'+(w.berichte.length>1?'e':'')+' &middot; <b>'+ueH(w.std)+' h</b></span></div>';
+    if(offen){
+      w.berichte.forEach(function(x){
+        const r=x.r;
+        const p=String(r.datum).split('-');
+        const wt=UE_TAGE[new Date(parseInt(p[0],10),parseInt(p[1],10)-1,parseInt(p[2],10)).getDay()];
+        const label=r.rolle==='va'?getProjektLabel(r.projekt_id||''):(getProjektLabel(r.projekt_id||'')||r.projekt_nr||r.mitarbeiter_name||'--');
+        const rl=r.rolle==='va'?'VA':(r.rolle==='ws'?'WS':'AR');
+        const st=r.bh_freigegeben?'<span class="ue-chip ok">freigegeben</span>':(r.abgenommen?'<span class="ue-chip mid">abgenommen</span>':(r.gesendet?'<span class="ue-chip">gesendet</span>':'<span class="ue-chip warn">nicht gesendet</span>'));
+        h+='<div class="ue-ber">'+
+          '<div class="ue-ber-d"><b>'+wt+'</b> '+fmtD(r.datum).substring(0,6)+'</div>'+
+          '<div class="ue-ber-n"><div class="ue-ber-p">'+_dfEsc(label||'--')+'</div><div class="ue-ber-s">'+rl+' '+st+'</div></div>'+
+          '<div class="ue-ber-h">'+ueH(x.std)+' h</div>'+
+          '<div class="ue-ber-a">'+
+          '<button class="btn" '+tsAttr('ueOeffnen(\''+r.id+'\')')+'>Oeffnen</button>'+
+          (r.rolle==='va'?'<button class="btn btn-e" '+tsAttr('ueAlsVorlage(\''+r.id+'\')')+'>Als Vorlage</button>':'')+
+          '</div></div>';
+      });
+    }
+    h+='</div>';
+  });
+  el.innerHTML=h;
+}
+async function ueHoleBericht(id){
+  let r=reports.find(function(x){return String(x.id)===String(id);});
+  if(r)return r;
+  const q=await sb.from(tblBerichte()).select('*').eq('id',id).single();
+  if(q.error||!q.data){toast('Bericht konnte nicht geladen werden: '+(q.error?q.error.message:'nicht gefunden'),'err');return null;}
+  return q.data;
+}
+async function ueOeffnen(id){
+  const r=await ueHoleBericht(id);if(!r)return;
+  if(!reports.find(function(x){return String(x.id)===String(id);})){reports.unshift(r);renderSB();}
+  loadReport(r.id);
+}
+// Macht aus einem alten VA-Bericht die Vorlage fuer einen neuen: Projekt, Kolonne mit Zeiten, Maschinen und
+// Arbeitsschritte (Text) werden uebernommen - Datum ist heute; Wetter, Mengen, Lieferungen, Maengel, Fotos
+// und Bemerkungen bleiben leer.
+function ueVorlageAus(r,heute){
+  let steps=r.steps;if(typeof steps==='string'){try{steps=JSON.parse(steps);}catch(e){console.error('Vorlage: Arbeitsschritte nicht lesbar, werden leer uebernommen',e);steps=[];}}
+  steps=(Array.isArray(steps)?steps:[]).map(function(st){
+    return {txt:st.txt||'',projektId:st.projektId||'',projektNr:st.projektNr||'',pos:st.pos||'',leistung:st.leistung||'',lvId:st.lvId||'',menge:'',eh:st.eh||'',mitarbeiter:[]};
+  });
+  return {datum:heute,projekt_id:r.projekt_id||'',projektnr_intern:r.projektnr_intern||'',bauleiter:r.bauleiter||'',bauherr:r.bauherr||'',baustelle:r.baustelle||'',
+    temperatur:'',nied_mm:'',besucher:'',boden:r.boden||'',wetter:'Sonnig',taetigkeiten:r.taetigkeiten||[],
+    zeit_rows:r.zeit_rows||[],mach_rows:r.mach_rows||[],steps:steps,
+    lieferungen:[],mengen:[],lv_rows:[],maengel:[],naechstes:'',bemerkungen:'',zusatz_projekte:r.zusatz_projekte||[]};
+}
+async function ueAlsVorlage(id){
+  const r=await ueHoleBericht(id);if(!r)return;
+  if(r.rolle!=='va'){toast('Vorlagen gibt es im Moment nur fuer Vorarbeiter-Berichte','info');return;}
+  if(!confirm('Bericht vom '+fmtD(r.datum)+' als Vorlage fuer HEUTE uebernehmen?\n\nUebernommen werden Projekt, Kolonne mit Zeiten, Maschinen und Arbeitsschritte. Nicht gespeicherte Eingaben im Formular gehen verloren.'))return;
+  const v=ueVorlageAus(r,ueHeuteIso());
+  currentId=null;
+  document.querySelectorAll('.ri').forEach(function(x){x.classList.remove('act');});
+  showTab('zeit');
+  setTimeout(function(){loadVAForm(v);toast('Vorlage uebernommen - bitte Zeiten und Datum pruefen','ok');},150);
 }
 
-async function delReport(id){if(!confirm('Bericht loeschen?'))return;await sb.from(tblBerichte()).delete().eq('id',id);if(currentId===id)currentId=null;await loadReports();renderSB();document.getElementById('detailContent').innerHTML='<div class="empty"><div class="ei">&#128465;</div><div class="et">Geloescht</div></div>';toast('Geloescht','err');}
+async function delReport(id){if(!confirm('Bericht loeschen?'))return;await sb.from(tblBerichte()).delete().eq('id',id);const rfDel=await sb.from('rueckfragen').delete().eq('bericht_id',String(id));if(rfDel.error)console.error('Rueckfragen zum Bericht konnten nicht geloescht werden:',rfDel.error);if(currentId===id)currentId=null;await loadReports();renderSB();document.getElementById('detailContent').innerHTML='<div class="empty"><div class="ei">&#128465;</div><div class="et">Geloescht</div></div>';toast('Geloescht','err');}
 // ══════ HILFSFUNKTIONEN ══════
 function getProjektLabel(nrOrId){const p=PROJEKTE.find(x=>x.id===nrOrId||x.nr===nrOrId);if(!p)return nrOrId||'--';return p.nr?p.nr+' - '+p.name:p.name;}
 function getProjektFahrzeit(nrOrId){const p=PROJEKTE.find(x=>x.id===nrOrId||x.nr===nrOrId);return p?parseInt(p.fahrzeit_min||0):0;}
@@ -5877,7 +6310,7 @@ function buildAR(){
     '<div class="fg w25"><label>Netto Arbeit</label><input type="text" id="a-netto-work" readonly style="color:var(--gl);font-weight:700;font-family:\'IBM Plex Mono\',monospace"></div>'+
     '</div><div class="row">'+
     '<div class="fg w50"><label>Fahrzeit (aus Projekt)</label><input type="text" id="a-fahrzeit-anzeige" readonly style="color:var(--earth);font-family:\'IBM Plex Mono\',monospace;font-size:11px"></div>'+
-    '<div class="fg w50"><label>Fahrt-Status</label><div style="display:flex;gap:5px;margin-top:4px">'+
+    '<div class="fg w50 fg-fahrt"><label>Fahrt-Status</label><div style="display:flex;gap:5px;margin-top:4px">'+
     '<button type="button" class="fahrt-btn fahrt-active" data-val="fahrer" ontouchstart="setFahrt(this)" onclick="setFahrt(this)">Fahrer<br><span style="font-size:9px;opacity:.7">100%</span></button>'+
     '<button type="button" class="fahrt-btn" data-val="beifahrer" ontouchstart="setFahrt(this)" onclick="setFahrt(this)">Beifahrer<br><span style="font-size:9px;opacity:.7">50%</span></button>'+
     '<button type="button" class="fahrt-btn" data-val="privat" ontouchstart="setFahrt(this)" onclick="setFahrt(this)">Privat<br><span style="font-size:9px;opacity:.7">0%</span></button>'+
@@ -5893,7 +6326,7 @@ function buildAR(){
     '<textarea id="a-taetigkeit" placeholder="Weitere Details..." style="min-height:60px"></textarea>'+
     '<div style="margin-top:8px"><input type="text" id="a-besonder" placeholder="Besonderheiten...">'+'</div></div>'+
     '<div class="send-status" id="ar-send-status"></div>'+
-    '<div class="arow"><button class="btn btn-p" ontouchstart="saveAndSendAR()" onclick="saveAndSendAR()">Speichern und PDF senden</button>'+
+    '<div class="arow arow-fab"><button class="btn btn-p" ontouchstart="saveAndSendAR()" onclick="saveAndSendAR()"><span class="lbl-l">Speichern und PDF senden</span><span class="lbl-s">Senden</span></button>'+
     '<button class="btn" ontouchstart="clearARForm()" onclick="clearARForm()">Neu</button></div>';
 }
 
@@ -5975,9 +6408,9 @@ function buildVABericht(){
     '<textarea id="v-bemerkungen"></textarea>'+'</div></div>'+
     '<div style="display:flex;align-items:center;gap:8px;margin:4px 2px"><span id="draft-indicator" style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);opacity:0.5;transition:opacity .3s">Entwurf wird automatisch gesichert</span></div>'+
     '<div class="send-status" id="va-send-status"></div>'+
-    '<div class="arow">'+
-    '<button class="btn btn-p" ontouchstart="saveAndSendVA()" onclick="saveAndSendVA()">Speichern und PDF senden</button>'+
-    '<button class="btn btn-e" ontouchstart="manualSaveDraft()" onclick="manualSaveDraft()">Entwurf speichern</button>'+
+    '<div class="arow arow-fab">'+
+    '<button class="btn btn-p" ontouchstart="saveAndSendVA()" onclick="saveAndSendVA()"><span class="lbl-l">Speichern und PDF senden</span><span class="lbl-s">Senden</span></button>'+
+    '<button class="btn btn-e" ontouchstart="manualSaveDraft()" onclick="manualSaveDraft()"><span class="lbl-l">Entwurf speichern</span><span class="lbl-s">Entwurf</span></button>'+
     '<button class="btn" ontouchstart="newReport()" onclick="newReport()">Neu</button></div>';
 }
 
@@ -6060,7 +6493,7 @@ function buildVAZeit(){
     '<div class="sec"><div class="sh">Geraeteeinsatz (Dataflor)</div>'+
     '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Geraet</th><th>Fahrzeugnr.</th><th>Stunden</th><th>Projekt</th><th></th></tr></thead><tbody id="mach-body"></tbody></table></div>'+
     '<button class="btn" ontouchstart="addMachRow()" onclick="addMachRow()">+ Geraet</button></div>'+
-    '<div class="arow"><button class="btn btn-p" ontouchstart="saveAndSendVA()" onclick="saveAndSendVA()">Speichern und PDF senden</button></div>';
+    '<div class="arow arow-fab"><button class="btn btn-p" ontouchstart="saveAndSendVA()" onclick="saveAndSendVA()"><span class="lbl-l">Speichern und PDF senden</span><span class="lbl-s">Senden</span></button></div>';
 }
 
 function buildVAMaterial(){
@@ -6069,7 +6502,7 @@ function buildVAMaterial(){
     '<div class="sec" style="margin-top:12px"><div class="sh">LV-Positionen</div>'+
     '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Pos.-Nr.</th><th>Bezeichnung</th><th>Einheit</th><th>Soll</th><th>Ist</th><th>Projekt</th><th></th></tr></thead><tbody id="lv-body"></tbody></table></div>'+
     '<button class="btn" ontouchstart="addLVRow()" onclick="addLVRow()">+ Position</button></div>'+
-    '<div class="arow"><button class="btn btn-p" ontouchstart="saveAndSendVA()" onclick="saveAndSendVA()">Speichern und PDF senden</button></div>';
+    '<div class="arow arow-fab"><button class="btn btn-p" ontouchstart="saveAndSendVA()" onclick="saveAndSendVA()"><span class="lbl-l">Speichern und PDF senden</span><span class="lbl-s">Senden</span></button></div>';
 }
 
 function buildKI(){return'';}
@@ -6135,7 +6568,7 @@ function updZeitTotal(){let t=0;document.querySelectorAll('.zeit-gesamt').forEac
 function getZeitRows(){return[...document.querySelectorAll('#zeit-body tr')].map(tr=>({name:tr.querySelector('.zeit-name')?.value||'',qual:tr.querySelector('.zeit-qual')?.value||'',von:tr.querySelector('.zeit-von')?.value||'',bis:tr.querySelector('.zeit-bis')?.value||'',pause:tr.querySelector('.zeit-pause')?.value||'60',nettoArbeit:tr.querySelector('.zeit-netto')?.value||'',fahrt:tr.querySelector('.fahrt-sel')?.value||'fahrer',fahrzeitMin:tr.querySelector('.zeit-fahrzeit')?.value||'0',fahrtAnteil:tr.querySelector('.zeit-anteil')?.value||'',gesamt:tr.querySelector('.zeit-gesamt')?.value||'',projektNr:PROJEKTE.find(p=>p.id===tr.querySelector('.row-pr')?.value)?.nr||'',projektId:tr.querySelector('.row-pr')?.value||'',tae:tr.querySelector('.row-tae')?.value||''})).filter(r=>r.name);}
 function addMachRow(data={}){const tbody=document.getElementById('mach-body');if(!tbody)return;const tr=document.createElement('tr');const rowKat=data.projektId?getProjektKat(data.projektId):currentVAKat();const prOpts=rowProjektOpts(rowKat,data.projektId||'');tr.innerHTML='<td><select class="geraet-sel" style="font-size:10px;min-width:200px"><option value="">- Geraet -</option>'+GERAETE.map(g=>'<option value="'+g.nr+'" '+(data.geraetNr===g.nr?'selected':'')+'>'+g.nr+' - '+g.bez+'</option>').join('')+'</select></td><td><input type="text" class="mach-fzn" value="'+(data.fahrzeugnr||'')+'" placeholder="Kfz/Nr." style="width:80px"></td><td><input type="number" class="mach-std" value="'+(data.netto||'')+'" placeholder="Std." min="0" step="0.5" style="width:70px;color:var(--gl);font-family:\'IBM Plex Mono\',monospace;font-weight:700"></td><td><select class="row-pr" data-kat="'+rowKat+'" style="font-size:9px;min-width:90px">'+prOpts+'</select></td><td><button class="delbtn" ontouchstart="this.closest(\'tr\').remove()" onclick="this.closest(\'tr\').remove()">&#x2715;</button></td>';tbody.appendChild(tr);}
 function getMachRows(){return[...document.querySelectorAll('#mach-body tr')].map(tr=>{const geraetNr=tr.querySelector('.geraet-sel')?.value||'';const geraet=GERAETE.find(g=>g.nr===geraetNr);return{geraetNr,geraetBez:geraet?.bez||'',fahrzeugnr:tr.querySelector('.mach-fzn')?.value||'',netto:tr.querySelector('.mach-std')?.value||'',projektId:tr.querySelector('.row-pr')?.value||''};}).filter(r=>r.geraetNr);}
-function addStep(data={}){stepIdx++;const i=stepIdx;const maRows=getZeitRowsSimple();let maHtml=maRows.length>0?'<div class="ma-zuweisung"><div class="ma-zuw-title">Mitarbeiter zuweisen</div>'+maRows.map(ma=>{const checked=(data.mitarbeiter||[]).some(m=>m.name===ma.name);const std=(data.mitarbeiter||[]).find(m=>m.name===ma.name)?.stunden||'';return'<div class="ma-check-row"><input type="checkbox" class="ma-cb" data-name="'+ma.name+'" '+(checked?'checked':'')+' onchange="updateStepMA('+i+')"><span class="ma-name-lbl">'+ma.name+'</span><span class="ma-budget" data-name="'+ma.name+'"></span><input type="number" class="ma-h" data-name="'+ma.name+'" value="'+std+'" placeholder="Std." min="0" step="0.5" style="opacity:'+(checked?'1':'0.4')+'" oninput="updateStepMA('+i+')">';}).join('')+'</div>':'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-top:6px" data-no-ma="1">Erst Mitarbeiter im Tab Zeiten eintragen</div>';
+function addStep(data={}){stepIdx++;const i=stepIdx;const maRows=getZeitRowsSimple();let maHtml=maRows.length>0?'<div class="ma-zuweisung"><div class="ma-zuw-title">Mitarbeiter zuweisen</div>'+maRows.map(ma=>{const checked=(data.mitarbeiter||[]).some(m=>m.name===ma.name);const std=(data.mitarbeiter||[]).find(m=>m.name===ma.name)?.stunden||'';return'<div class="ma-check-row"><input type="checkbox" class="ma-cb" data-name="'+ma.name+'" '+(checked?'checked':'')+' onchange="updateStepMA('+i+')"><span class="ma-name-lbl">'+ma.name+'</span><span class="ma-budget" data-name="'+ma.name+'"></span><input type="number" class="ma-h" data-name="'+ma.name+'" value="'+std+'" placeholder="Std." min="0" step="0.5" style="opacity:'+(checked?'1':'0.4')+'" oninput="updateStepMA('+i+')"></div>';}).join('')+'</div>':'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-top:6px" data-no-ma="1">Erst Mitarbeiter im Tab Zeiten eintragen</div>';
   const stepKat=data.projektId?getProjektKat(data.projektId):currentVAKat();
   const div=document.createElement('div');div.className='lief-block';div.id='step-'+i;
   div.innerHTML='<div class="lief-head"><div class="lief-num">'+i+'</div>'+
@@ -6252,7 +6685,7 @@ function updateMAOffen(){
     b.innerHTML='<span style="color:var(--m)">Zeiten '+fmt(t)+'h</span> &middot; '+restHtml;
   });
 }
-function refreshStepMAs(){const blocks=document.querySelectorAll('[id^="step-"]');if(!blocks.length)return;const maRows=getZeitRowsSimple();blocks.forEach(block=>{const idx=block.id.replace('step-','');let zone=block.querySelector('.ma-zuweisung');const noMA=block.querySelector('[data-no-ma]');const checked={};block.querySelectorAll('.ma-cb').forEach(cb=>{checked[cb.dataset.name]=cb.checked;});const stunden={};block.querySelectorAll('.ma-h').forEach(h=>{stunden[h.dataset.name]=h.value;});if(maRows.length===0){if(zone)zone.remove();if(!noMA){const msg=document.createElement('div');msg.setAttribute('data-no-ma','1');msg.style.cssText='font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-top:6px';msg.textContent='Erst Mitarbeiter im Tab Zeiten eintragen';block.appendChild(msg);}return;}if(noMA)noMA.remove();if(!zone){zone=document.createElement('div');zone.className='ma-zuweisung';block.appendChild(zone);}zone.innerHTML='<div class="ma-zuw-title">Mitarbeiter zuweisen</div>'+maRows.map(ma=>{const ic=checked[ma.name]||false;const h=stunden[ma.name]||'';return'<div class="ma-check-row"><input type="checkbox" class="ma-cb" data-name="'+ma.name+'" '+(ic?'checked':'')+' onchange="updateStepMA('+idx+')"><span class="ma-name-lbl">'+ma.name+'</span><span class="ma-budget" data-name="'+ma.name+'"></span><input type="number" class="ma-h" data-name="'+ma.name+'" value="'+h+'" placeholder="Std." min="0" step="0.5" style="opacity:'+(ic?'1':'0.4')+'" oninput="updateStepMA('+idx+')">';}).join('');});updateMAOffen();}
+function refreshStepMAs(){const blocks=document.querySelectorAll('[id^="step-"]');if(!blocks.length)return;const maRows=getZeitRowsSimple();blocks.forEach(block=>{const idx=block.id.replace('step-','');let zone=block.querySelector('.ma-zuweisung');const noMA=block.querySelector('[data-no-ma]');const checked={};block.querySelectorAll('.ma-cb').forEach(cb=>{checked[cb.dataset.name]=cb.checked;});const stunden={};block.querySelectorAll('.ma-h').forEach(h=>{stunden[h.dataset.name]=h.value;});if(maRows.length===0){if(zone)zone.remove();if(!noMA){const msg=document.createElement('div');msg.setAttribute('data-no-ma','1');msg.style.cssText='font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-top:6px';msg.textContent='Erst Mitarbeiter im Tab Zeiten eintragen';block.appendChild(msg);}return;}if(noMA)noMA.remove();if(!zone){zone=document.createElement('div');zone.className='ma-zuweisung';block.appendChild(zone);}zone.innerHTML='<div class="ma-zuw-title">Mitarbeiter zuweisen</div>'+maRows.map(ma=>{const ic=checked[ma.name]||false;const h=stunden[ma.name]||'';return'<div class="ma-check-row"><input type="checkbox" class="ma-cb" data-name="'+ma.name+'" '+(ic?'checked':'')+' onchange="updateStepMA('+idx+')"><span class="ma-name-lbl">'+ma.name+'</span><span class="ma-budget" data-name="'+ma.name+'"></span><input type="number" class="ma-h" data-name="'+ma.name+'" value="'+h+'" placeholder="Std." min="0" step="0.5" style="opacity:'+(ic?'1':'0.4')+'" oninput="updateStepMA('+idx+')"></div>';}).join('');});updateMAOffen();}
 function getStepMAs(idx){const block=document.getElementById('step-'+idx);if(!block)return[];const result=[];block.querySelectorAll('.ma-cb:checked').forEach(cb=>{const h=block.querySelector('.ma-h[data-name="'+cb.dataset.name+'"]');result.push({name:cb.dataset.name,stunden:h?.value||''});});return result;}
 function getSteps(){return[...document.querySelectorAll('[id^="step-"]')].filter(b=>b.id.match(/^step-\d+$/)).map(b=>{const i=b.id.replace('step-','');const pid=b.querySelector('#st-pr-'+i)?.value||'';return{txt:b.querySelector('#st-txt-'+i)?.value||'',projektId:pid,projektNr:PROJEKTE.find(p=>p.id===pid)?.nr||'',pos:b.querySelector('#st-pos-'+i)?.value||'',leistung:b.querySelector('#st-leist-'+i)?.value||'',menge:b.querySelector('#st-mg-'+i)?.value||'',eh:b.querySelector('#st-eh-'+i)?.value||'',lvId:b.querySelector('#st-lvid-'+i)?.value||'',mitarbeiter:getStepMAs(i)};}).filter(s=>s.txt||s.lvId);}
 function addLief(data={}){liefIdx++;const i=liefIdx;const div=document.createElement('div');div.className='lief-block';div.innerHTML='<div class="lief-head"><div class="lief-num" style="background:var(--earthg);border-color:var(--earth);color:var(--earth)">'+i+'</div><button class="delbtn" style="margin-left:auto" ontouchstart="this.closest(\'.lief-block\').remove()" onclick="this.closest(\'.lief-block\').remove()">&#x2715;</button></div><div class="row"><div class="fg w50"><label>Lieferant</label><input type="text" id="lf-firma-'+i+'" value="'+(data.firma||'')+'" placeholder="Muster GmbH..."></div><div class="fg w50"><label>Lieferschein-Nr.</label><input type="text" id="lf-ls-'+i+'" value="'+(data.ls||'')+'" placeholder="LS-001"></div><div class="fg w50"><label>Material</label><input type="text" id="lf-mat-'+i+'" placeholder="Rollrasen...">'+'</div><div class="fg w25"><label>Menge</label><input type="number" id="lf-mg-'+i+'" value="'+(data.menge||'')+'"></div><div class="fg w25"><label>Einheit</label><select id="lf-eh-'+i+'"><option>m2</option><option>m3</option><option>t</option><option>lfm</option><option>Stk</option><option>kg</option><option>l</option></select></div><div class="fg w50"><label>Status</label><select id="lf-ok-'+i+'"><option>OK</option><option>Teillieferung</option><option>Falsche Ware</option><option>Maengel</option><option>Verzug</option></select></div><div class="fg w50"><label>Bemerkung</label><input type="text" id="lf-bem-'+i+'" value="'+(data.bem||'')+'"></div></div>';document.getElementById('lief-con')?.appendChild(div);}
@@ -6303,7 +6736,7 @@ function newReport(skipConfirm){
   // Sicherheitsabfrage nur bei manueller Ausloesung (Button) — nach erfolgreichem
   // Senden wird newReport(true) aufgerufen und leert ohne Nachfrage.
   if(!skipConfirm&&!confirm('Neuen Bericht beginnen? Nicht gespeicherte Eingaben gehen verloren.'))return;
-  currentId=null;
+  currentId=null;_fahrerBegruendung='';_fahrerBegruendungAlt='';
   if(currentRole==='arbeiter'){clearARForm(true);return;}
   if(currentRole==='werkstatt'){clearWSForm(true);return;}
   stepIdx=0;liefIdx=0;mangelIdx=0;zusatzProjektIdx=0;
@@ -6499,6 +6932,175 @@ function modCheckboxLesen(prefix){
   MODULE_DEFS.forEach(d=>{const c=document.getElementById(prefix+'-'+d.key);if(c&&c.checked)module.push(d.key);});
   return module.length?module:['tagesberichte'];
 }
+// ══════ RUECKFRAGEN + POSTEINGANG ══════
+// Admin, Buchhaltung und Bauleiter koennen zu einem Bericht eine Frage stellen oder ihn zur Korrektur
+// zurueckgeben (Tabelle rueckfragen). Der Mitarbeiter sieht das im Posteingang, antwortet oder korrigiert.
+// Sendet er den Bericht neu, gilt die Rueckfrage als erledigt und der Fragesteller bekommt eine Nachricht.
+// Typen: frage | korrektur (an den Mitarbeiter)  ·  antwort | korrigiert (zurueck an den Fragesteller)
+let _inbox=[],_inboxAnzahl=0,_inboxGemeldet=false,_rfBericht=null,_sendeKorrektur=false;
+const RF_TYP={frage:'Frage',korrektur:'Zur Korrektur zurueckgegeben',antwort:'Antwort',korrigiert:'Korrektur eingegangen'};
+const RF_ROLLE={admin:'Admin',verwaltung:'Buchhaltung',projektleiter:'Bauleiter',vorarbeiter:'Vorarbeiter',arbeiter:'Arbeiter',werkstatt:'Werkstatt'};
+function rfZeit(iso){
+  if(!iso)return '';
+  const d=new Date(iso);if(isNaN(d.getTime()))return '';
+  return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit'})+' '+d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+}
+function korrekturFelder(){
+  // Nach einer Aenderung muessen Bauleiter und Buchhaltung den Bericht neu pruefen
+  return {abgenommen:false,abgenommen_von:null,abgenommen_am:null,abgenommen_sig:null,bh_freigegeben:false,bh_freigegeben_von:null,bh_freigegeben_am:null};
+}
+async function inboxLaden(){
+  if(!currentUser)return;
+  const r=await sb.from('rueckfragen').select('*').eq('an_id',String(currentUser.id)).eq('test',TESTMODUS).eq('erledigt',false).order('erstellt_am',{ascending:false}).limit(200);
+  if(r.error){
+    console.error('Posteingang konnte nicht geladen werden:',r.error);
+    toast('Posteingang konnte nicht geladen werden: '+(r.error.message||''),'err');
+    return;
+  }
+  _inbox=r.data||[];_inboxAnzahl=_inbox.length;
+  inboxBadges();
+  if(_inboxAnzahl>0&&!_inboxGemeldet){_inboxGemeldet=true;toast(_inboxAnzahl+' offene Nachricht'+(_inboxAnzahl>1?'en':'')+' im Posteingang','info');}
+}
+function inboxBadges(){
+  ['inbox-badge-app','inbox-badge-admin','inbox-badge-pl','mk-badge-tb'].forEach(function(id){
+    const el=document.getElementById(id);if(!el)return;
+    el.textContent=_inboxAnzahl>0?String(_inboxAnzahl):'';
+    el.classList.toggle('on',_inboxAnzahl>0);
+  });
+}
+async function inboxOeffnen(){
+  await inboxLaden();
+  inboxRender();
+  document.getElementById('mo-inbox').style.display='flex';
+}
+function inboxSchliessen(){document.getElementById('mo-inbox').style.display='none';}
+function inboxRender(){
+  const el=document.getElementById('inbox-list');if(!el)return;
+  if(!_inbox.length){el.innerHTML='<div style="color:var(--m);font-size:12px;padding:16px;text-align:center">Keine offenen Nachrichten</div>';return;}
+  el.innerHTML=_inbox.map(function(n){
+    const anMA=(n.typ==='frage'||n.typ==='korrektur');
+    let btns='';
+    if(anMA){
+      btns='<button class="btn btn-p" ontouchstart="inboxBerichtOeffnen(\''+n.bericht_id+'\')" onclick="inboxBerichtOeffnen(\''+n.bericht_id+'\')">'+(n.typ==='korrektur'?'Bericht korrigieren':'Bericht oeffnen')+'</button>'+
+        '<button class="btn btn-sky" ontouchstart="inboxAntworten(\''+n.id+'\')" onclick="inboxAntworten(\''+n.id+'\')">Antworten</button>';
+    }else{
+      btns='<button class="btn btn-sky" ontouchstart="inboxPdf(\''+n.bericht_id+'\')" onclick="inboxPdf(\''+n.bericht_id+'\')">PDF ansehen</button>'+
+        '<button class="btn" ontouchstart="inboxErledigt(\''+n.id+'\')" onclick="inboxErledigt(\''+n.id+'\')">Erledigt &#x2713;</button>';
+    }
+    return '<div class="ib-item '+_dfEsc(n.typ)+'">'+
+      '<div class="ib-typ">'+_dfEsc(RF_TYP[n.typ]||n.typ)+'</div>'+
+      '<div class="ib-meta">Von '+_dfEsc(n.von_name||'--')+' ('+_dfEsc(RF_ROLLE[n.von_rolle]||n.von_rolle||'')+') am '+_dfEsc(rfZeit(n.erstellt_am))+'<br>Bericht vom '+_dfEsc(fmtD(n.bericht_datum))+(n.bericht_projekt?' &middot; '+_dfEsc(n.bericht_projekt):'')+'</div>'+
+      (n.text?'<div class="ib-text">'+_dfEsc(n.text)+'</div>':'')+
+      '<div class="ib-row">'+btns+'</div></div>';
+  }).join('');
+}
+async function inboxBerichtOeffnen(berichtId){
+  // Mitarbeiter: Bericht ins eigene Formular laden. Admin/Bauleiter: PDF zeigen.
+  const ueberlagert=['admin-screen','pl-screen','menu-screen','ausb-screen','br-screen'].some(function(id){const el=document.getElementById(id);return el&&el.style.display&&el.style.display!=='none';});
+  if(!currentUser||!(currentRole==='vorarbeiter'||currentRole==='arbeiter'||currentRole==='werkstatt')||ueberlagert){inboxPdf(berichtId);return;}
+  let r=reports.find(function(x){return String(x.id)===String(berichtId);});
+  if(!r){
+    const q=await sb.from(tblBerichte()).select('*').eq('id',berichtId).single();
+    if(q.error||!q.data){toast('Bericht nicht gefunden: '+(q.error?q.error.message:''),'err');return;}
+    r=q.data;reports.unshift(r);renderSB();
+  }
+  inboxSchliessen();
+  loadReport(r.id);
+  toast('Bericht geladen - nach der Korrektur einfach neu senden','info');
+}
+async function inboxPdf(berichtId){
+  inboxSchliessen();
+  await freigabeAnsehen(berichtId);
+}
+async function inboxAntworten(id){
+  const n=_inbox.find(function(x){return String(x.id)===String(id);});if(!n)return;
+  const txt=prompt('Antwort an '+(n.von_name||'')+':','');
+  if(txt===null)return;
+  if(!txt.trim()){toast('Bitte einen Text eingeben','err');return;}
+  const ins=await sb.from('rueckfragen').insert({test:TESTMODUS,bericht_id:String(n.bericht_id),bericht_datum:n.bericht_datum||null,bericht_projekt:n.bericht_projekt||'',typ:'antwort',text:txt.trim(),
+    von_id:String(currentUser.id),von_name:currentUser.name,von_rolle:currentUser.rolle,an_id:String(n.von_id),an_name:n.von_name||''});
+  if(ins.error){toast('Antwort konnte nicht gesendet werden: '+ins.error.message,'err');return;}
+  const up=await sb.from('rueckfragen').update({erledigt:true,erledigt_am:new Date().toISOString()}).eq('id',n.id);
+  if(up.error){toast('Antwort gesendet, aber Nachricht konnte nicht als erledigt markiert werden: '+up.error.message,'err');}
+  await rueckfrageOffenNeuBerechnen(n.bericht_id);
+  toast('Antwort gesendet','ok');
+  await inboxLaden();inboxRender();
+}
+async function inboxErledigt(id){
+  const up=await sb.from('rueckfragen').update({erledigt:true,erledigt_am:new Date().toISOString()}).eq('id',id);
+  if(up.error){toast('Konnte nicht als erledigt markiert werden: '+up.error.message,'err');return;}
+  await inboxLaden();inboxRender();
+}
+// Stehen noch Fragen/Korrekturen an den Mitarbeiter offen? Dann bleibt der Bericht gesperrt.
+async function rueckfrageOffenNeuBerechnen(berichtId){
+  const r=await sb.from('rueckfragen').select('id').eq('bericht_id',String(berichtId)).eq('test',TESTMODUS).in('typ',['frage','korrektur']).eq('erledigt',false).limit(1);
+  if(r.error){console.error('Rueckfrage-Status konnte nicht geprueft werden:',r.error);toast('Rueckfrage-Status konnte nicht geprueft werden: '+r.error.message,'err');return;}
+  const offen=(r.data||[]).length>0;
+  const up=await sb.from(tblBerichte()).update({rueckfrage_offen:offen}).eq('id',berichtId);
+  if(up.error){console.error('Rueckfrage-Status konnte nicht gespeichert werden:',up.error);toast('Rueckfrage-Status konnte nicht gespeichert werden: '+up.error.message,'err');}
+}
+// Mitarbeiter hat den Bericht neu gesendet: offene Rueckfragen an ihn erledigen, Fragesteller informieren
+async function rueckfrageKorrigiert(berichtId){
+  const r=await sb.from('rueckfragen').select('*').eq('bericht_id',String(berichtId)).eq('test',TESTMODUS).eq('an_id',String(currentUser.id)).in('typ',['frage','korrektur']).eq('erledigt',false);
+  if(r.error){console.error('Rueckfragen konnten nicht geladen werden:',r.error);toast('Rueckfragen konnten nicht geladen werden: '+r.error.message,'err');return;}
+  const offen=r.data||[];
+  if(!offen.length)return;
+  const ids=offen.map(function(x){return x.id;});
+  const up=await sb.from('rueckfragen').update({erledigt:true,erledigt_am:new Date().toISOString()}).in('id',ids);
+  if(up.error){toast('Rueckfragen konnten nicht als erledigt markiert werden: '+up.error.message,'err');return;}
+  const frager={};
+  offen.forEach(function(x){if(x.von_id&&!frager[x.von_id])frager[x.von_id]=x;});
+  const neu=Object.keys(frager).map(function(k){const x=frager[k];return {test:TESTMODUS,bericht_id:String(berichtId),bericht_datum:x.bericht_datum||null,bericht_projekt:x.bericht_projekt||'',typ:'korrigiert',
+    text:'Der Bericht wurde neu gesendet. Abnahme und Freigabe wurden zurueckgesetzt.',von_id:String(currentUser.id),von_name:currentUser.name,von_rolle:currentUser.rolle,an_id:String(x.von_id),an_name:x.von_name||''};});
+  if(neu.length){const ins=await sb.from('rueckfragen').insert(neu);if(ins.error){toast('Fragesteller konnte nicht informiert werden: '+ins.error.message,'err');}}
+  await rueckfrageOffenNeuBerechnen(berichtId);
+  toast('Korrektur gesendet - '+offen.length+' Rueckfrage(n) erledigt','ok');
+  inboxLaden();
+}
+async function rueckfrageOeffnen(berichtId){
+  const q=await sb.from(tblBerichte()).select('id,mitarbeiter_id,mitarbeiter_name,datum,projekt_nr,rolle').eq('id',berichtId).single();
+  if(q.error||!q.data){toast('Bericht nicht gefunden: '+(q.error?q.error.message:''),'err');return;}
+  _rfBericht=q.data;
+  document.getElementById('rf-bericht-info').textContent='Bericht vom '+fmtD(q.data.datum)+' von '+(q.data.mitarbeiter_name||'--')+(q.data.projekt_nr?' · '+q.data.projekt_nr:'');
+  document.getElementById('rf-typ').value='frage';
+  document.getElementById('rf-text').value='';
+  document.getElementById('mo-rueckfrage').style.display='flex';
+}
+function rueckfrageSchliessen(){document.getElementById('mo-rueckfrage').style.display='none';_rfBericht=null;}
+async function rueckfrageSenden(){
+  const b=_rfBericht;if(!b)return;
+  const typ=document.getElementById('rf-typ').value;
+  const txt=document.getElementById('rf-text').value.trim();
+  if(!txt){toast('Bitte einen Text eingeben','err');return;}
+  if(!b.mitarbeiter_id){toast('Bericht hat keinen zugeordneten Mitarbeiter','err');return;}
+  const ins=await sb.from('rueckfragen').insert({test:TESTMODUS,bericht_id:String(b.id),bericht_datum:b.datum||null,bericht_projekt:b.projekt_nr||'',typ:typ,text:txt,
+    von_id:String(currentUser.id),von_name:currentUser.name,von_rolle:currentUser.rolle,an_id:String(b.mitarbeiter_id),an_name:b.mitarbeiter_name||''});
+  if(ins.error){toast('Rueckfrage konnte nicht gesendet werden: '+ins.error.message,'err');return;}
+  const up=await sb.from(tblBerichte()).update({rueckfrage_offen:true}).eq('id',b.id);
+  if(up.error){toast('Rueckfrage gesendet, aber Bericht konnte nicht markiert werden: '+up.error.message,'err');}
+  rueckfrageSchliessen();
+  toast(typ==='korrektur'?'Zur Korrektur zurueckgegeben':'Frage gesendet','ok');
+  if(document.getElementById('frei-list')&&typeof ladeFreigabe==='function')ladeFreigabe();
+  if(document.getElementById('pl-ber-list')&&typeof filterPLBer==='function')filterPLBer();
+  if(document.getElementById('ber-list')&&typeof filterBer==='function')filterBer();
+}
+
+// ══════ FAHRER-WIDERSPRUCH: Pflicht-Begruendung beim Senden (VA) ══════
+let _fahrerBegruendung='',_fahrerBegruendungAlt='';
+function fahrerBegruendungDialog(fw){
+  document.getElementById('fahrer-text').textContent=fw.text+'.';
+  document.getElementById('fahrer-begr').value=_fahrerBegruendungAlt||'';
+  document.getElementById('mo-fahrer').style.display='flex';
+}
+function fahrerBegruendungAbbrechen(){document.getElementById('mo-fahrer').style.display='none';showTab('zeit');}
+function fahrerBegruendungSenden(){
+  const t=document.getElementById('fahrer-begr').value.trim();
+  if(t.length<5){toast('Bitte eine kurze Begruendung eingeben','err');return;}
+  _fahrerBegruendung=t;
+  document.getElementById('mo-fahrer').style.display='none';
+  saveAndSendVA();
+}
+
 // ══════ Antippen ohne Fehlausloesung beim Scrollen ══════
 // Bisher loeste ontouchstart sofort aus - also auch, wenn man nur scrollen wollte.
 // tsTap merkt sich die erste Beruehrung und loest erst beim Loslassen aus, und nur wenn der Finger
@@ -6564,7 +7166,7 @@ function menuKacheln(u){
 function menuKachelHTML(k){
   return '<div class="mk" '+tsAttr('openModul(\''+k.key+'\')')+'>'+
     '<div class="mk-ic f-'+k.farbe+'">'+(MENU_ICONS[k.key]||'')+'</div>'+
-    '<div class="mk-tx"><div class="mk-name">'+k.name+'</div><div class="mk-sub">'+k.sub+'</div></div>'+
+    '<div class="mk-tx"><div class="mk-name">'+k.name+(k.key==='tagesberichte'?'<span class="mk-badge'+(_inboxAnzahl>0?' on':'')+'" id="mk-badge-tb">'+(_inboxAnzahl>0?_inboxAnzahl:'')+'</span>':'')+'</div><div class="mk-sub">'+k.sub+'</div></div>'+
     '<div class="mk-chev">&#8250;</div></div>';
 }
 function openMenu(){
@@ -6589,6 +7191,7 @@ function openMenu(){
   const mm=document.getElementById('menu-master');
   if(mm)mm.innerHTML=istMasterUser?masterPanelHTML():'';
   document.getElementById('menu-screen').style.display='flex';
+  inboxLaden();
 }
 async function openModul(k){
   // Controlling/Verwaltung sind Admin-Bereiche: nur mit Rolle admin, sonst sichtbar ablehnen
