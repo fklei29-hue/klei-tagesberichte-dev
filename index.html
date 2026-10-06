@@ -658,6 +658,70 @@ input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and
   .ue-wsum{flex-basis:100%;margin-left:22px;}
   .ue-monat{min-width:0;flex:1;}
 }
+
+/* ══════ Lieferung 07.10.2026: Wortmarke, Arbeiter-Ansicht, Kalender, Abgabe, Wochenplan ══════ */
+.ts-word,.h-word{font-size:18px;font-weight:700;letter-spacing:1.2px;color:#fff;}
+/* Arbeiter-Ansicht: keine Berichtsliste links, Formular mittig */
+body.ar-ui .app{grid-template-columns:1fr;}
+body.ar-ui aside{display:none;}
+body.ar-ui #main-content .panel{max-width:1040px;margin-left:auto;margin-right:auto;}
+/* Kalender (Mitarbeiter): Projekt und Stunden im Tagesfeld */
+.kal-day{flex-direction:column;gap:2px;padding:3px;overflow:hidden;min-width:0;text-align:center;}
+.kal-day.ok{color:var(--gl);}
+.kal-nr{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;line-height:1.1;}
+.kal-p{font-family:'IBM Plex Sans',sans-serif;font-size:9px;line-height:1.15;color:var(--c);max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-weight:400;}
+.kal-p b{font-family:'IBM Plex Mono',monospace;font-weight:600;}
+.kal-pn{display:none;}
+.kal-h{font-family:'IBM Plex Mono',monospace;font-size:8.5px;color:var(--m);font-weight:500;}
+@media(min-width:681px){
+  .kalender-wrap{max-width:1100px;margin:0 auto;}
+  .kal-grid{gap:5px;}
+  .kal-day{aspect-ratio:auto;min-height:92px;align-items:flex-start;justify-content:flex-start;padding:7px 9px;text-align:left;border-radius:8px;}
+  .kal-nr{font-size:13px;margin-bottom:2px;}
+  .kal-p{font-size:11.5px;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+  .kal-pn{display:inline;}
+  .kal-h{font-size:10.5px;margin-top:auto;}
+}
+/* Abgabe-Matrix: volle Breite nutzen, Tagesspalten teilen sich den Platz */
+.abg-table{width:100%;}
+.abg-table .abg-name{width:1%;}
+/* Einteilung: Wochenplan */
+.ew-nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.ew-nav .btn{padding:8px 14px;}
+.ew-titel{font-size:15px;font-weight:700;color:var(--c);flex:1;min-width:180px;}
+.ew-nav .ew-titel{text-align:center;}
+.ew-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;align-items:start;}
+.ew-tag{background:var(--s1);border:1px solid var(--b);border-radius:10px;padding:8px;cursor:pointer;min-height:120px;min-width:0;}
+.ew-tag.heute{border:2px solid var(--sky);padding:7px;}
+.ew-tag.we{background:var(--s3);}
+.ew-tag-kopf{display:flex;justify-content:space-between;align-items:baseline;gap:6px;font-size:12px;color:var(--c);padding-bottom:6px;margin-bottom:6px;border-bottom:1px solid var(--b);}
+.ew-tag-n{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--m);white-space:nowrap;}
+.ew-leer{font-size:11px;color:var(--m);padding:6px 0;}
+.ew-g{border-left:3px solid var(--g);padding:3px 0 3px 7px;margin-bottom:7px;min-width:0;}
+.ew-g.intern{border-left-color:var(--ws);}
+.ew-g.abw{border-left-color:var(--r);}
+.ew-g-t{font-size:11.5px;font-weight:600;color:var(--c);line-height:1.3;overflow-wrap:anywhere;}
+.ew-g-p{font-size:11px;color:var(--t);line-height:1.4;margin-top:2px;overflow-wrap:anywhere;}
+.ew-grund{color:var(--r);font-size:10px;}
+.ew-edit-kopf{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+.ew-hinweis{font-size:11.5px;color:var(--o);background:rgba(212,120,42,.1);border:1px solid rgba(212,120,42,.35);border-radius:var(--rad);padding:8px 10px;margin-bottom:10px;line-height:1.5;}
+.ew-karte{background:var(--s1);border:1px solid var(--b);border-left:4px solid var(--g);border-radius:10px;padding:12px;margin-bottom:10px;}
+.ew-karte.abw{border-left-color:var(--r);}
+.ew-karte-kopf{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:10px;}
+.ew-weg{padding:9px 12px;}
+.ew-chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.ew-chip{display:inline-flex;align-items:center;gap:6px;background:var(--gg);border:1px solid var(--gd);border-radius:999px;padding:5px 5px 5px 11px;font-size:12.5px;color:var(--c);}
+.ew-chip.unbekannt{background:var(--rg);border-color:var(--r);}
+.ew-chip-x{background:none;border:none;color:var(--m);font-size:13px;cursor:pointer;padding:3px 7px;line-height:1;}
+.ew-plus{width:auto;min-width:150px;border-radius:999px;padding:6px 10px;font-size:12.5px;}
+.ew-leiste{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--b);}
+@media(max-width:1100px){.ew-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+@media(max-width:680px){
+  .ew-grid{grid-template-columns:1fr;}
+  .ew-tag{min-height:0;}
+  .ew-karte-kopf .fg{flex:1 1 100%!important;}
+  .ew-leiste .btn{flex:1 1 46%;justify-content:center;}
+}
 </style>
 </head>
 <body class="theme-light">
@@ -677,7 +741,7 @@ input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and
 <div id="admin-screen">
   <div class="ts-head">
     <img src="https://www.klei-sportplatzbau.de/images/logos/KLEI_LOGO_FARBIG_RGB_72DPI.png" class="ts-logo" alt="KLEI" onerror="this.style.display='none'">
-    <span class="ts-word">Terra Suite</span>
+    <span class="ts-word">KLEI</span>
     <span class="ts-bereich" id="admin-bereich-name">Tagesberichte</span>
     <span class="admin-badge badge-admin">Admin</span>
     <span id="admin-user-name" class="ts-user"></span>
@@ -723,7 +787,7 @@ input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and
 <div id="pl-screen">
   <div class="ts-head">
     <img src="https://www.klei-sportplatzbau.de/images/logos/KLEI_LOGO_FARBIG_RGB_72DPI.png" class="ts-logo" alt="KLEI" onerror="this.style.display='none'">
-    <span class="ts-word">Terra Suite</span>
+    <span class="ts-word">KLEI</span>
     <span class="ts-bereich">Tagesberichte</span>
     <span class="admin-badge badge-pl">Projektleiter</span>
     <span id="pl-user-name" class="ts-user"></span>
@@ -750,7 +814,7 @@ input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and
 <div id="menu-screen">
   <div class="ts-head">
     <img src="https://www.klei-sportplatzbau.de/images/logos/KLEI_LOGO_FARBIG_RGB_72DPI.png" class="ts-logo" alt="KLEI" onerror="this.style.display='none'">
-    <span class="ts-word">Terra Suite</span>
+    <span class="ts-word">KLEI</span>
     <span id="menu-user-name" class="ts-user"></span>
     <button class="theme-btn" style="margin-left:auto" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
     <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
@@ -768,7 +832,7 @@ input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and
 <div id="ausb-screen">
   <div class="ts-head">
     <img src="https://www.klei-sportplatzbau.de/images/logos/KLEI_LOGO_FARBIG_RGB_72DPI.png" class="ts-logo" alt="KLEI" onerror="this.style.display='none'">
-    <span class="ts-word">Terra Suite</span>
+    <span class="ts-word">KLEI</span>
     <span class="ts-bereich">Ausbildung</span>
     <span class="admin-badge badge-azubi" id="ausb-badge">Azubi</span>
     <span id="ausb-user-name" class="ts-user"></span>
@@ -795,7 +859,7 @@ input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and
 <div id="br-screen">
   <div class="ts-head">
     <img src="https://www.klei-sportplatzbau.de/images/logos/KLEI_LOGO_FARBIG_RGB_72DPI.png" class="ts-logo" alt="KLEI" onerror="this.style.display='none'">
-    <span class="ts-word">Terra Suite</span>
+    <span class="ts-word">KLEI</span>
     <span class="ts-bereich">Baurechner</span>
     <span id="br-user-name" class="ts-user"></span>
     <button class="theme-btn" style="margin-left:auto" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
@@ -809,7 +873,7 @@ input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and
 
 <header>
   <img src="https://www.klei-sportplatzbau.de/images/logos/KLEI_LOGO_FARBIG_RGB_72DPI.png" class="h-logo" alt="KLEI" onerror="this.style.display='none'">
-  <span class="h-word">Terra Suite</span>
+  <span class="h-word">KLEI</span>
   <div class="wsd-only wsd-htitle"><div class="wsd-ht1">KLEI Tagesberichte</div><div class="wsd-ht2" id="wsd-sub"></div></div>
   <div class="wsd-only" id="wsd-tabslot"></div>
   <div class="h-divider"></div>
@@ -1235,7 +1299,7 @@ document.getElementById('login-nr').addEventListener('keydown',e=>{if(e.key==='E
 
 function doLogout(){
   stopVAAutoSave();
-  currentUser=null;reports=[];currentId=null;currentRole=null;unterschriftData=null;_inbox=[];_inboxAnzahl=0;_inboxGemeldet=false;inboxBadges();
+  currentUser=null;reports=[];currentId=null;currentRole=null;unterschriftData=null;_inbox=[];_inboxAnzahl=0;_inboxGemeldet=false;inboxBadges();document.body.classList.remove('ar-ui');
   istMasterUser=false;masterEchteRolle=null;
   TESTMODUS=false;_testGasOk=false;testmodusBanner();
   laufTest=null;tEdit=null;matEditId=null;bhEditId=null;bhArbeit=null;AUSB_MAT=[];AUSB_TESTS=[];AUSB_ABG=[];AUSB_BH=[];
@@ -1267,10 +1331,15 @@ async function initApp(){
   document.getElementById('h-user-name').textContent=currentUser.name+' #'+currentUser.mitarbeiter_nr;
   document.querySelectorAll('.va-only').forEach(el=>el.style.display=currentRole==='vorarbeiter'?'':'none');
   if(currentRole==='werkstatt')document.getElementById('btn-new-bericht').className='btn-new ws';
+  document.body.classList.toggle('ar-ui',currentRole==='arbeiter');
   buildUI();renderSB();updateSBDate();
   inboxLaden();
-  if(reports.length)loadReport(reports[0].id);
-  else if(currentRole==='arbeiter'||currentRole==='werkstatt')setTimeout(()=>initARForm(),200);
+  // Arbeiter: startet immer mit einem neuen, leeren Bericht fuer heute (die Liste links gibt es dort nicht mehr,
+  // alte Berichte stehen im Tab "Meine Berichte"). Vorarbeiter/Werkstatt: wie bisher der letzte eigene Bericht.
+  const erster=reports.find(function(x){return (x.rolle||'ar')===uiRolle();});
+  if(currentRole==='arbeiter')setTimeout(()=>initARForm(),200);
+  else if(erster)loadReport(erster.id);
+  else if(currentRole==='werkstatt')setTimeout(()=>initARForm(),200);
 }
 
 // ══════ UNTERSCHRIFT ══════
@@ -2722,6 +2791,12 @@ let _expKey='';        // Zeitraum/Freigabe/Testmodus, zu dem _expZeilen gehoert
 let _expBusy=false;
 let _expLetzterExport=0;
 function expNorm(s){return String(s==null?'':s).toLowerCase().replace(/\s+/g,' ').trim();}
+// Uhrzeit einheitlich als HH:MM (Datenbank-Zeitfelder liefern HH:MM:SS, die Zeiterfassung HH:MM)
+function expHHMM(s){
+  s=String(s==null?'':s).trim();
+  const m=s.match(/^(\d{1,2}):(\d{2})/);
+  return m?(('0'+m[1]).slice(-2)+':'+m[2]):s;
+}
 function expZahl(n){n=Math.round((parseFloat(n)||0)*100)/100;return n.toFixed(2).replace('.',',');}
 function expCsvFeld(v){v=String(v==null?'':v).replace(/\r?\n/g,' ');if(/[;"]/.test(v))v='"'+v.replace(/"/g,'""')+'"';return v;}
 function expMonatsGrenzen(monat){
@@ -2770,7 +2845,7 @@ function expLohnZeilen(berichte,maListe,projekte){
         const pnr=t.projektNr||b.projekt_nr||'';
         inVA[String(b.datum)+'|'+k]=true;
         zeilen.push({monat:monat,datum:b.datum,name:String(t.name).trim(),maNr:nr,projektId:pid,projektNr:pnr,projektName:projName(pid,pnr),
-          von:t.von||'',bis:t.bis||'',pauseMin:nkNum(t.pause),arbeitH:arbeit,fahrtArt:art,fahrzeitMin:fzMin,fahrtH:fahrtH,gesamtH:gesamt,
+          von:expHHMM(t.von),bis:expHHMM(t.bis),pauseMin:nkNum(t.pause),arbeitH:arbeit,fahrtArt:art,fahrzeitMin:fzMin,fahrtH:fahrtH,gesamtH:gesamt,
           rolle:b.rolle||'',erfasstVon:b.mitarbeiter_name||'',eigen:false,vaKey:vk,fahrerBegr:b.fahrer_begruendung||'',hinweis:nr?'':'MA-Nr fehlt (Name nicht in Stammdaten)',
           wetter:b.wetter||'',tae:t.tae||''});
       });
@@ -2782,7 +2857,7 @@ function expLohnZeilen(berichte,maListe,projekte){
       const g=nkNum(b.netto_gesamt_h);
       zeilen.push({monat:monat,datum:b.datum,name:String(b.mitarbeiter_name||'').trim(),maNr:b.mitarbeiter_nr?String(b.mitarbeiter_nr):(nrNachName[expNorm(b.mitarbeiter_name)]||''),
         projektId:b.projekt_id||'',projektNr:b.projekt_nr||'',projektName:projName(b.projekt_id,b.projekt_nr),
-        von:b.von||'',bis:b.bis||'',pauseMin:nkNum(b.pause_min),arbeitH:arbeit,fahrtArt:art,fahrzeitMin:fzMin,fahrtH:fahrtH,gesamtH:g>0?g:(arbeit+fahrtH),
+        von:expHHMM(b.von),bis:expHHMM(b.bis),pauseMin:nkNum(b.pause_min),arbeitH:arbeit,fahrtArt:art,fahrzeitMin:fzMin,fahrtH:fahrtH,gesamtH:g>0?g:(arbeit+fahrtH),
         rolle:b.rolle||'',erfasstVon:b.mitarbeiter_name||'',eigen:true,hinweis:'',
         wetter:b.wetter||'',tae:Array.isArray(b.taetigkeiten)?b.taetigkeiten.join('|'):''});
     }
@@ -4247,7 +4322,10 @@ function eintParseBlatt(aoa){
 function renderAdminEint(){
   var el=document.getElementById('apanel-eint');
   if(!el)return;
-  el.innerHTML='<div class="a-sec"><div class="a-sec-title">Tageseinteilung importieren</div>'+
+  el.innerHTML='<div class="a-sec"><div class="a-sec-title">Wochenplan</div>'+
+    '<div style="font-size:11px;color:var(--m);line-height:1.5;margin-bottom:10px">Tag antippen, um die Einteilung fuer diesen Tag zu planen oder zu aendern. Importierte Einteilungen erscheinen hier ebenfalls.'+(EINTEILUNG_AKTIV?'':' Die Mitarbeiter sehen die Einteilung noch nicht (nicht freigeschaltet).')+'</div>'+
+    '<div id="eint-woche"><div style="color:var(--m);font-size:11px;padding:8px">Lade...</div></div></div>'+
+    '<div class="a-sec"><div class="a-sec-title">Tageseinteilung importieren</div>'+
     '<div style="font-size:11px;color:var(--m);line-height:1.5;margin-bottom:10px">Die Einteilungsdatei (.xlsx oder .csv) unveraendert hochladen. Zuerst erscheint eine Vorschau mit allen Zuordnungen, gespeichert wird erst nach Bestaetigung.</div>'+
     (EINTEILUNG_AKTIV?
       '<div style="background:var(--earthg);border:1px solid var(--earth);border-radius:var(--rad);padding:8px 10px;margin-bottom:10px;font-size:11px;color:var(--t)">Die Mitarbeiteransicht ist <b>aktiv</b>. Importierte Einteilungen sind fuer die Kollegen sichtbar.</div>':
@@ -4261,6 +4339,268 @@ function renderAdminEint(){
     '<div class="row"><div class="fg w50"><label>Datum</label><input type="date" id="eint-tag" value="'+todayStr()+'" onchange="eintZeigeTag()"></div></div>'+
     '<div id="eint-tagliste"><div style="color:var(--m);font-size:10px;padding:8px">Lade...</div></div></div>';
   eintZeigeTag();
+  _ewEdit=null;
+  ewLade();
+}
+
+// ══════ EINTEILUNG: WOCHENPLAN + TAGESPLANUNG (Admin) ══════
+// Zeigt die gespeicherten Einteilungen einer Woche als Kalender. Ein Tag laesst sich direkt planen: Baustellen
+// anlegen, Personen zuordnen, Abwesenheiten eintragen. Gespeichert wird in dieselben Tabellen und auf demselben
+// Weg wie beim Datei-Import (erst neue Zeilen schreiben, dann den alten Stand des Tages loeschen).
+var _ewMontag='',_ewDaten={},_ewEdit=null,_ewBusy=false;
+var EW_TAGE=['Mo','Di','Mi','Do','Fr','Sa','So'];
+function ewIso(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function ewDatum(iso){var p=String(iso).substring(0,10).split('-');return new Date(parseInt(p[0],10),parseInt(p[1],10)-1,parseInt(p[2],10));}
+function ewPlusTage(iso,n){var d=ewDatum(iso);d.setDate(d.getDate()+n);return ewIso(d);}
+function ewMontagVon(iso){return ewPlusTage(iso,-((ewDatum(iso).getDay()+6)%7));}
+function ewHeute(){return ewIso(new Date());}
+// "Florian Klei" -> "Florian K."  /  "Albrecht, Jeremias" -> "Jeremias A."
+function ewKurzName(name){
+  var s=String(name||'').trim();if(!s)return '';
+  var vor='',nach='';
+  if(s.indexOf(',')>=0){var t=s.split(',');nach=t[0].trim();vor=(t[1]||'').trim();}
+  else{var w=s.split(/\s+/);vor=w[0];nach=w.length>1?w[w.length-1]:'';}
+  if(!vor)return nach;
+  return vor+(nach?' '+nach.charAt(0)+'.':'');
+}
+function ewMaName(id,roh){
+  if(id){for(var i=0;i<MALISTE.length;i++){if(MALISTE[i].id===id)return MALISTE[i].name;}}
+  return roh?(roh+' (?)'):'(unbekannt)';
+}
+// Datenbankzeilen eines Tages -> Gruppen (eine Gruppe = eine Baustelle/Aufgabe mit ihren Personen)
+function ewGruppen(zeilen){
+  var map={},liste=[];
+  (zeilen||[]).forEach(function(e){
+    var k=String(e.reihenfolge)+'|'+(e.baustelle_text||'');
+    if(!map[k]){
+      map[k]={reihenfolge:parseInt(e.reihenfolge,10)||0,typ:e.typ||'baustelle',projektId:e.projekt_id||'',projektNr:e.projekt_nr||'',bez:e.baustelle_text||'',
+        basis:{verantwortlich:e.verantwortlich||'',fahrzeug_nr:e.fahrzeug_nr||'',transporte:e.transporte||'',fahrzeit_min:(e.fahrzeit_min==null?null:e.fahrzeit_min),startzeit:e.startzeit||''},pers:[]};
+      liste.push(map[k]);
+    }
+    if(e.mitarbeiter_id||e.alias_roh)map[k].pers.push({id:e.mitarbeiter_id||'',roh:e.alias_roh||'',grund:e.grund||''});
+  });
+  liste.sort(function(a,b){return a.reihenfolge-b.reihenfolge;});
+  return liste;
+}
+// Gruppen -> Datenbankzeilen (gleiche Spalten wie beim Import)
+function ewSaetze(datum,gruppen,importId,projekte,nameVon){
+  var out=[];
+  (gruppen||[]).forEach(function(g,i){
+    var p=null;
+    for(var j=0;j<(projekte||[]).length;j++){if(g.projektId&&projekte[j].id===g.projektId){p=projekte[j];break;}}
+    var bez=String(g.bez||'').trim()||(p?(p.name||''):'')||(g.typ==='abwesenheit'?'Abwesend':'');
+    var basis={datum:datum,reihenfolge:i+1,typ:g.typ||'baustelle',projekt_id:p?p.id:null,projekt_nr:p?(p.nr||''):(g.projektNr||''),
+      baustelle_text:bez,kolonne_roh:(g.pers||[]).map(function(x){return nameVon(x.id,x.roh);}).join(', '),
+      verantwortlich:(g.basis&&g.basis.verantwortlich)||'',fahrzeug_nr:(g.basis&&g.basis.fahrzeug_nr)||'',transporte:(g.basis&&g.basis.transporte)||'',
+      fahrzeit_min:(g.basis&&g.basis.fahrzeit_min!=null)?g.basis.fahrzeit_min:null,startzeit:(g.basis&&g.basis.startzeit)||'',import_id:importId};
+    if(!(g.pers||[]).length){
+      var leer=Object.assign({},basis);leer.mitarbeiter_id=null;leer.alias_roh='';leer.grund='';out.push(leer);return;
+    }
+    g.pers.forEach(function(x){
+      var z=Object.assign({},basis);
+      z.mitarbeiter_id=x.id||null;z.alias_roh=x.roh||'';
+      z.grund=x.grund||(g.typ==='abwesenheit'?bez:'');
+      out.push(z);
+    });
+  });
+  return out;
+}
+// Personen, die am selben Tag in mehr als einer Gruppe stehen (Hinweis, kein Verbot: halber Tag hier, halber dort)
+function ewDoppelte(gruppen){
+  var z={},out=[];
+  (gruppen||[]).forEach(function(g){var gesehen={};(g.pers||[]).forEach(function(x){if(!x.id||gesehen[x.id])return;gesehen[x.id]=true;z[x.id]=(z[x.id]||0)+1;});});
+  for(var id in z){if(Object.prototype.hasOwnProperty.call(z,id)&&z[id]>1)out.push(id);}
+  return out;
+}
+function ewWocheWechsel(delta){if(_ewEdit)return;_ewMontag=ewPlusTage(_ewMontag||ewMontagVon(ewHeute()),delta*7);ewLade();}
+function ewWocheHeute(){if(_ewEdit)return;_ewMontag=ewMontagVon(ewHeute());ewLade();}
+async function ewLade(){
+  var el=document.getElementById('eint-woche');if(!el)return;
+  if(!_ewMontag)_ewMontag=ewMontagVon(ewHeute());
+  el.innerHTML='<div style="color:var(--m);font-size:11px;padding:8px">Lade...</div>';
+  if(!MALISTE||!MALISTE.length)await loadMitarbeiterListe();
+  var mo=_ewMontag,so=ewPlusTage(mo,6);
+  var r=await _eintLadeAlle('einteilungen','*',function(q){return q.gte('datum',mo).lte('datum',so).order('datum',{ascending:true}).order('reihenfolge',{ascending:true});});
+  if(!r.ok){
+    console.error('Wochenplan: Einteilungen konnten nicht geladen werden - '+r.fehler);
+    el.innerHTML='<div style="font-size:12px;color:var(--r);padding:8px">FEHLER beim Laden des Wochenplans: '+_dfEsc(r.fehler)+'</div>';
+    return;
+  }
+  _ewDaten={};
+  r.daten.forEach(function(e){var d=String(e.datum).substring(0,10);(_ewDaten[d]=_ewDaten[d]||[]).push(e);});
+  ewRender();
+}
+function ewRender(){
+  var el=document.getElementById('eint-woche');if(!el)return;
+  if(_ewEdit){el.innerHTML=ewEditHTML();return;}
+  var mo=_ewMontag,so=ewPlusTage(mo,6),heute=ewHeute();
+  var kw=ueKW(mo).kw;
+  var h='<div class="ew-nav">'+
+    '<button class="btn" '+tsAttr('ewWocheWechsel(-1)')+'>&#8249;</button>'+
+    '<div class="ew-titel">KW '+kw+' &middot; '+fmtD(mo).substring(0,6)+' - '+fmtD(so)+'</div>'+
+    '<button class="btn" '+tsAttr('ewWocheWechsel(1)')+'>&#8250;</button>'+
+    '<button class="btn" '+tsAttr('ewWocheHeute()')+'>Heute</button></div>'+
+    '<div class="ew-grid">';
+  for(var i=0;i<7;i++){
+    var d=ewPlusTage(mo,i);
+    var gruppen=ewGruppen(_ewDaten[d]||[]);
+    if(i===6&&!gruppen.length)continue; // Sonntag nur zeigen, wenn etwas geplant ist
+    var kopf=0;var gesehen={};
+    gruppen.forEach(function(g){if(g.typ==='abwesenheit')return;g.pers.forEach(function(x){var k=x.id||('?'+x.roh);if(!gesehen[k]){gesehen[k]=true;kopf++;}});});
+    h+='<div class="ew-tag'+(d===heute?' heute':'')+(i>=5?' we':'')+'" '+tsAttr('ewBearbeite(\''+d+'\')')+'>'+
+      '<div class="ew-tag-kopf"><span><b>'+EW_TAGE[i]+'</b> '+fmtD(d).substring(0,6)+'</span><span class="ew-tag-n">'+(gruppen.length?(kopf+' Pers.'):'')+'</span></div>';
+    if(!gruppen.length)h+='<div class="ew-leer">Noch nichts geplant</div>';
+    gruppen.forEach(function(g){
+      var namen=g.pers.map(function(x){return _dfEsc(x.id?ewKurzName(ewMaName(x.id,'')):((x.roh||'unbekannt')+' (?)'))+(g.typ==='abwesenheit'&&x.grund?' <span class="ew-grund">['+_dfEsc(x.grund)+']</span>':'');}).join(', ');
+      var titel=g.typ==='abwesenheit'?('Abwesend'+(g.bez&&_eintNorm(g.bez)!=='abwesend'?': '+_dfEsc(g.bez):'')):((g.projektNr?'<span class="ct-pnr">'+_dfEsc(g.projektNr)+'</span> ':'')+_dfEsc(g.bez||'(ohne Bezeichnung)'));
+      h+='<div class="ew-g'+(g.typ==='abwesenheit'?' abw':(g.typ==='intern'?' intern':''))+'"><div class="ew-g-t">'+titel+'</div><div class="ew-g-p">'+(namen||'<span style="color:var(--m)">niemand eingeteilt</span>')+'</div></div>';
+    });
+    h+='</div>';
+  }
+  h+='</div>';
+  el.innerHTML=h;
+}
+function ewBearbeite(datum){
+  if(_ewBusy)return;
+  _ewEdit={datum:datum,gruppen:ewGruppen(_ewDaten[datum]||[]),hatte:!!(_ewDaten[datum]||[]).length,geaendert:false};
+  ewRender();
+  var el=document.getElementById('eint-woche');if(el&&el.scrollIntoView)el.scrollIntoView();
+}
+function ewAbbrechen(){
+  if(_ewEdit&&_ewEdit.geaendert&&!confirm('Aenderungen an diesem Tag verwerfen?'))return;
+  _ewEdit=null;ewRender();
+}
+function ewEditHTML(){
+  var ed=_ewEdit,d=ewDatum(ed.datum);
+  var wt=EW_TAGE[(d.getDay()+6)%7];
+  var projOpts=PROJEKTE.slice().sort(function(a,b){return String(a.nr||'').localeCompare(String(b.nr||''),'de');});
+  var maAktiv=MALISTE.filter(function(m){return m.aktiv!==false;}).sort(function(a,b){return String(a.name||'').localeCompare(String(b.name||''),'de');});
+  var doppelt=ewDoppelte(ed.gruppen);
+  var h='<div class="ew-edit-kopf">'+
+    '<button class="btn" '+tsAttr('ewAbbrechen()')+'>&#8592; Zurueck zur Woche</button>'+
+    '<div class="ew-titel">Einteilung '+wt+', '+fmtD(ed.datum)+'</div></div>';
+  if(doppelt.length)h+='<div class="ew-hinweis">Mehrfach eingeteilt: '+doppelt.map(function(id){return _dfEsc(ewMaName(id,''));}).join(', ')+'. Das ist erlaubt (z.B. halber Tag), bitte nur pruefen.</div>';
+  if(!ed.gruppen.length)h+='<div class="ew-leer" style="padding:14px 4px">Fuer diesen Tag ist noch nichts geplant. Baustelle hinzufuegen oder den letzten geplanten Tag uebernehmen.</div>';
+  ed.gruppen.forEach(function(g,i){
+    var abw=(g.typ==='abwesenheit');
+    h+='<div class="ew-karte'+(abw?' abw':'')+'">'+
+      '<div class="ew-karte-kopf">'+
+      '<div class="fg" style="flex:0 0 132px"><label>Art</label><select onchange="ewSetze('+i+',\'typ\',this.value)">'+
+        '<option value="baustelle"'+(g.typ==='baustelle'?' selected':'')+'>Baustelle</option>'+
+        '<option value="intern"'+(g.typ==='intern'?' selected':'')+'>Intern</option>'+
+        '<option value="abwesenheit"'+(abw?' selected':'')+'>Abwesenheit</option></select></div>'+
+      (abw?'':'<div class="fg" style="flex:2 1 220px"><label>Projekt</label><select onchange="ewSetze('+i+',\'projekt\',this.value)"><option value="">(ohne Projekt)</option>'+
+        projOpts.map(function(p){return '<option value="'+_dfEsc(p.id)+'"'+(p.id===g.projektId?' selected':'')+'>'+_dfEsc((p.nr?p.nr+' - ':'')+(p.name||''))+'</option>';}).join('')+'</select>'+
+        (!g.projektId&&g.projektNr?'<div style="font-size:10px;color:var(--o);margin-top:3px">Projekt-Nr. aus dem Import: '+_dfEsc(g.projektNr)+' (keinem Projekt zugeordnet)</div>':'')+'</div>')+
+      '<div class="fg" style="flex:2 1 200px"><label>'+(abw?'Grund (z.B. Urlaub, Krank, Berufsschule)':'Bezeichnung (optional)')+'</label><input value="'+_dfEsc(g.bez)+'" placeholder="'+(abw?'Urlaub':'z.B. Pflasterarbeiten Eingang')+'" oninput="ewSetze('+i+',\'bez\',this.value)"></div>'+
+      '<button class="btn btn-r ew-weg" '+tsAttr('ewGruppeWeg('+i+')')+' title="Zeile entfernen">&#x2715;</button>'+
+      '</div>'+
+      '<div class="ew-chips">'+
+      g.pers.map(function(x,j){return '<span class="ew-chip'+(x.id?'':' unbekannt')+'">'+_dfEsc(ewMaName(x.id,x.roh))+(abw&&x.grund?' <span class="ew-grund">['+_dfEsc(x.grund)+']</span>':'')+
+        '<button class="ew-chip-x" '+tsAttr('ewPersonWeg('+i+','+j+')')+'>&#x2715;</button></span>';}).join('')+
+      '<select class="ew-plus" onchange="ewPersonDazu('+i+',this.value)"><option value="">+ Person</option>'+
+        maAktiv.filter(function(m){return !g.pers.some(function(x){return x.id===m.id;});}).map(function(m){return '<option value="'+_dfEsc(m.id)+'">'+_dfEsc(m.name)+'</option>';}).join('')+'</select>'+
+      '</div></div>';
+  });
+  h+='<div class="ew-leiste">'+
+    '<button class="btn" '+tsAttr('ewGruppeNeu(\'baustelle\')')+'>+ Baustelle</button>'+
+    '<button class="btn" '+tsAttr('ewGruppeNeu(\'abwesenheit\')')+'>+ Abwesenheit</button>'+
+    '<button class="btn btn-e" '+tsAttr('ewLetztenTagUebernehmen()')+'>Letzten geplanten Tag uebernehmen</button>'+
+    '<span style="flex:1"></span>'+
+    '<button class="btn" '+tsAttr('ewAbbrechen()')+'>Abbrechen</button>'+
+    '<button class="btn btn-p" '+tsAttr('ewSpeichern()')+'>Einteilung speichern</button></div>';
+  return h;
+}
+function ewSetze(i,feld,wert){
+  var g=_ewEdit&&_ewEdit.gruppen[i];if(!g)return;
+  _ewEdit.geaendert=true;
+  if(feld==='bez'){g.bez=wert;return;} // kein Neuaufbau: das Eingabefeld behaelt den Fokus
+  if(feld==='typ'){g.typ=wert;if(wert==='abwesenheit'){g.projektId='';g.projektNr='';}}
+  if(feld==='projekt'){
+    g.projektId=wert||'';g.projektNr='';
+    for(var j=0;j<PROJEKTE.length;j++){if(PROJEKTE[j].id===wert){g.projektNr=PROJEKTE[j].nr||'';break;}}
+    g.basis.fahrzeit_min=null; // Fahrzeit stammte ggf. aus der Importdatei des alten Projekts
+  }
+  ewRender();
+}
+function ewGruppeNeu(typ){
+  if(!_ewEdit)return;
+  _ewEdit.geaendert=true;
+  _ewEdit.gruppen.push({reihenfolge:_ewEdit.gruppen.length+1,typ:typ,projektId:'',projektNr:'',bez:'',basis:{verantwortlich:'',fahrzeug_nr:'',transporte:'',fahrzeit_min:null,startzeit:''},pers:[]});
+  ewRender();
+}
+function ewGruppeWeg(i){
+  if(!_ewEdit||!_ewEdit.gruppen[i])return;
+  var g=_ewEdit.gruppen[i];
+  if(g.pers.length&&!confirm('Diese Zeile mit '+g.pers.length+' Person(en) entfernen?'))return;
+  _ewEdit.geaendert=true;_ewEdit.gruppen.splice(i,1);ewRender();
+}
+function ewPersonDazu(i,maId){
+  var g=_ewEdit&&_ewEdit.gruppen[i];if(!g||!maId)return;
+  if(g.pers.some(function(x){return x.id===maId;}))return;
+  _ewEdit.geaendert=true;
+  g.pers.push({id:maId,roh:'',grund:(g.typ==='abwesenheit'?String(g.bez||'').trim():'')});
+  ewRender();
+}
+function ewPersonWeg(i,j){
+  var g=_ewEdit&&_ewEdit.gruppen[i];if(!g||!g.pers[j])return;
+  _ewEdit.geaendert=true;g.pers.splice(j,1);ewRender();
+}
+async function ewLetztenTagUebernehmen(){
+  var ed=_ewEdit;if(!ed||_ewBusy)return;
+  if(ed.gruppen.length&&!confirm('Die Planung dieses Tages wird durch die des letzten geplanten Tages ersetzt. Fortfahren?'))return;
+  _ewBusy=true;
+  try{
+    var q=await sb.from('einteilungen').select('datum').lt('datum',ed.datum).order('datum',{ascending:false}).limit(1);
+    if(q.error)throw new Error(q.error.message||'Unbekannter Datenbankfehler');
+    if(!q.data||!q.data.length){toast('Es gibt keinen frueheren geplanten Tag','info');return;}
+    var tag=String(q.data[0].datum).substring(0,10);
+    var r=await _eintLadeAlle('einteilungen','*',function(x){return x.eq('datum',tag).order('reihenfolge',{ascending:true});});
+    if(!r.ok)throw new Error(r.fehler);
+    ed.gruppen=ewGruppen(r.daten);ed.geaendert=true;
+    ewRender();
+    toast('Planung vom '+fmtD(tag)+' uebernommen - bitte pruefen und speichern','info');
+  }catch(e){
+    console.error('Wochenplan: letzter Tag konnte nicht uebernommen werden:',e);
+    toast('Uebernehmen fehlgeschlagen: '+(e.message||String(e)),'err');
+  }finally{_ewBusy=false;}
+}
+async function ewSpeichern(){
+  var ed=_ewEdit;if(!ed||_ewBusy)return;
+  _ewBusy=true;
+  try{
+    var datum=ed.datum;
+    var gruppen=ed.gruppen.filter(function(g){return g.pers.length||g.projektId||String(g.bez||'').trim();});
+    if(!gruppen.length){
+      if(!ed.hatte){toast('Nichts eingetragen - es wurde nichts gespeichert','info');return;}
+      if(!confirm('Es ist nichts mehr eingetragen. Die Einteilung fuer den '+fmtD(datum)+' vollstaendig loeschen?'))return;
+      var del0=await sb.from('einteilungen').delete().eq('datum',datum);
+      if(del0.error)throw new Error('Loeschen fehlgeschlagen: '+del0.error.message);
+      toast('Einteilung geloescht','ok');
+    }else{
+      var ok=0,offen=0;
+      gruppen.forEach(function(g){g.pers.forEach(function(x){if(x.id)ok++;else offen++;});});
+      var imp=await sb.from('einteilung_importe').insert({datum:datum,dateiname:'Manuell geplant (Wochenplan)',zeilen_gesamt:gruppen.length,zeilen_ok:ok,zeilen_offen:offen,importiert_von:currentUser?currentUser.name:''}).select('id');
+      if(imp.error||!imp.data||!imp.data.length)throw new Error('Planung konnte nicht angelegt werden: '+(imp.error?imp.error.message:'keine ID zurueckgeliefert'));
+      var importId=imp.data[0].id;
+      var saetze=ewSaetze(datum,gruppen,importId,PROJEKTE,ewMaName);
+      // Neue Zeilen zuerst schreiben, danach den alten Stand loeschen - bei einem Fehler bleibt der alte Stand erhalten
+      for(var i=0;i<saetze.length;i+=500){
+        var ins=await sb.from('einteilungen').insert(saetze.slice(i,i+500));
+        if(ins.error)throw new Error('Zeilen konnten nicht geschrieben werden: '+ins.error.message+' - der alte Stand wurde NICHT geloescht');
+      }
+      var del=await sb.from('einteilungen').delete().eq('datum',datum).neq('import_id',importId);
+      if(del.error)throw new Error('Neue Einteilung gespeichert, aber der alte Stand konnte nicht geloescht werden ('+del.error.message+'). Der Tag enthaelt jetzt doppelte Zeilen');
+      toast('Einteilung fuer den '+fmtD(datum)+' gespeichert','ok');
+    }
+    _ewEdit=null;
+    await ewLade();
+    var tagEl=document.getElementById('eint-tag');if(tagEl){tagEl.value=datum;eintZeigeTag();}
+    if(datum===todayStr())await ladeEinteilungHeute();
+  }catch(e){
+    console.error('Wochenplan: Speichern fehlgeschlagen:',e);
+    toast('FEHLER: '+(e.message||String(e)),'err');
+  }finally{_ewBusy=false;}
 }
 
 function eintStatus(txt,farbe){
@@ -5589,8 +5929,18 @@ async function markiereVersand(id,vers){
 }
 
 // ══════ LOAD / RENDER ══════
+function uiRolle(){return currentRole==='vorarbeiter'?'va':(currentRole==='werkstatt'?'ws':'ar');}
 function loadReport(id){
   const r=reports.find(x=>x.id===id);if(!r)return;
+  // Bericht aus einer anderen Ansicht (z.B. VA-Bericht in der Arbeiter-Ansicht): das Formular hier kann ihn nicht
+  // darstellen. Frueher blieb die Seite dann leer UND der Bericht galt als "in Bearbeitung" - ein Senden haette ihn
+  // ueberschrieben. Jetzt: nur ansehen, nichts ist in Bearbeitung.
+  if((r.rolle||'ar')!==uiRolle()){
+    currentId=null;
+    document.querySelectorAll('.ri').forEach(el=>el.classList.toggle('act',el.dataset.id===id));
+    berichtNurAnsehen(r);
+    return;
+  }
   currentId=id;document.querySelectorAll('.ri').forEach(el=>el.classList.toggle('act',el.dataset.id===id));
   if(r.rolle==='ws'){
     const sv=(elId,v)=>{const el=document.getElementById(elId);if(el)el.value=v||'';};
@@ -5848,8 +6198,10 @@ function ueRender(){
           '<div class="ue-ber-n"><div class="ue-ber-p">'+_dfEsc(label||'--')+'</div><div class="ue-ber-s">'+rl+' '+st+'</div></div>'+
           '<div class="ue-ber-h">'+ueH(x.std)+' h</div>'+
           '<div class="ue-ber-a">'+
-          '<button class="btn" '+tsAttr('ueOeffnen(\''+r.id+'\')')+'>Oeffnen</button>'+
-          (r.rolle==='va'?'<button class="btn btn-e" '+tsAttr('ueAlsVorlage(\''+r.id+'\')')+'>Als Vorlage</button>':'')+
+          (currentRole==='arbeiter'?
+            '<button class="btn" '+tsAttr('ueAnsehen(\''+r.id+'\')')+'>Ansehen</button>':
+            '<button class="btn" '+tsAttr('ueOeffnen(\''+r.id+'\')')+'>Oeffnen</button>')+
+          (r.rolle==='va'&&currentRole==='vorarbeiter'?'<button class="btn btn-e" '+tsAttr('ueAlsVorlage(\''+r.id+'\')')+'>Als Vorlage</button>':'')+
           '</div></div>';
       });
     }
@@ -5863,6 +6215,67 @@ async function ueHoleBericht(id){
   const q=await sb.from(tblBerichte()).select('*').eq('id',id).single();
   if(q.error||!q.data){toast('Bericht konnte nicht geladen werden: '+(q.error?q.error.message:'nicht gefunden'),'err');return null;}
   return q.data;
+}
+// ---- Bericht nur ansehen (Arbeiter-Ansicht und Berichte aus einer anderen Ansicht) ----
+function ueListeZeigen(){
+  const ue=document.getElementById('ue-content'),dc=document.getElementById('detailContent');
+  if(ue)ue.style.display='';
+  if(dc&&currentRole==='arbeiter'){dc.style.display='none';dc.innerHTML='';}
+  buildUE();
+}
+function berichtAnsichtHTML(r,name,opt){
+  opt=opt||{};
+  const rl=r.rolle==='va'?'Vorarbeiter':(r.rolle==='ws'?'Werkstatt':'Arbeiter');
+  let zr=r.zeit_rows;
+  if(typeof zr==='string'){try{zr=JSON.parse(zr);}catch(e){console.error('Berichtsansicht: zeit_rows nicht lesbar',e);zr=[];}}
+  zr=(Array.isArray(zr)?zr:[]).filter(function(t){return t&&t.name;});
+  const tae=Array.isArray(r.taetigkeiten)?r.taetigkeiten:[];
+  let h='';
+  if(opt.zurueck)h+='<div style="margin-bottom:10px"><button class="btn" '+tsAttr('ueListeZeigen()')+'>&#8592; Alle Berichte</button></div>';
+  h+='<div class="card"><div class="card-title">'+_dfEsc(opt.projekt||r.projekt_nr||'--')+'</div>'+
+    '<div class="card-meta"><span class="g">'+_dfEsc(fmtD(r.datum))+'</span><span>'+rl+'-Bericht</span></div></div>'+
+    '<div class="srow">'+
+    '<div class="sc"><div class="sv">'+ueH(ueEigeneStd(r,name))+' h</div><div class="sl">Meine Stunden</div></div>'+
+    '<div class="sc"><div class="sv">'+(zr.length?zr.length:1)+'</div><div class="sl">Personen</div></div>'+
+    '<div class="sc"><div class="sv" style="font-size:13px">'+(r.bh_freigegeben?'freigegeben':(r.abgenommen?'abgenommen':(r.gesendet?'gesendet':'nicht gesendet')))+'</div><div class="sl">Status</div></div></div>';
+  if(zr.length){
+    h+='<div class="ib"><div class="ib-t">Zeiten</div><div class="tbl-wrap"><table class="tbl"><thead><tr><th style="text-align:left">Name</th><th>Von</th><th>Bis</th><th>Arbeit</th><th>Fahrt</th><th>Gesamt</th></tr></thead><tbody>'+
+      zr.map(function(t){return '<tr><td style="text-align:left">'+_dfEsc(t.name)+'</td><td>'+_dfEsc(expHHMM(t.von))+'</td><td>'+_dfEsc(expHHMM(t.bis))+'</td><td>'+_dfEsc(t.nettoArbeit||'--')+'</td><td>'+_dfEsc(t.fahrtAnteil||'--')+'</td><td><b>'+_dfEsc(t.gesamt||'--')+'</b></td></tr>';}).join('')+
+      '</tbody></table></div></div>';
+  }else{
+    h+='<div class="ib"><div class="ib-t">Zeiten</div><div class="ib-c">'+_dfEsc(expHHMM(r.von)||'--')+' - '+_dfEsc(expHHMM(r.bis)||'--')+' &middot; Pause '+(parseInt(r.pause_min,10)||0)+' min</div></div>';
+  }
+  if(tae.length)h+='<div class="ib"><div class="ib-t">Taetigkeiten</div><div class="ib-c">'+_dfEsc(tae.join(' | '))+'</div></div>';
+  if(r.taetigkeit_text)h+='<div class="ib"><div class="ib-t">Details</div><div class="ib-c">'+_dfEsc(r.taetigkeit_text)+'</div></div>';
+  if(r.besonder)h+='<div class="ib"><div class="ib-t">Besonderheiten</div><div class="ib-c">'+_dfEsc(r.besonder)+'</div></div>';
+  if(r.bemerkungen)h+='<div class="ib"><div class="ib-t">Bemerkungen</div><div class="ib-c">'+_dfEsc(r.bemerkungen)+'</div></div>';
+  if(r.pdf_url)h+='<div class="ib"><div class="ib-t">Drive</div><a href="'+_dfEsc(r.pdf_url)+'" target="_blank" style="color:var(--sky);font-size:12px">PDF in Drive oeffnen &#x279A;</a></div>';
+  if(opt.bearbeitbar){
+    h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">'+
+      '<button class="btn btn-p" '+tsAttr('loadReport(\''+r.id+'\')')+'>Bearbeiten</button>'+
+      '<button class="btn btn-r" '+tsAttr('ueLoeschen(\''+r.id+'\')')+'>Loeschen</button></div>';
+  }else{
+    h+='<div style="font-size:11.5px;color:var(--m);line-height:1.5;margin-top:10px">Dieser Bericht wurde in der '+rl+'-Ansicht erstellt. Bearbeiten geht nur dort, hier kannst du ihn ansehen.</div>';
+  }
+  return h;
+}
+function berichtNurAnsehen(r){
+  const dc=document.getElementById('detailContent');if(!dc)return;
+  const ue=document.getElementById('ue-content');
+  const arUI=(currentRole==='arbeiter');
+  if(arUI&&ue)ue.style.display='none';
+  dc.style.display='';
+  dc.innerHTML=berichtAnsichtHTML(r,currentUser.name,{zurueck:arUI,bearbeitbar:((r.rolle||'ar')===uiRolle()),projekt:getProjektLabel(r.projekt_id||r.projekt_nr||'')});
+  tabAktiv('details');
+}
+async function ueAnsehen(id){
+  const r=await ueHoleBericht(id);if(!r)return;
+  if(!reports.find(function(x){return String(x.id)===String(id);})){reports.unshift(r);renderSB();}
+  berichtNurAnsehen(r);
+}
+async function ueLoeschen(id){
+  await delReport(id);
+  if(!reports.find(function(x){return String(x.id)===String(id);}))ueListeZeigen();
 }
 async function ueOeffnen(id){
   const r=await ueHoleBericht(id);if(!r)return;
@@ -6115,11 +6528,11 @@ function buildUI(){
     tabs.innerHTML=
       '<div class="tab act" id="tab-quick" ontouchstart="showTab(\'quick\')" onclick="showTab(\'quick\')">Zeiterfassung</div>'+
       '<div class="tab" id="tab-kalender" ontouchstart="showTab(\'kalender\')" onclick="showTab(\'kalender\')">Kalender</div>'+
-      '<div class="tab" id="tab-details" ontouchstart="showTab(\'details\')" onclick="showTab(\'details\')">Details</div>';
+      '<div class="tab" id="tab-details" ontouchstart="showTab(\'details\')" onclick="showTab(\'details\')">Meine Berichte</div>';
     content.innerHTML=
       '<div class="panel act" id="panel-quick">'+buildAR()+'</div>'+
       '<div class="panel" id="panel-kalender"><div id="kalender-content"></div></div>'+
-      '<div class="panel" id="panel-details"><div id="detailContent"><div class="empty"><div class="ei">&#128203;</div><div class="et">Bericht waehlen</div></div></div></div>';
+      '<div class="panel" id="panel-details"><div id="ue-content"></div><div id="detailContent" style="display:none"></div></div>';
   }else{
     // Vorarbeiter: Zeiten zuerst (haeufigster Einstieg)
     tabs.innerHTML=
@@ -6698,13 +7111,52 @@ function addMangel(data={}){mangelIdx++;const i=mangelIdx;const div=document.cre
 function getMangelData(){return[...document.querySelectorAll('.mangel-block')].map(b=>{const sels=b.querySelectorAll('select'),ta=b.querySelector('textarea'),m=b.querySelector('input[type=text]');return{typ:sels[0]?.value,schwere:sels[1]?.value,txt:ta?.value,massnahme:m?.value};}).filter(m=>m.txt);}
 
 // ══════ KALENDER ══════
+// Berichte des angezeigten Monats direkt aus der Datenbank (die Liste "reports" enthaelt nur die letzten 100)
+let _kalCache={},_kalLaedt='';
+function kalKey(){return kalJahr+'-'+String(kalMonat+1).padStart(2,'0');}
+async function kalLadeMonat(){
+  const key=kalKey();
+  if(_kalCache[key]!==undefined||_kalLaedt===key||!currentUser)return;
+  _kalLaedt=key;
+  try{
+    const g=expMonatsGrenzen(key);
+    const q=await sb.from(tblBerichte()).select('id,datum,rolle,projekt_id,projekt_nr,mitarbeiter_id,mitarbeiter_name,netto_gesamt_h,netto_arbeit_h,zeit_rows')
+      .eq('mitarbeiter_id',currentUser.id).gte('datum',g.von).lte('datum',g.bis).order('datum',{ascending:true}).range(0,999);
+    if(q.error)throw new Error(q.error.message||'Unbekannter Datenbankfehler');
+    _kalCache[key]=q.data||[];
+  }catch(e){
+    console.error('Kalender: Berichte des Monats konnten nicht geladen werden:',e);
+    toast('Kalender: Berichte konnten nicht geladen werden: '+(e.message||String(e)),'err');
+    _kalCache[key]=false; // Anzeige bleibt bei den zuletzt geladenen Berichten
+  }finally{_kalLaedt='';}
+  if(kalKey()===key)buildKalender();
+}
+// Tagesfelder: je Datum die Projekte (Nummer + Name) und die eigenen Stunden
+function kalTagesDaten(liste,userId,name,projekte,jahr,monat){
+  const map={};
+  (liste||[]).forEach(function(r){
+    if(!r.datum)return;
+    const p=String(r.datum).substring(0,10).split('-');
+    if(parseInt(p[0],10)!==jahr||parseInt(p[1],10)-1!==monat)return;
+    if(r.mitarbeiter_id!==undefined&&r.mitarbeiter_id!==userId)return;
+    let pr=null;
+    for(let i=0;i<(projekte||[]).length;i++){if((r.projekt_id&&projekte[i].id===r.projekt_id)||(!r.projekt_id&&r.projekt_nr&&projekte[i].nr===r.projekt_nr)){pr=projekte[i];break;}}
+    const d=String(r.datum).substring(0,10);
+    if(!map[d])map[d]={eintraege:[],std:0};
+    const h=ueEigeneStd(r,name);
+    map[d].eintraege.push({nr:pr?(pr.nr||''):(r.projekt_nr||''),name:pr?(pr.name||''):'',std:h});
+    map[d].std+=h;
+  });
+  return map;
+}
 function buildKalender(){
   const el=document.getElementById('kalender-content');if(!el)return;
   const heute=new Date(),firstDay=new Date(kalJahr,kalMonat,1),lastDay=new Date(kalJahr,kalMonat+1,0);
   const startWd=(firstDay.getDay()+6)%7;
   const MONATE=['Januar','Februar','Maerz','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
-  const berichteImMonat={};
-  reports.forEach(r=>{if(!r.datum)return;const d=new Date(r.datum);if(d.getMonth()!==kalMonat||d.getFullYear()!==kalJahr)return;if(r.mitarbeiter_id!==currentUser.id)return;berichteImMonat[r.datum]=(berichteImMonat[r.datum]||0)+1;});
+  const geladen=_kalCache[kalKey()];
+  const tage=kalTagesDaten(Array.isArray(geladen)?geladen:reports,currentUser.id,currentUser.name,PROJEKTE,kalJahr,kalMonat);
+  if(geladen===undefined)kalLadeMonat();
   let html='<div class="kalender-wrap"><div class="kal-header">'+
     '<button class="kal-nav" ontouchstart="kalPrev()" onclick="kalPrev()">&#x276E;</button>'+
     '<div class="kal-monat">'+MONATE[kalMonat]+' '+kalJahr+'</div>'+
@@ -6715,14 +7167,23 @@ function buildKalender(){
   for(let tag=1;tag<=lastDay.getDate();tag++){
     const datum=kalJahr+'-'+String(kalMonat+1).padStart(2,'0')+'-'+String(tag).padStart(2,'0');
     const dayDate=new Date(kalJahr,kalMonat,tag);const wd=dayDate.getDay();
-    const isWE=(wd===0||wd===6),isFuture=dayDate>heute,isHeute=datum===todayStr(),hatBericht=berichteImMonat[datum]>0;
+    const td=tage[datum];
+    const isWE=(wd===0||wd===6),isFuture=dayDate>heute,isHeute=datum===todayStr(),hatBericht=!!td;
     let cls='kal-day';if(isHeute)cls+=' heute';
-    if(isWE)cls+=' we';else if(isFuture)cls+=' zukunft';else if(hatBericht)cls+=' ok';else cls+=' fehlt';
-    html+='<div class="'+cls+'">'+tag+'</div>';
+    if(hatBericht)cls+=' ok';else if(isWE)cls+=' we';else if(isFuture)cls+=' zukunft';else cls+=' fehlt';
+    let inhalt='<span class="kal-nr">'+tag+'</span>';
+    if(td){
+      td.eintraege.slice(0,3).forEach(function(x){
+        inhalt+='<span class="kal-p"><b>'+_dfEsc(x.nr||'--')+'</b><span class="kal-pn"> '+_dfEsc(x.name)+'</span></span>';
+      });
+      if(td.eintraege.length>3)inhalt+='<span class="kal-h">+'+(td.eintraege.length-3)+' weitere</span>';
+      inhalt+='<span class="kal-h">'+ueH(td.std)+' h</span>';
+    }
+    html+='<div class="'+cls+'">'+inhalt+'</div>';
   }
   html+='</div></div>';
   const werktage=[];for(let t=1;t<=lastDay.getDate();t++){const d=new Date(kalJahr,kalMonat,t);if(d.getDay()!==0&&d.getDay()!==6&&d<=heute)werktage.push(kalJahr+'-'+String(kalMonat+1).padStart(2,'0')+'-'+String(t).padStart(2,'0'));}
-  const mitBericht=werktage.filter(d=>berichteImMonat[d]>0).length;
+  const mitBericht=werktage.filter(d=>!!tage[d]).length;
   html+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px">'+
     '<div class="sc"><div class="sv" style="color:var(--gl)">'+mitBericht+'</div><div class="sl">Berichte</div></div>'+
     '<div class="sc"><div class="sv" style="color:var(--r)">'+(werktage.length-mitBericht)+'</div><div class="sl">Fehlend</div></div>'+
@@ -6759,11 +7220,16 @@ function newReport(skipConfirm){
 function expDFCSV(){const r=reports.find(x=>x.id===currentId);if(!r){toast('Kein Bericht','err');return;}const rows=r.zeit_rows||[];const hdr='Datum;Projekt;Name;Von;Bis;Arbeit_h;Fahrt;Fahrzeit_min;Gesamt_h';const lines=rows.filter(t=>t.name).map(t=>[r.datum,r.projekt_nr,t.name,t.von||'',t.bis||'',(t.nettoArbeit||'0').replace(',','.'),t.fahrt||'fahrer',t.fahrzeitMin||0,(t.gesamt||'0').replace(',','.')].join(';'));dlFile('Dataflor_'+r.datum+'.csv',[hdr,...lines].join('\n'),'text/csv');toast('CSV exportiert','ok');}
 function expDFXML(){const r=reports.find(x=>x.id===currentId);if(!r){toast('Kein Bericht','err');return;}const rows=r.zeit_rows||[];const x=(s)=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');const xml='<?xml version="1.0" encoding="UTF-8"?>\n<DataflorZeiterfassung>\n  <Datum>'+r.datum+'</Datum>\n  <Projekt>'+x(r.projekt_nr)+'</Projekt>\n  <Personal>\n'+rows.filter(t=>t.name).map(t=>'    <Eintrag><Name>'+x(t.name)+'</Name><Von>'+(t.von||'')+'</Von><Bis>'+(t.bis||'')+'</Bis><Arbeit>'+(t.nettoArbeit||'0').replace(',','.')+'</Arbeit><Gesamt>'+(t.gesamt||'0').replace(',','.')+'</Gesamt></Eintrag>').join('\n')+'\n  </Personal>\n</DataflorZeiterfassung>';dlFile('Dataflor_'+r.datum+'.xml',xml,'application/xml');toast('XML exportiert','ok');}
 
-function showTab(name){
+function tabAktiv(name){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('act'));
   const t=document.getElementById('tab-'+name),p=document.getElementById('panel-'+name);
   if(t)t.classList.add('act');if(p)p.classList.add('act');
+}
+function showTab(name){
+  tabAktiv(name);
+  if(name==='details'&&currentRole==='arbeiter')ueListeZeigen();
+  if(name==='kalender')_kalCache={};
   if(name==='ue')buildUE();if(name==='bericht')setTimeout(refreshStepMAs,100);
   if(name==='zeit')setTimeout(updateSplitInfo,100);
   if(name==='kalender'){kalMonat=new Date().getMonth();kalJahr=new Date().getFullYear();buildKalender();}
@@ -7100,6 +7566,37 @@ function fahrerBegruendungSenden(){
   document.getElementById('mo-fahrer').style.display='none';
   saveAndSendVA();
 }
+
+// ══════ Geister-Klick-Schutz ══════
+// Viele Buttons loesen schon bei der ersten Beruehrung aus (ontouchstart). Wechselt dabei die Ansicht, schickt der
+// Browser den Klick beim Loslassen an das, was JETZT unter dem Finger liegt - z.B. "Abmelden" im Hauptmenue nach
+// einem Tipp auf "Menue". Ein Klick wird deshalb verworfen, wenn das beruehrte Element inzwischen verschwunden ist
+// und der Klick ein ANDERES Element trifft. Normale Klicks (gleiches Element) bleiben unberuehrt.
+let _gkZiel=null,_gkStart=0;
+function gkIstGeist(ziel,start,jetzt,klickZiel){
+  if(!ziel||!klickZiel)return false;
+  if(jetzt-start>1200)return false;
+  if(ziel===klickZiel)return false;
+  if(ziel.contains&&ziel.contains(klickZiel))return false;
+  if(klickZiel.contains&&klickZiel.contains(ziel))return false;
+  if(ziel.isConnected===false)return true;
+  return !!(ziel.getClientRects&&ziel.getClientRects().length===0);
+}
+document.addEventListener('touchstart',function(e){_gkZiel=e.target;_gkStart=Date.now();},{capture:true,passive:true});
+document.addEventListener('click',function(e){
+  if(gkIstGeist(_gkZiel,_gkStart,Date.now(),e.target)){e.preventDefault();e.stopPropagation();_gkZiel=null;}
+},true);
+// iOS: Nach dem Schliessen der Tastatur bleibt die Seite manchmal nach oben verschoben - die Kopfzeile mit "Menue"
+// ist dann nicht mehr erreichbar. Die Seite selbst scrollt nie (nur die Inhaltsbereiche), also zuruecksetzen.
+document.addEventListener('focusout',function(){
+  setTimeout(function(){
+    const a=document.activeElement;
+    if(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'||a.tagName==='SELECT'))return;
+    if(window.scrollY>0||document.documentElement.scrollTop>0||document.body.scrollTop>0){
+      window.scrollTo(0,0);document.documentElement.scrollTop=0;document.body.scrollTop=0;
+    }
+  },150);
+});
 
 // ══════ Antippen ohne Fehlausloesung beim Scrollen ══════
 // Bisher loeste ontouchstart sofort aus - also auch, wenn man nur scrollen wollte.
