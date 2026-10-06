@@ -25,7 +25,8 @@ const STYLE = `
   :host{--bg:#0f1512;--surface:#182420;--surface2:#1f2f28;--line:#2b3f36;--text:#e8f0ea;--muted:#93a89b;
     --accent:#57c274;--warn:#e0a33e;--radius:14px;
     display:block;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-    color:var(--text);background:var(--bg);padding:14px;box-sizing:border-box}
+    color:var(--text);background:var(--bg);padding:14px;box-sizing:border-box;
+    -webkit-text-size-adjust:100%;text-size-adjust:100%}
   *{box-sizing:border-box}
   .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:12px}
   h3{margin:0 0 10px;font-size:14.5px}
@@ -34,13 +35,13 @@ const STYLE = `
   .inline{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .kv{display:flex;justify-content:space-between;font-size:12.5px;padding:6px 0;border-bottom:1px dashed var(--line);gap:8px}
   .kv:last-child{border-bottom:none}.kv span{color:var(--muted)}
-  .khead,.krow{display:grid;grid-template-columns:20px 1fr 56px 66px 78px;gap:6px;align-items:center}
+  .khead,.krow{display:grid;grid-template-columns:20px minmax(0,1fr) 84px 84px 96px;gap:8px;align-items:center}
   .khead{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding-bottom:5px;border-bottom:1px solid var(--line)}
   .khead div:not(:nth-child(2)){text-align:right}
   .krow{padding:6px 0;border-bottom:1px dashed var(--line)}
-  .kname{font-size:12.5px;font-weight:600;line-height:1.25}
+  .kname{font-size:12.5px;font-weight:600;line-height:1.25;min-width:0;overflow-wrap:anywhere;hyphens:auto}
   .kname span{color:var(--muted);font-weight:500;font-size:10px;display:block}
-  .krow input[type=number]{padding:7px 5px;font-size:12.5px;text-align:right;border-radius:8px}
+  .krow input[type=number]{padding:7px 5px;font-size:12.5px;text-align:right;border-radius:8px;min-width:0}
   .krow input[type=checkbox]{width:15px;height:15px;padding:0;margin:0;accent-color:var(--accent)}
   .ksum{font-size:12px;font-weight:700;text-align:right;white-space:nowrap}
   .koff .kname,.koff .ksum,.koff input[type=number]{opacity:.38}
@@ -52,6 +53,25 @@ const STYLE = `
     background:linear-gradient(135deg,#57c274,#3fa85e);color:#06140b;margin-top:6px}
   .btn.ghost{background:var(--surface2);color:var(--text);border:1px solid var(--line)}
   .note{font-size:10.5px;color:var(--muted);padding-top:6px}
+  /* Schmale Bildschirme (Handy): Position zweizeilig - oben Haken + Name, darunter Menge, EP, Summe
+     in drei festen Spalten. Vorher sprengten lange Namen die Zeile und die Summe lief aus der Karte. */
+  @media (max-width:640px){
+    :host{padding:6px}
+    .card{padding:12px}
+    .khead,.krow{grid-template-columns:20px minmax(0,1fr) minmax(0,1fr) minmax(0,1.15fr);
+      grid-template-areas:"cb name name name" ". q p sum";column-gap:8px;row-gap:6px}
+    .khead>div:nth-child(1),.krow>input[type=checkbox]{grid-area:cb}
+    .khead>div:nth-child(2),.krow>.kname{grid-area:name}
+    .khead>div:nth-child(3),.krow>input[data-q]{grid-area:q}
+    .khead>div:nth-child(4),.krow>input[data-p]{grid-area:p}
+    .khead>div:nth-child(5),.krow>.ksum{grid-area:sum}
+    .krow{padding:9px 0}
+    .kname{font-size:13.5px}
+    .kname span{font-size:11px;margin-top:2px}
+    .krow input[type=number]{font-size:14px;padding:9px 8px}
+    .ksum{font-size:13.5px}
+    .inline{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  }
 `;
 
 class TerrasuiteKalkulation extends HTMLElement {
