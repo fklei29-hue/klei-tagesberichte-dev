@@ -722,6 +722,35 @@ body.ar-ui #main-content .panel{max-width:1040px;margin-left:auto;margin-right:a
   .ew-karte-kopf .fg{flex:1 1 100%!important;}
   .ew-leiste .btn{flex:1 1 46%;justify-content:center;}
 }
+
+/* ══════ Vorarbeiter ohne Liste links + Hinweis "Bericht in Bearbeitung" ══════ */
+body.va-ui .app{grid-template-columns:1fr;}
+body.va-ui aside{display:none;}
+body.va-ui #panel-details{max-width:1040px;margin-left:auto;margin-right:auto;}
+.edit-bar{display:none;flex:none;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 14px;background:rgba(212,120,42,.12);border-bottom:1px solid rgba(212,120,42,.45);}
+.edit-bar.on{display:flex;}
+.edit-bar-t{flex:1;min-width:200px;font-size:12.5px;line-height:1.45;color:var(--c);}
+.edit-bar .btn{font-size:12px;padding:7px 12px;}
+
+/* ══════ Sende-Leiste ausserhalb des Scrollbereichs ══════ */
+main{position:relative;}
+#main-content .arow.arow-fab{display:none;}
+.fab-wrap{position:absolute;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:60;display:none;flex-direction:column;align-items:flex-end;gap:6px;max-width:calc(100% - 28px);pointer-events:none;}
+.fab-wrap.on{display:flex;}
+.fab-wrap>*{pointer-events:auto;}
+.fab-wrap .send-status{margin:0;font-family:'IBM Plex Sans',sans-serif;font-size:12.5px;font-weight:600;padding:8px 12px;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.14);max-width:100%;}
+.fab-wrap .send-status.sending{background:#e3eef2;border-color:rgba(37,96,117,.45);}
+.fab-wrap .send-status.ok{background:#e6f2dc;}
+.fab-wrap .send-status.err{background:#f6e3de;}
+body:not(.theme-light) .fab-wrap .send-status{background:var(--s1);}
+.fab-btns{display:flex;gap:8px;padding:8px;border:1px solid var(--b);border-radius:14px;background:var(--s1);box-shadow:0 8px 28px rgba(0,0,0,.22);}
+.fab-btns .btn{white-space:nowrap;}
+@media(max-width:680px){
+  .fab-wrap{right:10px;max-width:calc(100% - 20px);}
+  .fab-btns .lbl-l{display:none;}
+  .fab-btns .lbl-s{display:inline;}
+  .fab-btns .btn{padding:12px 16px;font-size:13.5px;}
+}
 </style>
 </head>
 <body class="theme-light">
@@ -901,7 +930,9 @@ body.ar-ui #main-content .panel{max-width:1040px;margin-left:auto;margin-right:a
   </aside>
   <main>
     <div class="tabs" id="tabs-row"></div>
+    <div class="edit-bar" id="edit-bar"></div>
     <div class="content" id="main-content"></div>
+    <div class="fab-wrap" id="fab-wrap"><div class="send-status" id="fab-status"></div><div class="fab-btns" id="fab-btns"></div></div>
   </main>
 </div>
 
@@ -1052,7 +1083,17 @@ const GERAETE=[
   {nr:'1080',bez:'Verdichtungsgeraet > 2 to bis 1 to'},{nr:'1081',bez:'Verdichtungsgeraet (Ruettelplatte)'},
   {nr:'1082',bez:'Verdichtungsgeraet (Stampfer)'},{nr:'1200',bez:'Baustelleneinrichtung'},
   {nr:'1500',bez:'Tankanlagen'},{nr:'1600',bez:'Absperrung / Verkehrsleitung'},
-  {nr:'1700',bez:'Vermessungsgeraet'},{nr:'2000',bez:'LKW < 7 to (Transporter)'}
+  {nr:'1700',bez:'Vermessungsgeraet'},{nr:'2000',bez:'LKW < 7 to (Transporter)'},
+  {nr:'2060',bez:'Rad Dumper'},
+  {nr:'008001',bez:'Traktor Holder'},
+  {nr:'008002',bez:'Traktor Same Allrad 100'},
+  {nr:'008003',bez:'Traktor Fendt 208 P II AL'},
+  {nr:'008004',bez:'Traktor Fendt 108 LS TERR'},
+  {nr:'008005',bez:'Traktor Kubota Allrad'},
+  {nr:'008007',bez:'Traktor Deutz Allrad'},
+  {nr:'008008',bez:'Traktor Aebi TT 211 Allrad'},
+  {nr:'008009',bez:'Traktor Kubota L2 Allrad'},
+  {nr:'009010',bez:'Fraese Motorhacke Hako'}
 ];
 const PAUSEN=[0,15,30,45,60,75,90];
 
@@ -1299,7 +1340,7 @@ document.getElementById('login-nr').addEventListener('keydown',e=>{if(e.key==='E
 
 function doLogout(){
   stopVAAutoSave();
-  currentUser=null;reports=[];currentId=null;currentRole=null;unterschriftData=null;_inbox=[];_inboxAnzahl=0;_inboxGemeldet=false;inboxBadges();document.body.classList.remove('ar-ui');
+  currentUser=null;reports=[];currentId=null;currentRole=null;unterschriftData=null;_inbox=[];_inboxAnzahl=0;_inboxGemeldet=false;inboxBadges();document.body.classList.remove('ar-ui');document.body.classList.remove('va-ui');bearbeitungAnzeigen();fabSetzen();
   istMasterUser=false;masterEchteRolle=null;
   TESTMODUS=false;_testGasOk=false;testmodusBanner();
   laufTest=null;tEdit=null;matEditId=null;bhEditId=null;bhArbeit=null;AUSB_MAT=[];AUSB_TESTS=[];AUSB_ABG=[];AUSB_BH=[];
@@ -1332,12 +1373,16 @@ async function initApp(){
   document.querySelectorAll('.va-only').forEach(el=>el.style.display=currentRole==='vorarbeiter'?'':'none');
   if(currentRole==='werkstatt')document.getElementById('btn-new-bericht').className='btn-new ws';
   document.body.classList.toggle('ar-ui',currentRole==='arbeiter');
+  document.body.classList.toggle('va-ui',currentRole==='vorarbeiter');
   buildUI();renderSB();updateSBDate();
+  fabSetzen();fabBeobachten();
   inboxLaden();
-  // Arbeiter: startet immer mit einem neuen, leeren Bericht fuer heute (die Liste links gibt es dort nicht mehr,
-  // alte Berichte stehen im Tab "Meine Berichte"). Vorarbeiter/Werkstatt: wie bisher der letzte eigene Bericht.
+  // Arbeiter und Vorarbeiter: starten immer mit einem neuen, leeren Bericht fuer heute (die Liste links gibt es dort
+  // nicht mehr, alte Berichte stehen im Tab "Meine Berichte"). Werkstatt: wie bisher der letzte eigene Bericht.
   const erster=reports.find(function(x){return (x.rolle||'ar')===uiRolle();});
+  bearbeitungAnzeigen();
   if(currentRole==='arbeiter')setTimeout(()=>initARForm(),200);
+  else if(currentRole==='vorarbeiter'){/* neues Formular wird in buildUI vorbereitet */}
   else if(erster)loadReport(erster.id);
   else if(currentRole==='werkstatt')setTimeout(()=>initARForm(),200);
 }
@@ -5930,6 +5975,20 @@ async function markiereVersand(id,vers){
 
 // ══════ LOAD / RENDER ══════
 function uiRolle(){return currentRole==='vorarbeiter'?'va':(currentRole==='werkstatt'?'ws':'ar');}
+// Arbeiter und Vorarbeiter haben keine Berichtsliste links mehr: alte Berichte stehen im Tab "Meine Berichte"
+function ohneListe(){return currentRole==='arbeiter'||currentRole==='vorarbeiter';}
+// Ohne die Liste links fehlt die Markierung, welcher Bericht gerade geladen ist. Dieser Balken zeigt es an,
+// damit niemand versehentlich einen alten Bericht ueberschreibt.
+function bearbeitungAnzeigen(){
+  const el=document.getElementById('edit-bar');if(!el)return;
+  let r=null;
+  if(currentId&&ohneListe())r=reports.find(function(x){return x.id===currentId;})||null;
+  if(!r){el.classList.remove('on');el.innerHTML='';return;}
+  el.innerHTML='<span class="edit-bar-t">Du bearbeitest den gespeicherten Bericht vom <b>'+_dfEsc(fmtD(r.datum))+'</b>'+
+    (r.projekt_id||r.projekt_nr?' ('+_dfEsc(getProjektLabel(r.projekt_id||r.projekt_nr))+')':'')+'. Senden ersetzt diesen Bericht.</span>'+
+    '<button class="btn" '+tsAttr('newReport()')+'>Neuer Bericht</button>';
+  el.classList.add('on');
+}
 function loadReport(id){
   const r=reports.find(x=>x.id===id);if(!r)return;
   // Bericht aus einer anderen Ansicht (z.B. VA-Bericht in der Arbeiter-Ansicht): das Formular hier kann ihn nicht
@@ -5939,9 +5998,10 @@ function loadReport(id){
     currentId=null;
     document.querySelectorAll('.ri').forEach(el=>el.classList.toggle('act',el.dataset.id===id));
     berichtNurAnsehen(r);
+    bearbeitungAnzeigen();
     return;
   }
-  currentId=id;document.querySelectorAll('.ri').forEach(el=>el.classList.toggle('act',el.dataset.id===id));
+  currentId=id;bearbeitungAnzeigen();document.querySelectorAll('.ri').forEach(el=>el.classList.toggle('act',el.dataset.id===id));
   if(r.rolle==='ws'){
     const sv=(elId,v)=>{const el=document.getElementById(elId);if(el)el.value=v||'';};
     sv('ws-datum',r.datum);sv('ws-von',r.von);sv('ws-bis',r.bis);sv('ws-taetigkeit',r.taetigkeit_text||'');sv('ws-maengel',r.besonder||'');
@@ -6198,9 +6258,7 @@ function ueRender(){
           '<div class="ue-ber-n"><div class="ue-ber-p">'+_dfEsc(label||'--')+'</div><div class="ue-ber-s">'+rl+' '+st+'</div></div>'+
           '<div class="ue-ber-h">'+ueH(x.std)+' h</div>'+
           '<div class="ue-ber-a">'+
-          (currentRole==='arbeiter'?
-            '<button class="btn" '+tsAttr('ueAnsehen(\''+r.id+'\')')+'>Ansehen</button>':
-            '<button class="btn" '+tsAttr('ueOeffnen(\''+r.id+'\')')+'>Oeffnen</button>')+
+          '<button class="btn" '+tsAttr('ueAnsehen(\''+r.id+'\')')+'>Ansehen</button>'+
           (r.rolle==='va'&&currentRole==='vorarbeiter'?'<button class="btn btn-e" '+tsAttr('ueAlsVorlage(\''+r.id+'\')')+'>Als Vorlage</button>':'')+
           '</div></div>';
       });
@@ -6220,7 +6278,7 @@ async function ueHoleBericht(id){
 function ueListeZeigen(){
   const ue=document.getElementById('ue-content'),dc=document.getElementById('detailContent');
   if(ue)ue.style.display='';
-  if(dc&&currentRole==='arbeiter'){dc.style.display='none';dc.innerHTML='';}
+  if(dc&&ohneListe()){dc.style.display='none';dc.innerHTML='';}
   buildUE();
 }
 function berichtAnsichtHTML(r,name,opt){
@@ -6253,6 +6311,7 @@ function berichtAnsichtHTML(r,name,opt){
   if(opt.bearbeitbar){
     h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">'+
       '<button class="btn btn-p" '+tsAttr('loadReport(\''+r.id+'\')')+'>Bearbeiten</button>'+
+      (opt.pdfSenden?'<button class="btn" '+tsAttr('resendVA(\''+r.id+'\')')+'>PDF erneut senden</button>':'')+
       '<button class="btn btn-r" '+tsAttr('ueLoeschen(\''+r.id+'\')')+'>Loeschen</button></div>';
   }else{
     h+='<div style="font-size:11.5px;color:var(--m);line-height:1.5;margin-top:10px">Dieser Bericht wurde in der '+rl+'-Ansicht erstellt. Bearbeiten geht nur dort, hier kannst du ihn ansehen.</div>';
@@ -6262,10 +6321,11 @@ function berichtAnsichtHTML(r,name,opt){
 function berichtNurAnsehen(r){
   const dc=document.getElementById('detailContent');if(!dc)return;
   const ue=document.getElementById('ue-content');
-  const arUI=(currentRole==='arbeiter');
+  const arUI=ohneListe();
+  const eigen=((r.rolle||'ar')===uiRolle());
   if(arUI&&ue)ue.style.display='none';
   dc.style.display='';
-  dc.innerHTML=berichtAnsichtHTML(r,currentUser.name,{zurueck:arUI,bearbeitbar:((r.rolle||'ar')===uiRolle()),projekt:getProjektLabel(r.projekt_id||r.projekt_nr||'')});
+  dc.innerHTML=berichtAnsichtHTML(r,currentUser.name,{zurueck:arUI,bearbeitbar:eigen,pdfSenden:(eigen&&currentRole==='vorarbeiter'),projekt:getProjektLabel(r.projekt_id||r.projekt_nr||'')});
   tabAktiv('details');
 }
 async function ueAnsehen(id){
@@ -6306,7 +6366,7 @@ async function ueAlsVorlage(id){
   setTimeout(function(){loadVAForm(v);toast('Vorlage uebernommen - bitte Zeiten und Datum pruefen','ok');},150);
 }
 
-async function delReport(id){if(!confirm('Bericht loeschen?'))return;await sb.from(tblBerichte()).delete().eq('id',id);const rfDel=await sb.from('rueckfragen').delete().eq('bericht_id',String(id));if(rfDel.error)console.error('Rueckfragen zum Bericht konnten nicht geloescht werden:',rfDel.error);if(currentId===id)currentId=null;await loadReports();renderSB();document.getElementById('detailContent').innerHTML='<div class="empty"><div class="ei">&#128465;</div><div class="et">Geloescht</div></div>';toast('Geloescht','err');}
+async function delReport(id){if(!confirm('Bericht loeschen?'))return;await sb.from(tblBerichte()).delete().eq('id',id);const rfDel=await sb.from('rueckfragen').delete().eq('bericht_id',String(id));if(rfDel.error)console.error('Rueckfragen zum Bericht konnten nicht geloescht werden:',rfDel.error);if(currentId===id){currentId=null;bearbeitungAnzeigen();}await loadReports();renderSB();document.getElementById('detailContent').innerHTML='<div class="empty"><div class="ei">&#128465;</div><div class="et">Geloescht</div></div>';toast('Geloescht','err');}
 // ══════ HILFSFUNKTIONEN ══════
 function getProjektLabel(nrOrId){const p=PROJEKTE.find(x=>x.id===nrOrId||x.nr===nrOrId);if(!p)return nrOrId||'--';return p.nr?p.nr+' - '+p.name:p.name;}
 function getProjektFahrzeit(nrOrId){const p=PROJEKTE.find(x=>x.id===nrOrId||x.nr===nrOrId);return p?parseInt(p.fahrzeit_min||0):0;}
@@ -6540,15 +6600,13 @@ function buildUI(){
       '<div class="tab" id="tab-bericht" ontouchstart="showTab(\'bericht\')" onclick="showTab(\'bericht\')">Bericht</div>'+
       '<div class="tab" id="tab-material" ontouchstart="showTab(\'material\')" onclick="showTab(\'material\')">Material</div>'+
       '<div class="tab" id="tab-kalender" ontouchstart="showTab(\'kalender\')" onclick="showTab(\'kalender\')">Kalender</div>'+
-      '<div class="tab" id="tab-details" ontouchstart="showTab(\'details\')" onclick="showTab(\'details\')">Details</div>'+
-      '<div class="tab" id="tab-ue" ontouchstart="showTab(\'ue\')" onclick="showTab(\'ue\')">Uebersicht</div>';
+      '<div class="tab" id="tab-details" ontouchstart="showTab(\'details\')" onclick="showTab(\'details\')">Meine Berichte</div>';
     content.innerHTML=
       '<div class="panel act" id="panel-zeit">'+buildVAZeit()+'</div>'+
       '<div class="panel" id="panel-bericht">'+buildVABericht()+'</div>'+
       '<div class="panel" id="panel-material">'+buildVAMaterial()+'</div>'+
       '<div class="panel" id="panel-kalender"><div id="kalender-content"></div></div>'+
-      '<div class="panel" id="panel-details"><div id="detailContent"><div class="empty"><div class="ei">&#128203;</div><div class="et">Bericht waehlen</div></div></div></div>'+
-      '<div class="panel" id="panel-ue"><div id="ue-content"></div></div>';
+      '<div class="panel" id="panel-details"><div id="ue-content"></div><div id="detailContent" style="display:none"></div></div>';
     setTimeout(()=>{addStep();addZeitRow();addLief();addMenge();addLVRow();const d=document.getElementById('v-datum');if(d)d.value=todayStr();einteilungVorbelegen();startVAAutoSave();setTimeout(checkVADraft,600);},100);
   }
 }
@@ -6773,7 +6831,7 @@ function calcAR(){
     const mEl=document.getElementById('a-h-monat');if(mEl)mEl.textContent=hM.toFixed(1)+'h';
   }
 }
-function clearARForm(skipConfirm){if(!skipConfirm&&!confirm('Neuen Bericht beginnen? Nicht gespeicherte Eingaben gehen verloren.'))return;currentId=null;document.getElementById('a-datum').value=todayStr();document.getElementById('a-projekt').value='';document.getElementById('a-von').value='06:30';document.getElementById('a-bis').value='16:30';document.getElementById('a-pause').value='60';['a-netto-work','a-netto','a-taetigkeit','a-besonder'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const fa=document.getElementById('a-fahrzeit-anzeige');if(fa)fa.value='0 min';const fi=document.getElementById('fahrzeit-info');if(fi)fi.textContent='';const st=document.getElementById('ar-send-status');if(st){st.className='send-status';st.textContent='';}curFahrtStatus='fahrer';document.querySelectorAll('.fahrt-btn').forEach(b=>{b.classList.remove('fahrt-active');if(b.dataset.val==='fahrer')b.classList.add('fahrt-active');});document.querySelectorAll('#ar-taetigkeiten-tags .tg').forEach(t=>t.classList.remove('a'));toast('Neuer Bericht','ok');}
+function clearARForm(skipConfirm){if(!skipConfirm&&!confirm('Neuen Bericht beginnen? Nicht gespeicherte Eingaben gehen verloren.'))return;currentId=null;bearbeitungAnzeigen();document.getElementById('a-datum').value=todayStr();document.getElementById('a-projekt').value='';document.getElementById('a-von').value='06:30';document.getElementById('a-bis').value='16:30';document.getElementById('a-pause').value='60';['a-netto-work','a-netto','a-taetigkeit','a-besonder'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const fa=document.getElementById('a-fahrzeit-anzeige');if(fa)fa.value='0 min';const fi=document.getElementById('fahrzeit-info');if(fi)fi.textContent='';const st=document.getElementById('ar-send-status');if(st){st.className='send-status';st.textContent='';}curFahrtStatus='fahrer';document.querySelectorAll('.fahrt-btn').forEach(b=>{b.classList.remove('fahrt-active');if(b.dataset.val==='fahrer')b.classList.add('fahrt-active');});document.querySelectorAll('#ar-taetigkeiten-tags .tg').forEach(t=>t.classList.remove('a'));toast('Neuer Bericht','ok');}
 
 // ══════ VA FORMS ══════
 function buildVABericht(){
@@ -6903,10 +6961,11 @@ function buildVAZeit(){
     '<th>Name</th><th>Qual.</th><th>Von</th><th>Bis</th><th>Pause</th><th>Arbeit</th><th>Fahrt</th><th>Fahrzeit</th><th>Anteil</th><th>GESAMT</th><th style="color:var(--earth)">&#9733; Projekt</th><th>Taetigkeit</th><th></th>'+
     '</tr></thead><tbody id="zeit-body"></tbody></table></div>'+
     '<button class="btn" ontouchstart="addZeitRow()" onclick="addZeitRow()">+ Person</button></div>'+
-    '<div class="sec"><div class="sh">Geraeteeinsatz (Dataflor)</div>'+
+    '<div class="sec"><div class="sh">Geraeteeinsatz</div>'+
     '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Geraet</th><th>Fahrzeugnr.</th><th>Stunden</th><th>Projekt</th><th></th></tr></thead><tbody id="mach-body"></tbody></table></div>'+
     '<button class="btn" ontouchstart="addMachRow()" onclick="addMachRow()">+ Geraet</button></div>'+
-    '<div class="arow arow-fab"><button class="btn btn-p" ontouchstart="saveAndSendVA()" onclick="saveAndSendVA()"><span class="lbl-l">Speichern und PDF senden</span><span class="lbl-s">Senden</span></button></div>';
+    '<div class="arow arow-fab"><button class="btn btn-p" ontouchstart="saveAndSendVA()" onclick="saveAndSendVA()"><span class="lbl-l">Speichern und PDF senden</span><span class="lbl-s">Senden</span></button>'+
+    '<button class="btn" ontouchstart="newReport()" onclick="newReport()">Neu</button></div>';
 }
 
 function buildVAMaterial(){
@@ -6915,7 +6974,8 @@ function buildVAMaterial(){
     '<div class="sec" style="margin-top:12px"><div class="sh">LV-Positionen</div>'+
     '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Pos.-Nr.</th><th>Bezeichnung</th><th>Einheit</th><th>Soll</th><th>Ist</th><th>Projekt</th><th></th></tr></thead><tbody id="lv-body"></tbody></table></div>'+
     '<button class="btn" ontouchstart="addLVRow()" onclick="addLVRow()">+ Position</button></div>'+
-    '<div class="arow arow-fab"><button class="btn btn-p" ontouchstart="saveAndSendVA()" onclick="saveAndSendVA()"><span class="lbl-l">Speichern und PDF senden</span><span class="lbl-s">Senden</span></button></div>';
+    '<div class="arow arow-fab"><button class="btn btn-p" ontouchstart="saveAndSendVA()" onclick="saveAndSendVA()"><span class="lbl-l">Speichern und PDF senden</span><span class="lbl-s">Senden</span></button>'+
+    '<button class="btn" ontouchstart="newReport()" onclick="newReport()">Neu</button></div>';
 }
 
 function buildKI(){return'';}
@@ -6935,8 +6995,7 @@ function addZeitRow(data={}){
   const prOpts=rowProjektOpts(rowKat,autoProjId);
   const taeOpts='<option value="">-</option>'+TAETIGKEITEN.map(t=>'<option value="'+t+'" '+(data.tae===t?'selected':'')+'>'+t+'</option>').join('');
   tr.innerHTML=
-    '<td><input class="projcell-filter" type="text" placeholder="Suchen..." style="display:block;width:110px;font-size:9px;padding:3px 5px;margin-bottom:2px" oninput="filterRowMA(this)">'+
-    '<select class="zeit-name" style="font-size:10px;min-width:120px" onchange="onZeitNameChange(this)">'+maRowOpts(data.name||'')+'</select></td>'+
+    '<td><select class="zeit-name" style="font-size:10px;min-width:120px" onchange="onZeitNameChange(this)">'+maRowOpts(data.name||'')+'</select></td>'+
     '<td><select class="zeit-qual" style="font-size:10px">'+['VA','Facharbeiter','Helfer','Azubi','Sub'].map(q=>'<option'+(data.qual===q?' selected':'')+'>'+q+'</option>').join('')+'</select></td>'+
     '<td><input class="zeit-von" type="time" value="'+(data.von||'06:30')+'" style="width:76px" oninput="calcZR(this)"></td>'+
     '<td><input class="zeit-bis" type="time" value="'+(data.bis||'16:30')+'" style="width:76px" oninput="calcZR(this)"></td>'+
@@ -6950,8 +7009,7 @@ function addZeitRow(data={}){
     '<td><input class="zeit-fahrzeit" type="number" value="'+fzVal+'" min="0" style="width:60px;background:var(--s2);border:1px solid var(--b);border-radius:3px;padding:3px 6px;color:var(--earth);font-family:\'IBM Plex Mono\',monospace" oninput="calcZR(this)"></td>'+
     '<td><input class="zeit-anteil" type="text" readonly value="'+(data.fahrtAnteil||'')+'" style="width:48px;color:var(--earth);font-family:\'IBM Plex Mono\',monospace;font-weight:600"></td>'+
     '<td><input class="zeit-gesamt" type="text" readonly value="'+(data.gesamt||'')+'" style="width:56px;color:var(--gl);font-family:\'IBM Plex Mono\',monospace;font-weight:700;font-size:12px"></td>'+
-    '<td><input class="projcell-filter" type="text" placeholder="Suchen..." style="display:block;width:90px;font-size:9px;padding:3px 5px;margin-bottom:2px" oninput="filterRowProj(this)">'+
-    '<select class="row-pr" data-kat="'+rowKat+'" style="font-size:9px;min-width:90px;border:2px solid var(--gd)" onchange="onZeitProjektChange(this)">'+prOpts+'</select></td>'+
+    '<td><select class="row-pr" data-kat="'+rowKat+'" style="font-size:9px;min-width:90px;border:2px solid var(--gd)" onchange="onZeitProjektChange(this)">'+prOpts+'</select></td>'+
     '<td><select class="row-tae" style="font-size:9px;min-width:110px">'+taeOpts+'</select></td>'+
     '<td><button class="delbtn" ontouchstart="this.closest(\'tr\').remove();updZeitTotal();refreshStepMAs()" onclick="this.closest(\'tr\').remove();updZeitTotal();refreshStepMAs()">&#x2715;</button></td>';
   tbody.appendChild(tr);calcZR(tr.querySelector('.zeit-von'));setTimeout(refreshStepMAs,50);
@@ -7197,7 +7255,7 @@ function newReport(skipConfirm){
   // Sicherheitsabfrage nur bei manueller Ausloesung (Button) — nach erfolgreichem
   // Senden wird newReport(true) aufgerufen und leert ohne Nachfrage.
   if(!skipConfirm&&!confirm('Neuen Bericht beginnen? Nicht gespeicherte Eingaben gehen verloren.'))return;
-  currentId=null;_fahrerBegruendung='';_fahrerBegruendungAlt='';
+  currentId=null;_fahrerBegruendung='';_fahrerBegruendungAlt='';bearbeitungAnzeigen();
   if(currentRole==='arbeiter'){clearARForm(true);return;}
   if(currentRole==='werkstatt'){clearWSForm(true);return;}
   stepIdx=0;liefIdx=0;mangelIdx=0;zusatzProjektIdx=0;
@@ -7225,10 +7283,52 @@ function tabAktiv(name){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('act'));
   const t=document.getElementById('tab-'+name),p=document.getElementById('panel-'+name);
   if(t)t.classList.add('act');if(p)p.classList.add('act');
+  fabSetzen();
+}
+// ══════ Sende-Leiste (Arbeiter, Vorarbeiter) ══════
+// Die Leiste lag vorher als fest positioniertes Element IM scrollenden Inhalt. Auf dem iPhone reagieren solche
+// Elemente nach dem Scrollen oft erst beim zweiten oder dritten Tipp. Ausserdem stand die Statusmeldung
+// ("Speichern...", "PDF wird erstellt...") am Seitenende bzw. in einem anderen Tab - nach dem Tipp auf "Senden"
+// war also nichts zu sehen. Jetzt: EINE Leiste ausserhalb des Scrollbereichs, der Status steht direkt darueber,
+// und die Buttons loesen beim Loslassen genau einmal aus (vorher zweimal -> Meldung "Bitte warten").
+let _fabBeobachter=null;
+function fabKnopf(klasse,aufruf,lang,kurz){
+  return '<button class="btn'+(klasse?' '+klasse:'')+'" '+tsAttr(aufruf)+'><span class="lbl-l">'+lang+'</span><span class="lbl-s">'+kurz+'</span></button>';
+}
+function fabKnoepfe(rolle,tabId){
+  if(rolle==='arbeiter'&&tabId==='tab-quick')
+    return fabKnopf('btn-p','saveAndSendAR()','Speichern und PDF senden','Senden')+fabKnopf('','clearARForm()','Neu','Neu');
+  if(rolle==='vorarbeiter'&&(tabId==='tab-zeit'||tabId==='tab-bericht'||tabId==='tab-material'))
+    return fabKnopf('btn-p','saveAndSendVA()','Speichern und PDF senden','Senden')+fabKnopf('btn-e','manualSaveDraft()','Entwurf speichern','Entwurf')+fabKnopf('','newReport()','Neu','Neu');
+  return '';
+}
+function fabSetzen(){
+  const w=document.getElementById('fab-wrap'),b=document.getElementById('fab-btns');if(!w||!b)return;
+  const akt=document.querySelector('#tabs-row .tab.act');
+  const html=currentUser?fabKnoepfe(currentRole,akt?akt.id:''):'';
+  if(b.innerHTML!==html)b.innerHTML=html;
+  w.classList.toggle('on',!!html);
+}
+// Statusmeldungen aus dem Formular (ar-send-status / va-send-status) in die Leiste spiegeln
+function fabStatusSpiegeln(){
+  const ziel=document.getElementById('fab-status');if(!ziel)return;
+  const q=document.getElementById(currentRole==='arbeiter'?'ar-send-status':'va-send-status');
+  if(!q){ziel.className='send-status';ziel.textContent='';return;}
+  ziel.className=q.className;ziel.textContent=q.textContent;
+}
+function fabBeobachten(){
+  if(_fabBeobachter){_fabBeobachter.disconnect();_fabBeobachter=null;}
+  fabStatusSpiegeln();
+  if(typeof MutationObserver==='undefined')return;
+  const q=document.getElementById(currentRole==='arbeiter'?'ar-send-status':'va-send-status');
+  if(!q)return;
+  _fabBeobachter=new MutationObserver(fabStatusSpiegeln);
+  _fabBeobachter.observe(q,{attributes:true,childList:true,characterData:true,subtree:true});
 }
 function showTab(name){
   tabAktiv(name);
-  if(name==='details'&&currentRole==='arbeiter')ueListeZeigen();
+  bearbeitungAnzeigen();
+  if(name==='details'&&ohneListe())ueListeZeigen();
   if(name==='kalender')_kalCache={};
   if(name==='ue')buildUE();if(name==='bericht')setTimeout(refreshStepMAs,100);
   if(name==='zeit')setTimeout(updateSplitInfo,100);
