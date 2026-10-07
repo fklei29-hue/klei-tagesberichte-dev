@@ -4371,12 +4371,12 @@ function renderAdminEint(){
     '<div style="font-size:11px;color:var(--m);line-height:1.5;margin-bottom:10px">Tag antippen, um die Einteilung fuer diesen Tag zu planen oder zu aendern. Importierte Einteilungen erscheinen hier ebenfalls.'+(EINTEILUNG_AKTIV?'':' Die Mitarbeiter sehen die Einteilung noch nicht (nicht freigeschaltet).')+'</div>'+
     '<div id="eint-woche"><div style="color:var(--m);font-size:11px;padding:8px">Lade...</div></div></div>'+
     '<div class="a-sec"><div class="a-sec-title">Tageseinteilung importieren</div>'+
-    '<div style="font-size:11px;color:var(--m);line-height:1.5;margin-bottom:10px">Die Einteilungsdatei (.xlsx oder .csv) unveraendert hochladen. Zuerst erscheint eine Vorschau mit allen Zuordnungen, gespeichert wird erst nach Bestaetigung.</div>'+
+    '<div style="font-size:11px;color:var(--m);line-height:1.5;margin-bottom:10px">Die Einteilungsdatei (.xlsx, .csv oder .pdf) unveraendert hochladen. Zuerst erscheint eine Vorschau mit allen Zuordnungen, gespeichert wird erst nach Bestaetigung.</div>'+
     (EINTEILUNG_AKTIV?
       '<div style="background:var(--earthg);border:1px solid var(--earth);border-radius:var(--rad);padding:8px 10px;margin-bottom:10px;font-size:11px;color:var(--t)">Die Mitarbeiteransicht ist <b>aktiv</b>. Importierte Einteilungen sind fuer die Kollegen sichtbar.</div>':
       '<div style="background:var(--s3);border:1px solid var(--b);border-radius:var(--rad);padding:8px 10px;margin-bottom:10px;font-size:11px;color:var(--m)">Die Mitarbeiteransicht ist <b>noch nicht freigeschaltet</b> (EINTEILUNG_AKTIV = false). Import und Vorschau funktionieren, die Kollegen sehen aber nichts. Freischalten erst nach RLS und Passwort-Hashing.</div>')+
     '<div class="row"><div class="fg w100"><label>Datei waehlen</label>'+
-    '<input type="file" id="eint-file" accept=".xlsx,.xlsm,.xls,.csv" onchange="eintDateiGewaehlt()" style="font-size:11px"></div></div>'+
+    '<input type="file" id="eint-file" accept=".xlsx,.xlsm,.xls,.csv,.pdf,application/pdf" onchange="eintDateiGewaehlt()" style="font-size:11px"></div></div>'+
     '<div id="eint-status" style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:var(--m);min-height:16px;margin-bottom:8px"></div>'+
     '<div id="eint-vorschau"></div>'+
     '</div>'+
@@ -4495,11 +4495,13 @@ function ewRender(){
     h+='<div class="ew-tag'+(d===heute?' heute':'')+(i>=5?' we':'')+'" '+tsAttr('ewBearbeite(\''+d+'\')')+'>'+
       '<div class="ew-tag-kopf"><span><b>'+EW_TAGE[i]+'</b> '+fmtD(d).substring(0,6)+'</span><span class="ew-tag-n">'+(gruppen.length?(kopf+' Pers.'):'')+'</span></div>';
     if(!gruppen.length)h+='<div class="ew-leer">Noch nichts geplant</div>';
-    gruppen.forEach(function(g){
+    var ohnePers=gruppen.filter(function(g){return !g.pers.length;}).length;
+    gruppen.filter(function(g){return g.pers.length;}).forEach(function(g){
       var namen=g.pers.map(function(x){return _dfEsc(x.id?ewKurzName(ewMaName(x.id,'')):((x.roh||'unbekannt')+' (?)'))+(g.typ==='abwesenheit'&&x.grund?' <span class="ew-grund">['+_dfEsc(x.grund)+']</span>':'');}).join(', ');
       var titel=g.typ==='abwesenheit'?('Abwesend'+(g.bez&&_eintNorm(g.bez)!=='abwesend'?': '+_dfEsc(g.bez):'')):((g.projektNr?'<span class="ct-pnr">'+_dfEsc(g.projektNr)+'</span> ':'')+_dfEsc(g.bez||'(ohne Bezeichnung)'));
       h+='<div class="ew-g'+(g.typ==='abwesenheit'?' abw':(g.typ==='intern'?' intern':''))+'"><div class="ew-g-t">'+titel+'</div><div class="ew-g-p">'+(namen||'<span style="color:var(--m)">niemand eingeteilt</span>')+'</div></div>';
     });
+    if(ohnePers)h+='<div class="ew-leer">+ '+ohnePers+' Baustelle'+(ohnePers>1?'n':'')+' ohne Personen</div>';
     h+='</div>';
   }
   h+='</div>';
@@ -4657,6 +4659,7 @@ function eintDateiGewaehlt(){
   var inp=document.getElementById('eint-file');
   if(!inp||!inp.files||!inp.files.length)return;
   var datei=inp.files[0];
+  if(/\.pdf$/i.test(datei.name||'')||datei.type==='application/pdf'){eintPdfGewaehlt(datei);return;}
   eintStatus('Tabellenmodul wird geladen...','var(--m)');
   ladeXlsxModul(function(){
     if(_xlsxFehler||typeof XLSX==='undefined'){
@@ -4693,6 +4696,303 @@ function eintDateiGewaehlt(){
         if(m2)EINT_VORSCHAU.datum=m2[1]+'-'+m2[2]+'-'+m2[3];
       }
       eintStatus('Blatt "'+wb.SheetNames[0]+'" gelesen: '+EINT_VORSCHAU.zeilen.length+' Zeilen.','var(--g)');
+      renderEintVorschau();
+    };
+    reader.readAsArrayBuffer(datei);
+  });
+}
+
+// ══════ EINTEILUNG: PDF-IMPORT ══════
+// Die Einteilung kommt aus Teams teils nur als PDF. Das PDF wird im Browser gelesen (pdf.js, nichts wird hochgeladen)
+// und in dieselbe Zeilen/Spalten-Form gebracht wie ein Excel-Blatt - danach laeuft alles ueber eintParseBlatt()
+// und die gewohnte Vorschau. Die Tabelle wird aus den gezeichneten Linien/Zellrahmen des PDF rekonstruiert;
+// fehlen sie, werden die Spalten aus den Abstaenden im Text geschaetzt (mit deutlichem Hinweis).
+var EINT_PDF_CDN='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+var EINT_PDF_WORKER='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+var _pdfGeladen=false,_pdfFehler=false,_pdfCallbacks=[];
+function ladePdfModul(cb){
+  if(_pdfGeladen||_pdfFehler){cb();return;}
+  _pdfCallbacks.push(cb);
+  if(_pdfCallbacks.length>1)return;
+  var fertig=function(ok){if(ok)_pdfGeladen=true;else _pdfFehler=true;var c=_pdfCallbacks;_pdfCallbacks=[];c.forEach(function(f){f();});};
+  var sc=document.createElement('script');
+  sc.src=EINT_PDF_CDN;
+  sc.onload=function(){
+    if(typeof pdfjsLib==='undefined'){fertig(false);return;}
+    pdfjsLib.GlobalWorkerOptions.workerSrc=EINT_PDF_WORKER;
+    fertig(true);
+  };
+  sc.onerror=function(){fertig(false);};
+  document.head.appendChild(sc);
+}
+// Linien und Rechtecke einer Seite einsammeln (waagerecht H, senkrecht V), in Seitenkoordinaten
+function eintPdfLinien(opList,OPS,seiteB,seiteH){
+  // Gezaehlt werden nur Pfade, die wirklich gezeichnet werden (Linie oder Flaeche). Beschnittpfade und
+  // seitengrosse Flaechen (Seitenhintergrund) sind keine Tabellenlinien.
+  var ctm=[1,0,0,1,0,0],stack=[],H=[],V=[],H0=[],V0=[];
+  var malen={};['stroke','closeStroke','fill','eoFill','fillStroke','eoFillStroke','closeFillStroke','closeEOFillStroke'].forEach(function(n){if(OPS[n]!=null)malen[OPS[n]]=1;});
+  function mul(A,B){return [A[0]*B[0]+A[2]*B[1],A[1]*B[0]+A[3]*B[1],A[0]*B[2]+A[2]*B[3],A[1]*B[2]+A[3]*B[3],A[0]*B[4]+A[2]*B[5]+A[4],A[1]*B[4]+A[3]*B[5]+A[5]];}
+  function pt(x,y){return [ctm[0]*x+ctm[2]*y+ctm[4],ctm[1]*x+ctm[3]*y+ctm[5]];}
+  function seg(a,b){
+    var dx=Math.abs(a[0]-b[0]),dy=Math.abs(a[1]-b[1]);
+    if(dy<=0.8&&dx>2)H0.push({p:(a[1]+b[1])/2,a:Math.min(a[0],b[0]),b:Math.max(a[0],b[0])});
+    else if(dx<=0.8&&dy>2)V0.push({p:(a[0]+b[0])/2,a:Math.min(a[1],b[1]),b:Math.max(a[1],b[1])});
+  }
+  function rect(x,y,w,h){
+    var p1=pt(x,y),p3=pt(x+w,y+h);
+    var X1=Math.min(p1[0],p3[0]),X2=Math.max(p1[0],p3[0]),Y1=Math.min(p1[1],p3[1]),Y2=Math.max(p1[1],p3[1]);
+    var bw=X2-X1,bh=Y2-Y1;
+    if(seiteB&&seiteH&&bw>=0.97*seiteB&&bh>=0.97*seiteH)return;
+    if(bh<=2&&bw>2)H0.push({p:(Y1+Y2)/2,a:X1,b:X2});
+    else if(bw<=2&&bh>2)V0.push({p:(X1+X2)/2,a:Y1,b:Y2});
+    else if(bw>2&&bh>2){H0.push({p:Y1,a:X1,b:X2});H0.push({p:Y2,a:X1,b:X2});V0.push({p:X1,a:Y1,b:Y2});V0.push({p:X2,a:Y1,b:Y2});}
+  }
+  var fn=opList.fnArray||[],ar=opList.argsArray||[];
+  for(var i=0;i<fn.length;i++){
+    var f=fn[i],a=ar[i];
+    if(malen[f]){H=H.concat(H0);V=V.concat(V0);H0=[];V0=[];}
+    else if(f===OPS.endPath){H0=[];V0=[];}
+    else if(f===OPS.save){stack.push(ctm.slice());}
+    else if(f===OPS.restore){if(stack.length)ctm=stack.pop();}
+    else if(f===OPS.transform){if(a&&a.length>=6)ctm=mul(ctm,a);}
+    else if(f===OPS.paintFormXObjectBegin){stack.push(ctm.slice());if(a&&a[0]&&a[0].length>=6)ctm=mul(ctm,a[0]);}
+    else if(f===OPS.paintFormXObjectEnd){if(stack.length)ctm=stack.pop();}
+    else if(f===OPS.constructPath&&a&&a[0]&&a[1]){
+      var sub=a[0],co=a[1],k=0,cur=null,start=null;
+      for(var j=0;j<sub.length;j++){
+        var o=sub[j];
+        if(o===OPS.moveTo){cur=pt(co[k],co[k+1]);start=cur;k+=2;}
+        else if(o===OPS.lineTo){var n=pt(co[k],co[k+1]);if(cur)seg(cur,n);cur=n;k+=2;}
+        else if(o===OPS.curveTo){cur=pt(co[k+4],co[k+5]);k+=6;}
+        else if(o===OPS.curveTo2||o===OPS.curveTo3){cur=pt(co[k+2],co[k+3]);k+=4;}
+        else if(o===OPS.closePath){if(cur&&start)seg(cur,start);cur=start;}
+        else if(o===OPS.rectangle){rect(co[k],co[k+1],co[k+2],co[k+3]);k+=4;}
+      }
+    }
+  }
+  return {H:H,V:V};
+}
+// Linien mit (fast) gleicher Lage zusammenfassen; "len" = wie viel Strecke dort insgesamt gezeichnet ist
+function eintPdfBuendel(segs,tol){
+  var s=segs.slice().sort(function(x,y){return x.p-y.p;}),out=[];
+  s.forEach(function(g){
+    var l=out.length?out[out.length-1]:null;
+    if(l&&Math.abs(g.p-l.max)<=tol){l.sum+=g.p*(g.b-g.a);l.len+=(g.b-g.a);l.max=g.p;}
+    else out.push({sum:g.p*(g.b-g.a),len:(g.b-g.a),max:g.p});
+  });
+  return out.map(function(o){return {p:o.len>0?o.sum/o.len:o.max,len:o.len};});
+}
+function eintPdfGrenzen(segs){
+  var b=eintPdfBuendel(segs,1.6);
+  if(!b.length)return [];
+  var mx=0;b.forEach(function(o){if(o.len>mx)mx=o.len;});
+  var pos=b.filter(function(o){return o.len>=0.3*mx;}).map(function(o){return o.p;}).sort(function(x,y){return x-y;});
+  var out=[];
+  pos.forEach(function(v){if(!out.length||v-out[out.length-1]>=4)out.push(v);});
+  return out;
+}
+// Textstuecke zu Zeilen ordnen (oben nach unten) und je Zeile von links nach rechts zusammensetzen
+function eintPdfZeilen(items){
+  var s=items.slice().sort(function(a,b){return b.y-a.y||a.x-b.x;}),zeilen=[];
+  s.forEach(function(it){
+    var l=zeilen.length?zeilen[zeilen.length-1]:null;
+    if(l&&Math.abs(l.y-it.y)<=Math.max(2,0.45*(it.h||8)))l.items.push(it);
+    else zeilen.push({y:it.y,items:[it]});
+  });
+  zeilen.forEach(function(z){
+    z.items.sort(function(a,b){return a.x-b.x;});
+    var t='';
+    z.items.forEach(function(it,i){
+      if(i>0){
+        var v=z.items[i-1],luecke=it.x-(v.x+(v.w||0));
+        if(luecke>Math.max(14,2.2*(it.h||8)))t+='\t';
+        else if(luecke>0.18*(it.h||8)&&!/\s$/.test(t)&&!/^\s/.test(it.s))t+=' ';
+      }
+      t+=it.s;
+    });
+    z.text=t.replace(/[ \u00a0]+/g,' ').replace(/ ?\t ?/g,'\t').trim();
+  });
+  return zeilen;
+}
+function eintPdfKopfSpalten(aoa){
+  // gleiche Erkennung wie eintParseBlatt: Zeile mit "Projekt-Nr.", Namensspalte mit Kopf "...Uhr"
+  for(var i=0;i<Math.min(aoa.length,15);i++){
+    var r=aoa[i]||[],proj=-1,crew=-1,tr=-1;
+    for(var j=0;j<r.length;j++){
+      var t=_eintNorm(Array.isArray(r[j])?r[j].join(' '):r[j]);
+      if(!t)continue;
+      if(t.indexOf('projektnr')===0)proj=j;
+      if(t.indexOf('transport')===0)tr=j;
+      if(/uhr$/.test(t)&&t.length<=12)crew=j;
+    }
+    if(proj>=0){if(crew<0&&tr>0)crew=tr-1;return {zeile:i,proj:proj,crew:crew};}
+  }
+  return {zeile:-1,proj:-1,crew:-1};
+}
+// Zellzeilen zu einem Zelltext verbinden. Namensspalte: Zeilenumbruch trennt Namen, ausser die Zeile endet
+// mit einem Trennzeichen (dann war es nur ein Umbruch mitten in der Aufzaehlung).
+function eintPdfZellText(zeilen,istNamen){
+  // Tabulator = grosser Abstand in der Zeile (Text aus einer Nachbarspalte ohne Rahmen).
+  // In der Namensspalte trennt er Namen, sonst ist er ein normales Leerzeichen.
+  var z=(zeilen||[]).filter(function(x){return x!=='';}).map(function(x){return istNamen?x.replace(/\t/g,', '):x.replace(/\t/g,' ');});
+  if(!z.length)return '';
+  if(!istNamen)return z.join(' ');
+  var t=z[0];
+  for(var i=1;i<z.length;i++){
+    // Umbruch direkt nach einem Bindestrich ("Franz-" / "Josef") gehoert zu EINEM Namen
+    if(/[A-Za-z\u00c0-\u017f]-$/.test(z[i-1]))t+='';
+    else t+=(/[,;\/]\s*$/.test(z[i-1])||/^\s*[,;\/]/.test(z[i]))?' ':'\n';
+    t+=z[i];
+  }
+  return t;
+}
+// Seiten -> Zeilen/Spalten wie ein Tabellenblatt. seiten=[{items:[{s,x,y,w,h}],H:[],V:[]}]
+function eintPdfSeitenZuAoa(seiten){
+  var kopfZeilen=[],tab=[],modus='gitter',ohneGitter=0,ausserhalb=0;
+  (seiten||[]).forEach(function(se,si){
+    var items=(se.items||[]).filter(function(it){return it&&String(it.s||'').trim()!=='';});
+    if(!items.length)return;
+    var ys=eintPdfGrenzen(se.H||[]).sort(function(a,b){return b-a;}); // oben -> unten
+    var xs=eintPdfGrenzen(se.V||[]);
+    if(ys.length>=3&&xs.length>=3){
+      var zellen={},oben=[];
+      items.forEach(function(it){
+        var rx=it.x+Math.min(it.w||0,6)/2,ry=it.y+0.35*(it.h||8);
+        if(ry>ys[0]){oben.push(it);return;}
+        var r=-1,c=-1,i;
+        for(i=0;i<ys.length-1;i++){if(ry<=ys[i]&&ry>ys[i+1]){r=i;break;}}
+        for(i=0;i<xs.length-1;i++){if(rx>=xs[i]&&rx<xs[i+1]){c=i;break;}}
+        if(r<0||c<0){ausserhalb++;return;}
+        var k=r+'|'+c;(zellen[k]=zellen[k]||[]).push(it);
+      });
+      if(si===0)eintPdfZeilen(oben).forEach(function(z){if(z.text)kopfZeilen.push([[z.text.replace(/\t/g,' ')]]);});
+      for(var r=0;r<ys.length-1;r++){
+        var zeile=[],leer=true;
+        for(var c=0;c<xs.length-1;c++){
+          var lst=zellen[r+'|'+c];
+          var zl=lst?eintPdfZeilen(lst).map(function(z){return z.text;}).filter(Boolean):[];
+          if(zl.length)leer=false;
+          zeile.push(zl);
+        }
+        if(!leer)tab.push(zeile);
+      }
+    }else{
+      ohneGitter++;
+      // Keine Linien: Spalten aus den durchgehenden Luecken im Text schaetzen
+      var zl2=eintPdfZeilen(items),kopf=-1,i2;
+      for(i2=0;i2<zl2.length;i2++){if(zl2[i2].items.some(function(it){return _eintNorm(it.s).indexOf('projektnr')===0;})){kopf=i2;break;}}
+      if(kopf<0){zl2.forEach(function(z){if(z.text)kopfZeilen.push([[z.text.replace(/\t/g,' ')]]);});return;}
+      if(si===0)for(i2=0;i2<kopf;i2++){if(zl2[i2].text)kopfZeilen.push([[zl2[i2].text.replace(/\t/g,' ')]]);}
+      var tz=zl2.slice(kopf),minX=1e9,maxX=-1e9;
+      tz.forEach(function(z){z.items.forEach(function(it){minX=Math.min(minX,it.x);maxX=Math.max(maxX,it.x+(it.w||0));});});
+      var n=Math.max(1,Math.ceil(maxX-minX)+1),belegt=new Array(n).fill(0);
+      tz.forEach(function(z){
+        var m={};
+        z.items.forEach(function(it){for(var q=Math.max(0,Math.floor(it.x-minX));q<=Math.min(n-1,Math.ceil(it.x+(it.w||0)-minX));q++)m[q]=1;});
+        Object.keys(m).forEach(function(q){belegt[q]++;});
+      });
+      var grenze=Math.max(1,Math.floor(0.06*tz.length)),gr=[minX-1],lauf=-1;
+      for(var q2=0;q2<n;q2++){
+        if(belegt[q2]<=grenze){if(lauf<0)lauf=q2;}
+        else{if(lauf>=0&&q2-lauf>=5)gr.push(minX+(lauf+q2)/2);lauf=-1;}
+      }
+      gr.push(maxX+1);
+      var roh=tz.map(function(z){
+        var zeile=[];for(var c2=0;c2<gr.length-1;c2++)zeile.push([]);
+        z.items.forEach(function(it){
+          var rx=it.x+Math.min(it.w||0,6)/2;
+          for(var c3=0;c3<gr.length-1;c3++){if(rx>=gr[c3]&&rx<gr[c3+1]){zeile[c3].push(it);break;}}
+        });
+        return zeile.map(function(l){return l.length?eintPdfZeilen(l).map(function(y){return y.text.replace(/\t/g,' ');}).join(' '):'';});
+      });
+      var pc=-1;roh[0].forEach(function(t,j){if(_eintNorm(t).indexOf('projektnr')===0)pc=j;});
+      roh.forEach(function(zeile,idx){
+        var neu=(idx===0)||zeile[0]!==''||(pc>=0&&zeile[pc]!=='')||!tab.length;
+        if(neu){tab.push(zeile.map(function(t){return t===''?[]:[t];}));}
+        else{var v=tab[tab.length-1];zeile.forEach(function(t,j){if(t!==''){while(v.length<=j)v.push([]);v[j].push(t);}});}
+      });
+    }
+  });
+  if(ohneGitter)modus='abstand';
+  // fuehrende/abschliessende Spalten ohne jeden Inhalt entfernen (z.B. Seitenrand)
+  var breite=0;tab.forEach(function(z){if(z.length>breite)breite=z.length;});
+  tab.forEach(function(z){while(z.length<breite)z.push([]);});
+  function spalteLeer(c){return tab.every(function(z){return !z[c]||!z[c].length;});}
+  while(breite>0&&tab.length&&spalteLeer(0)){tab.forEach(function(z){z.shift();});breite--;}
+  while(breite>0&&tab.length&&spalteLeer(breite-1)){tab.forEach(function(z){z.pop();});breite--;}
+  var ks=eintPdfKopfSpalten(tab);
+  var aoa=kopfZeilen.map(function(z){return [eintPdfZellText(z[0],false)];});
+  tab.forEach(function(z,ri){
+    aoa.push(z.map(function(zl,c){return eintPdfZellText(zl,ks.crew>=0&&c===ks.crew&&ri>ks.zeile);}));
+  });
+  return {aoa:aoa,modus:modus,zeilen:tab.length,spalten:breite,ausserhalb:ausserhalb};
+}
+async function eintPdfLesen(bytes){
+  var doc=await pdfjsLib.getDocument({data:bytes}).promise;
+  var seiten=[],textAnzahl=0;
+  for(var p=1;p<=doc.numPages;p++){
+    var page=await doc.getPage(p);
+    var tc=await page.getTextContent();
+    var items=[];
+    (tc.items||[]).forEach(function(it){
+      if(!it||typeof it.str!=='string'||!it.transform)return;
+      if(it.str.trim()==='')return;
+      var t=it.transform;
+      items.push({s:it.str,x:t[4],y:t[5],w:it.width||0,h:it.height||Math.abs(t[3])||8});
+    });
+    textAnzahl+=items.length;
+    var lin={H:[],V:[]};
+    try{
+      var vw=page.view||[0,0,0,0];
+      lin=eintPdfLinien(await page.getOperatorList(),pdfjsLib.OPS,Math.abs(vw[2]-vw[0]),Math.abs(vw[3]-vw[1]));
+    }catch(e){
+      console.error('EINTEILUNG PDF: Linien der Seite '+p+' konnten nicht gelesen werden - Spalten werden geschaetzt:',e);
+    }
+    seiten.push({items:items,H:lin.H,V:lin.V});
+  }
+  if(!textAnzahl)throw new Error('Das PDF enthaelt keinen lesbaren Text (vermutlich ein Scan oder Foto). Bitte als Excel-Datei oder als direkt aus Excel erzeugtes PDF hochladen.');
+  var erg=eintPdfSeitenZuAoa(seiten);
+  erg.seiten=doc.numPages;
+  return erg;
+}
+function eintPdfGewaehlt(datei){
+  eintStatus('PDF-Modul wird geladen...','var(--m)');
+  ladePdfModul(function(){
+    if(_pdfFehler||typeof pdfjsLib==='undefined'){
+      eintStatus('FEHLER: Das PDF-Modul konnte nicht geladen werden. Internetverbindung pruefen und Seite neu laden.','var(--r)');
+      return;
+    }
+    eintStatus('PDF wird gelesen...','var(--m)');
+    var reader=new FileReader();
+    reader.onerror=function(){eintStatus('FEHLER: Die Datei konnte nicht gelesen werden.','var(--r)');};
+    reader.onload=async function(ev){
+      var aRes=await ladeEintAliase();
+      if(!aRes.ok){
+        eintStatus('FEHLER: Die gespeicherten Zuordnungen konnten nicht geladen werden ('+aRes.fehler+'). Ohne sie waeren alle Namen offen. Import abgebrochen.','var(--r)');
+        return;
+      }
+      var erg=null;
+      try{
+        erg=await eintPdfLesen(new Uint8Array(ev.target.result));
+      }catch(err){
+        console.error('EINTEILUNG PDF: Lesen fehlgeschlagen:',err);
+        eintStatus('FEHLER beim Lesen des PDF: '+(err&&err.message?err.message:String(err)),'var(--r)');
+        return;
+      }
+      EINT_VORSCHAU=eintParseBlatt(erg.aoa);
+      EINT_VORSCHAU.dateiname=datei.name;
+      if(!EINT_VORSCHAU.datum){
+        var m2=String(datei.name).match(/(\d{4})[.\-_](\d{2})[.\-_](\d{2})/);
+        if(m2)EINT_VORSCHAU.datum=m2[1]+'-'+m2[2]+'-'+m2[3];
+        else{var m3=String(datei.name).match(/(\d{1,2})[.\-_](\d{1,2})[.\-_](\d{4})/);if(m3)EINT_VORSCHAU.datum=m3[3]+'-'+('0'+m3[2]).slice(-2)+'-'+('0'+m3[1]).slice(-2);}
+      }
+      if(erg.modus==='abstand'){
+        EINT_VORSCHAU.warnungen.unshift('Im PDF wurden keine Tabellenlinien gefunden. Die Spalten wurden aus den Abstaenden im Text geschaetzt - bitte die Vorschau besonders genau pruefen.');
+        eintStatus('PDF gelesen ('+erg.seiten+' Seite'+(erg.seiten>1?'n':'')+', OHNE Tabellenlinien): '+EINT_VORSCHAU.zeilen.length+' Zeilen. Vorschau bitte genau pruefen.','var(--o)');
+      }else{
+        EINT_VORSCHAU.warnungen.unshift('Aus einem PDF gelesen: Bitte die Vorschau einmal gegen das PDF pruefen, bevor du speicherst.');
+        eintStatus('PDF gelesen ('+erg.seiten+' Seite'+(erg.seiten>1?'n':'')+', '+erg.spalten+' Spalten): '+EINT_VORSCHAU.zeilen.length+' Zeilen.','var(--g)');
+      }
       renderEintVorschau();
     };
     reader.readAsArrayBuffer(datei);
