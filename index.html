@@ -793,6 +793,8 @@ body:not(.theme-light) .fab-wrap .send-status{background:var(--s1);}
     <div class="admin-tab" id="atab-ausw" ontouchstart="tsTap(event,this,function(){showAdminTab('ausw')})" onclick="tsKlick(function(){showAdminTab('ausw')})">Auswertung</div>
     <div class="admin-tab" id="atab-pfl" ontouchstart="tsTap(event,this,function(){showAdminTab('pfl')})" onclick="tsKlick(function(){showAdminTab('pfl')})">Pflege</div>
     <div class="admin-tab" id="atab-cock" ontouchstart="tsTap(event,this,function(){showAdminTab('cock')})" onclick="tsKlick(function(){showAdminTab('cock')})">Cockpit</div>
+    <div class="admin-tab" id="atab-verg" ontouchstart="tsTap(event,this,function(){showAdminTab('verg')})" onclick="tsKlick(function(){showAdminTab('verg')})">Vergleich</div>
+    <div class="admin-tab" id="atab-ausl" ontouchstart="tsTap(event,this,function(){showAdminTab('ausl')})" onclick="tsKlick(function(){showAdminTab('ausl')})">Auslastung</div>
     <div class="admin-tab" id="atab-ablauf" ontouchstart="tsTap(event,this,function(){showAdminTab('ablauf')})" onclick="tsKlick(function(){showAdminTab('ablauf')})">Bauablauf</div>
     <div class="admin-tab" id="atab-kalk" ontouchstart="tsTap(event,this,function(){showAdminTab('kalk')})" onclick="tsKlick(function(){showAdminTab('kalk')})">Kalkulation</div>
     <div class="admin-tab" id="atab-eint" ontouchstart="tsTap(event,this,function(){showAdminTab('eint')})" onclick="tsKlick(function(){showAdminTab('eint')})">Einteilung</div>
@@ -810,6 +812,8 @@ body:not(.theme-light) .fab-wrap .send-status{background:var(--s1);}
     <div class="admin-panel" id="apanel-ausw"></div>
     <div class="admin-panel" id="apanel-pfl"></div>
     <div class="admin-panel" id="apanel-cock"></div>
+    <div class="admin-panel" id="apanel-verg"></div>
+    <div class="admin-panel" id="apanel-ausl"></div>
     <div class="admin-panel" id="apanel-ablauf"></div>
     <div class="admin-panel" id="apanel-kalk"></div>
     <div class="admin-panel" id="apanel-eint"></div>
@@ -1451,7 +1455,7 @@ async function clearSig(){
 // es wird nur gesteuert, welche Tabs im jeweiligen Bereich sichtbar sind.
 const ADMIN_BEREICHE=[
   {key:'tb',name:'Tagesberichte',tabs:['frei','bhz','ber','abg','eint','exp']},
-  {key:'ctrl',name:'Controlling',tabs:['ausw','pfl','cock','ablauf','kalk']},
+  {key:'ctrl',name:'Controlling',tabs:['ausw','pfl','cock','ablauf','verg','ausl','kalk']},
   {key:'verw',name:'Verwaltung',tabs:['ma','proj','fz','email']}
 ];
 // Buchhaltung: Zeiten je Mitarbeiter (Einstieg), Freigabe je Bericht, Abgabe-Matrix und Export.
@@ -1531,6 +1535,8 @@ function showAdminTab(name){
   if(name==='abg')renderAdminAbgabe();
   if(name==='bhz')renderAdminBhZeiten();
   if(name==='ablauf')renderAdminAblauf();
+  if(name==='verg')renderAdminVergleich();
+  if(name==='ausl')renderAdminAuslastung();
   if(name==='ausw')renderAdminAusw();
   if(name==='pfl')renderAdminPflege();if(name==='cock')renderAdminCockpit();
   if(name==='kalk')renderKalkPanel('apanel-kalk');
@@ -1832,6 +1838,12 @@ async function editProj(id){
     '<div class="fg w25"><label>Fahrzeit</label><select id="ep-fz-'+id+'">'+[0,5,10,15,20,25,30,35,40,45,50,55,60,70,80,90,100,110,120].map(m=>'<option value="'+m+'" '+(parseInt(data.fahrzeit_min||0)===m?'selected':'')+'>'+m+'min</option>').join('')+'</select></div></div>'+
     '<div class="row"><div class="fg w33"><label>Kategorie</label><select id="ep-kat-'+id+'" onchange="toggleEpLeist(\''+id+'\')"><option value="bau" '+(!istPflege?'selected':'')+'>Bau</option><option value="pflege" '+(istPflege?'selected':'')+'>Pflege</option></select></div>'+
     '<div class="fg w33"><label>Plan-Stunden (Soll)</label><input type="number" min="0" step="1" id="ep-plan-'+id+'" value="'+(data.plan_stunden!=null&&data.plan_stunden!==''?data.plan_stunden:'')+'" placeholder="--"></div></div>'+
+    '<div class="row"><div class="fg w33"><label>Auftragssumme (EUR netto)</label><input type="number" min="0" step="100" id="ep-summe-'+id+'" value="'+(data.auftragssumme!=null&&data.auftragssumme!==''?data.auftragssumme:'')+'" placeholder="--"></div>'+
+    '<div class="fg w33"><label>Leitmenge</label><input type="number" min="0" step="1" id="ep-lmenge-'+id+'" value="'+(data.leitmenge!=null&&data.leitmenge!==''?data.leitmenge:'')+'" placeholder="z.B. 7800"></div>'+
+    '<div class="fg w33"><label>Einheit der Leitmenge</label><input id="ep-leh-'+id+'" value="'+_dfEsc(data.leitmenge_eh||'')+'" placeholder="m2, m3, lfdm"></div></div>'+
+    '<div class="row"><div class="fg w50"><label>Planung Start</label><input type="date" id="ep-pstart-'+id+'" value="'+String(data.plan_start||'').substring(0,10)+'"></div>'+
+    '<div class="fg w50"><label>Planung Ende</label><input type="date" id="ep-pende-'+id+'" value="'+String(data.plan_ende||'').substring(0,10)+'"></div></div>'+
+    '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-bottom:8px">Leitmenge = die eine kennzeichnende Menge der Baustelle (Platzflaeche, Pflasterflaeche, Erdmasse). Start und Ende steuern die Auslastungsvorschau.</div>'+
     '<div id="ep-leist-wrap-'+id+'" style="display:'+(istPflege?'block':'none')+'"><div class="fg w100"><label>Leistungen (eine pro Zeile)</label><textarea id="ep-leist-'+id+'" style="min-height:90px">'+leistText+'</textarea></div></div>'+
     '<div style="display:flex;gap:6px"><button class="btn btn-sky" ontouchstart="saveEditProj(\''+id+'\')" onclick="saveEditProj(\''+id+'\')">Speichern</button>'+
     '<button class="btn" ontouchstart="renderAdminProj()" onclick="renderAdminProj()">Abbrechen</button></div></div>';
@@ -1843,7 +1855,15 @@ async function saveEditProj(id){
   if(kat==='pflege'){const txt=document.getElementById('ep-leist-'+id)?.value||'';leistungen=txt.split('\n').map(l=>l.trim()).filter(Boolean);}
   const planEl=document.getElementById('ep-plan-'+id);
   const planWert=planEl?_auswNum(planEl.value):0;
-  const r=await sb.from('projekte').update({nr:document.getElementById('ep-nr-'+id).value.trim(),name:document.getElementById('ep-name-'+id).value.trim(),fahrzeit_min:parseInt(document.getElementById('ep-fz-'+id).value)||0,kategorie:kat,leistungen,plan_stunden:planWert>0?planWert:null}).eq('id',id);
+  const lesen=function(suffix){const el=document.getElementById('ep-'+suffix+'-'+id);return el?String(el.value||'').trim():'';};
+  const summeWert=_auswNum(lesen('summe'));
+  const lmengeWert=_auswNum(lesen('lmenge'));
+  const r=await sb.from('projekte').update({nr:document.getElementById('ep-nr-'+id).value.trim(),name:document.getElementById('ep-name-'+id).value.trim(),fahrzeit_min:parseInt(document.getElementById('ep-fz-'+id).value)||0,kategorie:kat,leistungen,plan_stunden:planWert>0?planWert:null,
+    auftragssumme:summeWert>0?summeWert:null,
+    leitmenge:lmengeWert>0?lmengeWert:null,
+    leitmenge_eh:lesen('leh')||null,
+    plan_start:lesen('pstart')||null,
+    plan_ende:lesen('pende')||null}).eq('id',id);
   if(r.error){console.error('Projekt speichern fehlgeschlagen:',r.error);toast('Speichern fehlgeschlagen: '+(r.error.message||''),'err');return;}
   await loadProjekte();toast('Gespeichert','ok');renderAdminProj();
 }
@@ -3886,6 +3906,549 @@ function ablWoche(i,pid){
 async function ablPlanSetzen(pid,val){
   await setPlanH(pid,val);
   ablRender(pid);
+}
+
+// ══════ VERGLEICH: BAUSTELLEN UND ARBEITSARTEN (nur lesend) ══════
+// Stellt je Baustelle das Soll (plan_stunden, auftragssumme, leitmenge) den Ist-Stunden
+// gegenueber und rechnet daraus Euro je Kolonnenstunde und Stunden je Leitmenge.
+// Die Ist-Stunden kommen aus expLohnZeilen - dieselbe Quelle wie Buchhaltung und Bauablauf.
+let _vgBerichte=null,_vgKey='',_vgBusy=false,_vgSort='stunden';
+
+function vgNum(v){
+  if(v==null||v==='')return 0;
+  const n=parseFloat(String(v).replace(',','.'));
+  return isNaN(n)?0:n;
+}
+function vgEuro(n){
+  return (Math.round((parseFloat(n)||0)*100)/100).toLocaleString('de-DE',{minimumFractionDigits:0,maximumFractionDigits:0});
+}
+function vgMedian(liste){
+  const a=(liste||[]).filter(function(x){return x>0;}).slice().sort(function(x,y){return x-y;});
+  if(!a.length)return 0;
+  const m=Math.floor(a.length/2);
+  return a.length%2?a[m]:((a[m-1]+a[m])/2);
+}
+
+function renderAdminVergleich(){
+  const el=document.getElementById('apanel-verg');
+  if(!el)return;
+  const heute=new Date();
+  const jahr=heute.getFullYear();
+  el.innerHTML='<div class="a-sec"><div class="a-sec-title">Baustellen im Vergleich</div>'+
+    '<div class="row"><div class="fg w33"><label>Von</label><input type="date" id="vg-von" value="'+(jahr-1)+'-01-01" onchange="vgLaden()"></div>'+
+    '<div class="fg w33"><label>Bis</label><input type="date" id="vg-bis" value="'+jahr+'-12-31" onchange="vgLaden()"></div>'+
+    '<div class="fg w33"><label>Kategorie</label><select id="vg-kat" onchange="vgRender()"><option value="">Alle</option><option value="bau">Nur Bau</option><option value="pflege">Nur Pflege</option></select></div></div>'+
+    '<div style="font-size:10px;color:var(--m);line-height:1.5">Soll kommt aus den Projektstammdaten (Plan-Stunden, Auftragssumme, Leitmenge), Ist aus den Berichten im gewaehlten Zeitraum. Euro je Stunde ist der Auftragswert geteilt durch die geleisteten Kolonnenstunden - darin stecken Material, Geraete und Nachunternehmer, es ist also kein Lohnsatz, sondern ein Vergleichsmassstab zwischen aehnlichen Baustellen.</div>'+
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">'+
+    '<button class="btn btn-sky" '+tsAttr('vgCSV()')+'>CSV Vergleich</button></div></div>'+
+    '<div id="vg-inhalt"><div class="empty"><div class="spin"></div></div></div>';
+  vgLaden();
+}
+
+async function vgLaden(){
+  const ziel=document.getElementById('vg-inhalt');
+  if(!ziel)return;
+  if(_vgBusy)return;
+  _vgBusy=true;
+  ziel.innerHTML='<div class="a-sec"><div class="empty"><div class="spin"></div></div></div>';
+  try{
+    const von=(document.getElementById('vg-von')||{value:''}).value;
+    const bis=(document.getElementById('vg-bis')||{value:''}).value;
+    if(von&&bis&&von>bis)throw new Error('"Von" liegt nach "Bis"');
+    const key=von+'|'+bis+'|'+(TESTMODUS?1:0);
+    if(!_vgBerichte||_vgKey!==key){
+      _vgBerichte=await ablLadeBerichte(von,bis);
+      _vgKey=key;
+    }
+    vgRender();
+  }catch(e){
+    console.error('Vergleich konnte nicht geladen werden:',e);
+    const z2=document.getElementById('vg-inhalt')||ziel;
+    z2.innerHTML='<div class="a-sec"><div style="color:var(--r);font-size:12px;padding:8px">Vergleich konnte nicht geladen werden: '+_dfEsc(e.message||String(e))+'</div></div>';
+    toast('Vergleich konnte nicht geladen werden: '+(e.message||String(e)),'err');
+  }finally{_vgBusy=false;}
+}
+
+// Ist-Stunden je Projekt aus den Abrechnungszeilen
+function vgIstJeProjekt(){
+  const zeilen=expLohnZeilen(_vgBerichte||[],MALISTE||[],PROJEKTE);
+  const map={};
+  zeilen.forEach(function(z){
+    const k=String(z.projektId||('nr:'+z.projektNr));
+    if(!map[k])map[k]={stunden:0,tage:{},personen:{}};
+    map[k].stunden+=z.gesamtH;
+    map[k].tage[z.datum]=true;
+    map[k].personen[expNorm(z.name)]=true;
+  });
+  Object.keys(map).forEach(function(k){
+    map[k].stunden=Math.round(map[k].stunden*100)/100;
+    map[k].anzTage=Object.keys(map[k].tage).length;
+    map[k].anzPersonen=Object.keys(map[k].personen).length;
+  });
+  return map;
+}
+
+function vgZeilen(){
+  const ist=vgIstJeProjekt();
+  const kat=(document.getElementById('vg-kat')||{value:''}).value;
+  const out=[];
+  (PROJEKTE||[]).forEach(function(p){
+    if(kat&&String(p.kategorie||'')!==kat)return;
+    const i=ist[String(p.id)]||{stunden:0,anzTage:0,anzPersonen:0};
+    if(i.stunden<=0)return;
+    const plan=vgNum(p.plan_stunden);
+    const summe=vgNum(p.auftragssumme);
+    const menge=vgNum(p.leitmenge);
+    out.push({
+      id:p.id, nr:p.nr||'', name:p.name||'', kategorie:p.kategorie||'',
+      plan:plan, ist:i.stunden, diff:Math.round((i.stunden-plan)*100)/100,
+      proz:plan>0?Math.round(i.stunden/plan*1000)/10:0,
+      summe:summe, euroStd:(summe>0&&i.stunden>0)?Math.round(summe/i.stunden*100)/100:0,
+      menge:menge, eh:p.leitmenge_eh||'',
+      hJeEinheit:(menge>0&&i.stunden>0)?Math.round(i.stunden/menge*1000)/1000:0,
+      tage:i.anzTage, personen:i.anzPersonen
+    });
+  });
+  const feld=_vgSort;
+  out.sort(function(a,b){
+    if(feld==='nr')return String(a.nr).localeCompare(String(b.nr),'de');
+    return (b[feld]||0)-(a[feld]||0);
+  });
+  return out;
+}
+
+function vgSortieren(feld){_vgSort=feld;vgRender();}
+
+function vgRender(){
+  const ziel=document.getElementById('vg-inhalt');
+  if(!ziel)return;
+  const zeilen=vgZeilen();
+  const mono='font-family:\'IBM Plex Mono\',monospace;';
+  if(!zeilen.length){
+    ziel.innerHTML='<div class="a-sec"><div style="color:var(--m);font-size:11px;padding:8px">Im gewaehlten Zeitraum sind zu keiner Baustelle dieser Kategorie Stunden erfasst.</div></div>';
+    return;
+  }
+  const mitSumme=zeilen.filter(function(z){return z.euroStd>0;});
+  const mitMenge=zeilen.filter(function(z){return z.hJeEinheit>0;});
+  const mitPlan=zeilen.filter(function(z){return z.plan>0;});
+  const eStd=mitSumme.map(function(z){return z.euroStd;});
+  const hJe=mitMenge.map(function(z){return z.hJeEinheit;});
+
+  let html='<div class="a-sec"><div class="a-sec-title">Kennzahlen</div>'+
+    '<div style="display:flex;gap:18px;flex-wrap:wrap;'+mono+'font-size:12px;color:var(--c)">'+
+    '<span>'+zeilen.length+' Baustellen mit Stunden</span>'+
+    '<span>'+mitPlan.length+' mit Plan-Stunden</span>'+
+    '<span>'+mitSumme.length+' mit Auftragssumme</span>'+
+    '<span>'+mitMenge.length+' mit Leitmenge</span></div>';
+  if(eStd.length){
+    html+='<div style="'+mono+'font-size:12px;color:var(--c);margin-top:8px">Euro je Kolonnenstunde &nbsp; '+
+      'Min '+vgEuro(Math.min.apply(null,eStd))+' &nbsp;&middot;&nbsp; Median <strong>'+vgEuro(vgMedian(eStd))+'</strong> &nbsp;&middot;&nbsp; Max '+vgEuro(Math.max.apply(null,eStd))+'</div>';
+  }
+  if(hJe.length){
+    html+='<div style="'+mono+'font-size:12px;color:var(--c);margin-top:4px">Stunden je Leitmenge &nbsp; '+
+      'Min '+expZahl(Math.min.apply(null,hJe))+' &nbsp;&middot;&nbsp; Median <strong>'+expZahl(vgMedian(hJe))+'</strong> &nbsp;&middot;&nbsp; Max '+expZahl(Math.max.apply(null,hJe))+
+      ' <span style="color:var(--m)">(nur Baustellen mit derselben Einheit sind vergleichbar)</span></div>';
+  }
+  if(mitSumme.length<3&&mitMenge.length<3){
+    html+='<div style="font-size:10px;color:var(--m);margin-top:8px;line-height:1.5">Noch zu wenige Baustellen mit Auftragssumme oder Leitmenge fuer einen belastbaren Vergleich. Die Werte traegst du in der Projektverwaltung ein.</div>';
+  }
+  html+='</div>';
+
+  const th='text-align:left;font-size:10px;color:var(--m);padding:6px 7px;border-bottom:1px solid var(--b);white-space:nowrap;cursor:pointer;';
+  const td='font-size:11.5px;color:var(--c);padding:6px 7px;border-bottom:1px solid var(--b);';
+  const tdn=td+mono+'text-align:right;white-space:nowrap;';
+  html+='<div class="a-sec"><div class="a-sec-title">Je Baustelle</div>'+
+    '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="width:100%;border-collapse:collapse">'+
+    '<tr><th style="'+th+'" '+tsAttr('vgSortieren(\'nr\')')+'>Nr</th>'+
+    '<th style="'+th+'">Baustelle</th>'+
+    '<th style="'+th+'text-align:right" '+tsAttr('vgSortieren(\'plan\')')+'>Plan h</th>'+
+    '<th style="'+th+'text-align:right" '+tsAttr('vgSortieren(\'ist\')')+'>Ist h</th>'+
+    '<th style="'+th+'text-align:right">Diff</th>'+
+    '<th style="'+th+'text-align:right" '+tsAttr('vgSortieren(\'summe\')')+'>Auftragssumme</th>'+
+    '<th style="'+th+'text-align:right" '+tsAttr('vgSortieren(\'euroStd\')')+'>EUR/h</th>'+
+    '<th style="'+th+'text-align:right">Leitmenge</th>'+
+    '<th style="'+th+'text-align:right" '+tsAttr('vgSortieren(\'hJeEinheit\')')+'>h/Einheit</th>'+
+    '<th style="'+th+'text-align:right">Tage</th></tr>';
+  zeilen.forEach(function(z){
+    html+='<tr><td style="'+td+mono+'white-space:nowrap">'+_dfEsc(z.nr||'--')+'</td>'+
+      '<td style="'+td+'">'+_dfEsc(z.name)+'</td>'+
+      '<td style="'+tdn+'">'+(z.plan>0?expZahl(z.plan):'<span style="color:var(--m)">--</span>')+'</td>'+
+      '<td style="'+tdn+'font-weight:600">'+expZahl(z.ist)+'</td>'+
+      '<td style="'+tdn+(z.plan>0?'color:'+(z.diff>0?'var(--r)':'var(--g)'):'color:var(--m)')+'">'+
+        (z.plan>0?((z.diff>0?'+':'')+expZahl(z.diff)+' <span style="font-size:9px">'+z.proz.toString().replace('.',',')+'%</span>'):'--')+'</td>'+
+      '<td style="'+tdn+'">'+(z.summe>0?vgEuro(z.summe)+' EUR':'<span style="color:var(--m)">--</span>')+'</td>'+
+      '<td style="'+tdn+'font-weight:600">'+(z.euroStd>0?vgEuro(z.euroStd):'<span style="color:var(--m)">--</span>')+'</td>'+
+      '<td style="'+tdn+'">'+(z.menge>0?expZahl(z.menge)+' '+_dfEsc(z.eh||''):'<span style="color:var(--m)">--</span>')+'</td>'+
+      '<td style="'+tdn+'">'+(z.hJeEinheit>0?expZahl(z.hJeEinheit):'<span style="color:var(--m)">--</span>')+'</td>'+
+      '<td style="'+tdn+'">'+z.tage+'</td></tr>';
+  });
+  html+='</table></div><div style="font-size:10px;color:var(--m);margin-top:6px">Spaltenkopf antippen sortiert. Nur Baustellen mit erfassten Stunden im Zeitraum.</div></div>';
+
+  html+=vgArbeitsarten();
+  ziel.innerHTML=html;
+}
+
+// ── Stunden je Arbeitsart ───────────────────────────────────────────────
+// Die Taetigkeiten stehen je Bericht als Liste. Die Stunden eines Berichts werden
+// anteilig auf seine angehakten Taetigkeiten verteilt, damit die Summen stimmen -
+// zaehlte man jede Taetigkeit voll, waere die Gesamtsumme ein Vielfaches der Wahrheit.
+function vgTaetigkeitenListe(b){
+  let t=b.taetigkeiten;
+  if(typeof t==='string'){
+    try{t=JSON.parse(t);}catch(e){
+      // Kein JSON: dann ist es ein einzelner Text
+      return String(b.taetigkeiten||'').trim()?[String(b.taetigkeiten).trim()]:[];
+    }
+  }
+  if(!Array.isArray(t))return [];
+  return t.map(function(x){return String(x==null?'':x).trim();}).filter(Boolean);
+}
+
+function vgArbeitsarten(){
+  const mono='font-family:\'IBM Plex Mono\',monospace;';
+  const zeilen=expLohnZeilen(_vgBerichte||[],MALISTE||[],PROJEKTE);
+  // Stunden je Bericht aus den Abrechnungszeilen (nicht aus netto_gesamt_h,
+  // weil dort die Kolonnenstunden eines VA-Berichts nicht vollstaendig stehen)
+  const stdJeBericht={};
+  zeilen.forEach(function(z){
+    if(!z.berichtId)return;
+    stdJeBericht[z.berichtId]=(stdJeBericht[z.berichtId]||0)+z.gesamtH;
+  });
+  const arten={};
+  let mitArt=0,ohneArt=0,stdMitArt=0,stdOhneArt=0;
+  (_vgBerichte||[]).forEach(function(b){
+    const std=stdJeBericht[b.id]||0;
+    const liste=vgTaetigkeitenListe(b);
+    if(!liste.length){
+      ohneArt++;stdOhneArt+=std;
+      return;
+    }
+    mitArt++;stdMitArt+=std;
+    const anteil=std/liste.length;
+    liste.forEach(function(t){
+      if(!arten[t])arten[t]={name:t,stunden:0,berichte:0};
+      arten[t].stunden+=anteil;
+      arten[t].berichte++;
+    });
+  });
+  const liste=Object.keys(arten).map(function(k){
+    const a=arten[k];
+    a.stunden=Math.round(a.stunden*100)/100;
+    return a;
+  }).sort(function(x,y){return y.stunden-x.stunden;});
+  if(!liste.length){
+    return '<div class="a-sec"><div class="a-sec-title">Stunden je Arbeitsart</div>'+
+      '<div style="color:var(--m);font-size:11px;padding:4px">In diesem Zeitraum wurden keine Taetigkeiten angehakt.</div></div>';
+  }
+  const ges=liste.reduce(function(s,a){return s+a.stunden;},0);
+  const quote=(mitArt+ohneArt)>0?Math.round(mitArt/(mitArt+ohneArt)*1000)/10:0;
+  const max=liste[0].stunden||1;
+  const th='text-align:left;font-size:10px;color:var(--m);padding:6px 7px;border-bottom:1px solid var(--b);white-space:nowrap;';
+  const td='font-size:11.5px;color:var(--c);padding:6px 7px;border-bottom:1px solid var(--b);';
+  const tdn=td+mono+'text-align:right;white-space:nowrap;';
+  let html='<div class="a-sec"><div class="a-sec-title">Stunden je Arbeitsart</div>'+
+    '<div style="font-size:10px;color:var(--m);line-height:1.5;margin-bottom:10px">'+
+    '<strong style="color:var(--c)">Abdeckung '+quote.toString().replace('.',',')+' %</strong> &ndash; '+mitArt+' von '+(mitArt+ohneArt)+
+    ' Berichten im Zeitraum haben Taetigkeiten angehakt. Die uebrigen '+ohneArt+' Berichte mit '+expZahl(stdOhneArt)+
+    ' h sind hier nicht enthalten. Hat ein Bericht mehrere Taetigkeiten, werden seine Stunden gleichmaessig darauf verteilt. '+
+    'Die Zahlen zeigen also Verhaeltnisse zwischen Arbeitsarten, keine vollstaendige Erhebung.</div>'+
+    '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="width:100%;border-collapse:collapse">'+
+    '<tr><th style="'+th+'">Arbeitsart</th><th style="'+th+'text-align:right">Stunden</th>'+
+    '<th style="'+th+'text-align:right">Anteil</th><th style="'+th+'">&nbsp;</th><th style="'+th+'text-align:right">Berichte</th></tr>';
+  liste.forEach(function(a){
+    const anteil=ges>0?Math.round(a.stunden/ges*1000)/10:0;
+    const breite=Math.max(1,Math.round(a.stunden/max*100));
+    html+='<tr><td style="'+td+'">'+_dfEsc(a.name)+'</td>'+
+      '<td style="'+tdn+'font-weight:600">'+expZahl(a.stunden)+'</td>'+
+      '<td style="'+tdn+'">'+anteil.toString().replace('.',',')+' %</td>'+
+      '<td style="'+td+'width:36%"><div style="height:7px;border-radius:4px;background:var(--sky);width:'+breite+'%"></div></td>'+
+      '<td style="'+tdn+'">'+a.berichte+'</td></tr>';
+  });
+  html+='<tr><td style="'+td+'font-weight:700">Summe</td><td style="'+tdn+'font-weight:700">'+expZahl(ges)+'</td>'+
+    '<td colspan="3" style="'+td+'"></td></tr></table></div></div>';
+  return html;
+}
+
+function vgCSV(){
+  const zeilen=vgZeilen();
+  if(!zeilen.length){toast('Keine Daten im Zeitraum','err');return;}
+  const hdr='Projekt-Nr;Baustelle;Kategorie;Plan-h;Ist-h;Differenz-h;Verbrauch-Prozent;Auftragssumme-EUR;EUR-je-Stunde;Leitmenge;Einheit;h-je-Einheit;Einsatztage;Personen';
+  const rows=zeilen.map(function(z){
+    return [z.nr,z.name,z.kategorie,expZahl(z.plan),expZahl(z.ist),expZahl(z.diff),
+            String(z.proz).replace('.',','),expZahl(z.summe),expZahl(z.euroStd),
+            expZahl(z.menge),z.eh,expZahl(z.hJeEinheit),z.tage,z.personen].map(expCsvFeld).join(';');
+  });
+  dlFile('KLEI_Vergleich_'+new Date().toISOString().split('T')[0]+'.csv','﻿'+[hdr].concat(rows).join('\r\n'),'text/csv;charset=utf-8');
+  toast(rows.length+' Baustellen exportiert','ok');
+}
+
+// ══════ AUSLASTUNG: WOCHENBEDARF GEGEN KAPAZITAET ══════
+// Der Bedarf kommt aus den Projektstammdaten (plan_stunden, plan_start, plan_ende),
+// das Ist der vergangenen Wochen aus den Berichten. Keine Richtwerte, keine erfundenen
+// Aufwandswerte - was nicht gepflegt ist, taucht hier auch nicht auf und wird benannt.
+let _auslBerichte=null,_auslKey='',_auslBusy=false,_auslSzen=0;
+
+const AUSL_RUECK=8;    // Wochen rueckwaerts (Ist)
+const AUSL_VOR=32;     // Wochen vorwaerts (Plan)
+const AUSL_SZENARIEN=[
+  {name:'Plan wie erfasst', text:'Die Planungszeitraeume und Plan-Stunden aus den Stammdaten, volle Produktivitaet.', produktiv:1.00},
+  {name:'15 Prozent Verzug', text:'Alles dauert 15 Prozent laenger - Witterung, Ausfaelle, Nacharbeiten.', produktiv:0.85},
+  {name:'30 Prozent Verzug', text:'Der ungemuetliche Fall: 30 Prozent Leistungsverlust.', produktiv:0.70}
+];
+
+function auslMontag(d){
+  const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  const wt=(x.getDay()||7);
+  x.setDate(x.getDate()-(wt-1));
+  return x;
+}
+function auslIso(d){
+  const p=function(n){return (n<10?'0':'')+n;};
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
+}
+function auslWinter(kw){return kw>=51||kw<=8;}
+
+function renderAdminAuslastung(){
+  const el=document.getElementById('apanel-ausl');
+  if(!el)return;
+  el.innerHTML='<div class="a-sec"><div class="a-sec-title">Auslastung je Woche</div>'+
+    '<div class="row"><div class="fg w25"><label>Kolonnen</label><input type="number" id="ausl-kol" min="1" max="20" step="1" value="3" onchange="auslRender()"></div>'+
+    '<div class="fg w25"><label>Personen je Kolonne</label><input type="number" id="ausl-pers" min="1" max="12" step="1" value="4" onchange="auslRender()"></div>'+
+    '<div class="fg w25"><label>Stunden je Woche</label><input type="number" id="ausl-std" min="20" max="60" step="0.5" value="38.5" onchange="auslRender()"></div>'+
+    '<div class="fg w25"><label>Winterpause (Prozent Kapazitaet)</label><input type="number" id="ausl-winter" min="0" max="100" step="5" value="35" onchange="auslRender()"></div></div>'+
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center" id="ausl-szen"></div>'+
+    '<div style="font-size:10px;color:var(--m);line-height:1.5;margin-top:8px" id="ausl-hinweis"></div></div>'+
+    '<div id="ausl-inhalt"><div class="empty"><div class="spin"></div></div></div>';
+  document.getElementById('ausl-szen').innerHTML=AUSL_SZENARIEN.map(function(s,i){
+    return '<button class="btn'+(i===_auslSzen?' btn-sky':'')+'" id="ausl-sz-'+i+'" '+tsAttr('auslSzenario('+i+')')+'>'+s.name+'</button>';
+  }).join('');
+  auslLaden();
+}
+function auslSzenario(i){
+  _auslSzen=i;
+  AUSL_SZENARIEN.forEach(function(s,k){
+    const b=document.getElementById('ausl-sz-'+k);
+    if(b)b.className='btn'+(k===i?' btn-sky':'');
+  });
+  auslRender();
+}
+
+async function auslLaden(){
+  const ziel=document.getElementById('ausl-inhalt');
+  if(!ziel)return;
+  if(_auslBusy)return;
+  _auslBusy=true;
+  try{
+    const von=auslIso(auslMontag(new Date(Date.now()-AUSL_RUECK*7*86400000)));
+    const bis=auslIso(new Date());
+    const key=von+'|'+bis+'|'+(TESTMODUS?1:0);
+    if(!_auslBerichte||_auslKey!==key){
+      _auslBerichte=await ablLadeBerichte(von,bis);
+      _auslKey=key;
+    }
+    auslRender();
+  }catch(e){
+    console.error('Auslastung konnte nicht geladen werden:',e);
+    const z2=document.getElementById('ausl-inhalt')||ziel;
+    z2.innerHTML='<div class="a-sec"><div style="color:var(--r);font-size:12px;padding:8px">Auslastung konnte nicht geladen werden: '+_dfEsc(e.message||String(e))+'</div></div>';
+    toast('Auslastung konnte nicht geladen werden: '+(e.message||String(e)),'err');
+  }finally{_auslBusy=false;}
+}
+
+// Wochenraster von AUSL_RUECK Wochen zurueck bis AUSL_VOR Wochen voraus
+function auslRaster(){
+  const start=auslMontag(new Date(Date.now()-AUSL_RUECK*7*86400000));
+  const heuteKey=(ablIsoKW(auslIso(new Date()))||{}).key;
+  const wochen=[];
+  for(let i=0;i<AUSL_RUECK+AUSL_VOR;i++){
+    const d=new Date(start.getFullYear(),start.getMonth(),start.getDate()+i*7);
+    const k=ablIsoKW(auslIso(d));
+    if(!k)continue;
+    wochen.push({key:k.key,kw:k.kw,jahr:k.jahr,von:auslIso(d),
+      bis:auslIso(new Date(d.getFullYear(),d.getMonth(),d.getDate()+6)),
+      winter:auslWinter(k.kw),vergangen:(k.key<heuteKey),jetzt:(k.key===heuteKey),
+      plan:0,ist:0,teile:[]});
+  }
+  return wochen;
+}
+
+function auslRechnen(){
+  const kol=vgNum((document.getElementById('ausl-kol')||{value:3}).value)||1;
+  const pers=vgNum((document.getElementById('ausl-pers')||{value:4}).value)||1;
+  const std=vgNum((document.getElementById('ausl-std')||{value:38.5}).value)||1;
+  const winterAnteil=Math.max(0,Math.min(100,vgNum((document.getElementById('ausl-winter')||{value:35}).value)))/100;
+  const produktiv=AUSL_SZENARIEN[_auslSzen].produktiv;
+  const basisKap=kol*pers*std;
+  const wochen=auslRaster();
+  const index={};
+  wochen.forEach(function(w,i){index[w.key]=i;w.kapazitaet=w.winter?basisKap*winterAnteil:basisKap;});
+
+  // Plan: Stunden je Baustelle gleichmaessig ueber ihren Planungszeitraum
+  const ohnePlan=[],mitPlan=[];
+  (PROJEKTE||[]).forEach(function(p){
+    const h=vgNum(p.plan_stunden);
+    const von=String(p.plan_start||'').substring(0,10);
+    const bis=String(p.plan_ende||'').substring(0,10);
+    if(h<=0||!von||!bis||von>bis){
+      if(h>0||von||bis)ohnePlan.push(p);
+      return;
+    }
+    // Alle Wochen zwischen Start und Ende einsammeln
+    const keys=[];
+    let d=auslMontag(new Date(von.substring(0,4),parseInt(von.substring(5,7),10)-1,parseInt(von.substring(8,10),10)));
+    const endeD=new Date(bis.substring(0,4),parseInt(bis.substring(5,7),10)-1,parseInt(bis.substring(8,10),10));
+    let schutz=0;
+    while(d<=endeD&&schutz<520){
+      const k=ablIsoKW(auslIso(d));
+      if(k)keys.push(k.key);
+      d=new Date(d.getFullYear(),d.getMonth(),d.getDate()+7);
+      schutz++;
+    }
+    if(!keys.length)return;
+    mitPlan.push(p);
+    const jeWoche=(h/keys.length)/Math.max(0.3,produktiv);
+    keys.forEach(function(k){
+      const i=index[k];
+      if(i==null)return;
+      wochen[i].plan+=jeWoche;
+      wochen[i].teile.push({name:(p.nr?p.nr+' ':'')+(p.name||''),h:jeWoche});
+    });
+  });
+
+  // Ist aus den Berichten der vergangenen Wochen
+  const zeilen=expLohnZeilen(_auslBerichte||[],MALISTE||[],PROJEKTE);
+  zeilen.forEach(function(z){
+    const k=ablIsoKW(z.datum);
+    if(!k)return;
+    const i=index[k.key];
+    if(i==null)return;
+    wochen[i].ist+=z.gesamtH;
+  });
+
+  wochen.forEach(function(w){
+    w.plan=Math.round(w.plan*100)/100;
+    w.ist=Math.round(w.ist*100)/100;
+    w.bedarf=w.vergangen||w.jetzt?Math.max(w.ist,w.plan):w.plan;
+    w.diff=Math.round((w.bedarf-w.kapazitaet)*100)/100;
+  });
+  return {wochen:wochen,basisKap:basisKap,mitPlan:mitPlan,ohnePlan:ohnePlan,produktiv:produktiv};
+}
+
+function auslRender(){
+  const ziel=document.getElementById('ausl-inhalt');
+  if(!ziel)return;
+  const m=auslRechnen();
+  const mono='font-family:\'IBM Plex Mono\',monospace;';
+  const hw=document.getElementById('ausl-hinweis');
+  if(hw){
+    hw.innerHTML='Kapazitaet '+expZahl(m.basisKap)+' h je Woche &middot; '+AUSL_SZENARIEN[_auslSzen].text+
+      ' Bedarf aus '+m.mitPlan.length+' Baustelle(n) mit Plan-Stunden und Planungszeitraum.'+
+      (m.ohnePlan.length?' <span style="color:var(--r)">'+m.ohnePlan.length+' Baustelle(n) haben nur einen Teil davon gepflegt und fehlen in der Vorschau.</span>':'');
+  }
+  const wochen=m.wochen;
+  if(!wochen.length){ziel.innerHTML='';return;}
+
+  const maxWert=Math.max(m.basisKap*1.1,wochen.reduce(function(a,w){return Math.max(a,w.plan,w.ist);},0),10);
+  const W=Math.max(360,wochen.length*20+60),H=200;
+  const links=46,oben=10,ph=150;
+  const bw=(W-links-10)/wochen.length;
+  const y=function(v){return oben+ph-(v/maxWert)*ph;};
+  let svg='';
+  const schritt=maxWert>1200?400:(maxWert>600?200:100);
+  for(let g=0;g<=maxWert;g+=schritt){
+    svg+='<line x1="'+links+'" y1="'+y(g).toFixed(1)+'" x2="'+(W-10)+'" y2="'+y(g).toFixed(1)+'" stroke="var(--b)" stroke-width="1"></line>'+
+      '<text x="'+(links-6)+'" y="'+(y(g)+3).toFixed(1)+'" text-anchor="end" font-size="9" fill="var(--m)" font-family="IBM Plex Mono, monospace">'+g+'</text>';
+  }
+  wochen.forEach(function(w,i){
+    const x=links+i*bw;
+    if(w.winter)svg+='<rect x="'+x.toFixed(1)+'" y="'+oben+'" width="'+bw.toFixed(1)+'" height="'+ph+'" fill="var(--s2)" opacity=".5"></rect>';
+    if(w.jetzt)svg+='<rect x="'+x.toFixed(1)+'" y="'+oben+'" width="'+bw.toFixed(1)+'" height="'+ph+'" fill="var(--sky)" opacity=".12"></rect>';
+  });
+  // Plan als Balken, Ist als zweiter schmaler Balken davor
+  wochen.forEach(function(w,i){
+    const x=links+i*bw+1.5, breite=Math.max(3,bw-3);
+    if(w.plan>0){
+      const h=(w.plan/maxWert)*ph;
+      svg+='<rect x="'+x.toFixed(1)+'" y="'+(oben+ph-h).toFixed(1)+'" width="'+breite.toFixed(1)+'" height="'+h.toFixed(1)+'" rx="2" fill="var(--sky)" opacity=".45"></rect>';
+    }
+    if(w.ist>0){
+      const h=(w.ist/maxWert)*ph;
+      const bi=Math.max(2,breite*0.5);
+      svg+='<rect x="'+(x+(breite-bi)/2).toFixed(1)+'" y="'+(oben+ph-h).toFixed(1)+'" width="'+bi.toFixed(1)+'" height="'+h.toFixed(1)+'" rx="2" fill="var(--sky)"></rect>';
+    }
+    if(w.diff>0)svg+='<circle cx="'+(x+breite/2).toFixed(1)+'" cy="'+(oben+4)+'" r="2.8" fill="var(--r)"></circle>';
+  });
+  // Kapazitaetslinie als Treppe
+  let kp='';
+  wochen.forEach(function(w,i){
+    const x1=links+i*bw,x2=x1+bw;
+    kp+=(i?' L':'M')+x1.toFixed(1)+' '+y(w.kapazitaet).toFixed(1)+' L'+x2.toFixed(1)+' '+y(w.kapazitaet).toFixed(1);
+  });
+  svg+='<path d="'+kp+'" fill="none" stroke="var(--t)" stroke-width="2" stroke-dasharray="5 4"></path>';
+  svg+='<line x1="'+links+'" y1="'+(oben+ph)+'" x2="'+(W-10)+'" y2="'+(oben+ph)+'" stroke="var(--m)" stroke-width="1"></line>';
+  wochen.forEach(function(w,i){
+    if(i%4!==0)return;
+    svg+='<text x="'+(links+i*bw+bw/2).toFixed(1)+'" y="'+(oben+ph+14)+'" text-anchor="middle" font-size="9" fill="var(--m)" font-family="IBM Plex Mono, monospace">'+w.kw+'</text>';
+  });
+  svg+='<text x="'+(W/2)+'" y="'+(H-3)+'" text-anchor="middle" font-size="9" fill="var(--m)">Kalenderwoche</text>';
+
+  // Vergangenheit und Vorschau getrennt zaehlen: eine ueberlaufene Woche von gestern
+  // ist eine Feststellung, eine von naechstem Monat eine Warnung.
+  const kommend=wochen.filter(function(w){return !w.vergangen;});
+  const ueber=kommend.filter(function(w){return w.diff>0;});
+  const ueberGewesen=wochen.filter(function(w){return w.vergangen&&w.diff>0;});
+  const spitze=kommend.length?kommend.reduce(function(a,b){return b.bedarf>a.bedarf?b:a;},kommend[0]):wochen[0];
+  let html='<div class="a-sec"><div class="a-sec-title">Bedarf, Ist und Kapazitaet</div>'+
+    '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><svg viewBox="0 0 '+W+' '+H+'" style="width:100%;min-width:'+Math.min(W,640)+'px;height:auto;display:block">'+svg+'</svg></div>'+
+    '<div style="display:flex;gap:14px;flex-wrap:wrap;font-size:10.5px;color:var(--m);margin-top:8px">'+
+    '<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--sky);opacity:.45"></span> Plan je Woche</span>'+
+    '<span><span style="display:inline-block;width:6px;height:10px;border-radius:2px;background:var(--sky)"></span> Ist (erfasst)</span>'+
+    '<span><svg width="20" height="8" aria-hidden="true"><line x1="0" y1="4" x2="20" y2="4" stroke="var(--t)" stroke-width="2" stroke-dasharray="5 4"></line></svg> Kapazitaet</span>'+
+    '<span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--r)"></span> ueber Kapazitaet</span>'+
+    '<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--s2)"></span> Winterpause</span></div>'+
+    '<div style="display:flex;gap:16px;flex-wrap:wrap;'+mono+'font-size:12px;color:var(--c);margin-top:10px">'+
+    '<span style="color:'+(ueber.length?'var(--r)':'var(--g)')+'">Vorschau: '+(ueber.length?ueber.length+' Woche(n) ueber Kapazitaet':'keine Woche ueber Kapazitaet')+'</span>'+
+    '<span>Spitze KW '+spitze.kw+' mit '+expZahl(spitze.bedarf)+' h</span>'+
+    (ueberGewesen.length?'<span style="color:var(--m)">rueckblickend '+ueberGewesen.length+' Woche(n) ueber Kapazitaet gearbeitet</span>':'')+'</div></div>';
+
+  const th='text-align:left;font-size:10px;color:var(--m);padding:5px 7px;border-bottom:1px solid var(--b);white-space:nowrap;';
+  const td='font-size:11.5px;color:var(--c);padding:5px 7px;border-bottom:1px solid var(--b);';
+  const tdn=td+mono+'text-align:right;white-space:nowrap;';
+  html+='<div class="a-sec"><div class="a-sec-title">Wochenwerte</div>'+
+    '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="width:100%;border-collapse:collapse">'+
+    '<tr><th style="'+th+'">KW</th><th style="'+th+'">Woche</th><th style="'+th+'text-align:right">Plan</th>'+
+    '<th style="'+th+'text-align:right">Ist</th><th style="'+th+'text-align:right">Kapazitaet</th>'+
+    '<th style="'+th+'text-align:right">Differenz</th><th style="'+th+'">Baustellen</th></tr>';
+  wochen.forEach(function(w){
+    const namen={};
+    w.teile.forEach(function(t){namen[t.name]=(namen[t.name]||0)+t.h;});
+    const liste=Object.keys(namen).sort(function(a,b){return namen[b]-namen[a];}).slice(0,3)
+      .map(function(n){return _dfEsc(n)+' <span style="color:var(--m)">'+expZahl(namen[n])+'</span>';}).join('<br>');
+    html+='<tr style="'+(w.jetzt?'background:var(--s2)':'')+'">'+
+      '<td style="'+td+mono+'white-space:nowrap">'+w.kw+(w.winter?' <span style="color:var(--m)">W</span>':'')+'</td>'+
+      '<td style="'+td+mono+'font-size:10px;white-space:nowrap">'+_dfEsc(fmtD(w.von))+'</td>'+
+      '<td style="'+tdn+'">'+(w.plan>0?expZahl(w.plan):'<span style="color:var(--m)">--</span>')+'</td>'+
+      '<td style="'+tdn+(w.ist>0?'font-weight:600':'color:var(--m)')+'">'+(w.ist>0?expZahl(w.ist):'--')+'</td>'+
+      '<td style="'+tdn+'">'+expZahl(w.kapazitaet)+'</td>'+
+      '<td style="'+tdn+'color:'+(w.diff>0?'var(--r)':'var(--m)')+'">'+(w.diff>0?'+'+expZahl(w.diff):expZahl(w.diff))+'</td>'+
+      '<td style="'+td+'font-size:10.5px">'+(liste||'<span style="color:var(--m)">--</span>')+'</td></tr>';
+  });
+  html+='</table></div></div>';
+
+  if(m.ohnePlan.length){
+    html+='<div class="a-sec"><div class="a-sec-title">Noch nicht planbar</div>'+
+      '<div style="font-size:11px;color:var(--c);line-height:1.6">Diesen Baustellen fehlt fuer die Vorschau noch etwas &ndash; Plan-Stunden, Start oder Ende:<br>'+
+      m.ohnePlan.slice(0,12).map(function(p){
+        const f=[];
+        if(vgNum(p.plan_stunden)<=0)f.push('Plan-Stunden');
+        if(!p.plan_start)f.push('Start');
+        if(!p.plan_ende)f.push('Ende');
+        return '<span style="color:var(--m)">'+_dfEsc((p.nr?p.nr+' ':'')+(p.name||''))+' &ndash; es fehlt: '+f.join(', ')+'</span>';
+      }).join('<br>')+
+      (m.ohnePlan.length>12?'<br><span style="color:var(--m)">... und '+(m.ohnePlan.length-12)+' weitere</span>':'')+
+      '</div><div style="font-size:10px;color:var(--m);margin-top:8px">Eintragen in der Projektverwaltung.</div></div>';
+  }
+  ziel.innerHTML=html;
 }
 
 // ══════ AUSWERTUNG (Admin) ══════
