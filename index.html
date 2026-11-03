@@ -782,6 +782,7 @@ body:not(.theme-light) .fab-wrap .send-status{background:var(--s1);}
   </div>
   <div class="ab-seg" id="admin-bereiche"></div>
   <div class="admin-tabs">
+    <div class="admin-tab" id="atab-bhz" ontouchstart="tsTap(event,this,function(){showAdminTab('bhz')})" onclick="tsKlick(function(){showAdminTab('bhz')})">Zeiten</div>
     <div class="admin-tab act" id="atab-frei" ontouchstart="tsTap(event,this,function(){showAdminTab('frei')})" onclick="tsKlick(function(){showAdminTab('frei')})">Freigabe</div>
     <div class="admin-tab" id="atab-ma" ontouchstart="tsTap(event,this,function(){showAdminTab('ma')})" onclick="tsKlick(function(){showAdminTab('ma')})">Mitarbeiter</div>
     <div class="admin-tab" id="atab-proj" ontouchstart="tsTap(event,this,function(){showAdminTab('proj')})" onclick="tsKlick(function(){showAdminTab('proj')})">Projekte</div>
@@ -792,11 +793,13 @@ body:not(.theme-light) .fab-wrap .send-status{background:var(--s1);}
     <div class="admin-tab" id="atab-ausw" ontouchstart="tsTap(event,this,function(){showAdminTab('ausw')})" onclick="tsKlick(function(){showAdminTab('ausw')})">Auswertung</div>
     <div class="admin-tab" id="atab-pfl" ontouchstart="tsTap(event,this,function(){showAdminTab('pfl')})" onclick="tsKlick(function(){showAdminTab('pfl')})">Pflege</div>
     <div class="admin-tab" id="atab-cock" ontouchstart="tsTap(event,this,function(){showAdminTab('cock')})" onclick="tsKlick(function(){showAdminTab('cock')})">Cockpit</div>
+    <div class="admin-tab" id="atab-ablauf" ontouchstart="tsTap(event,this,function(){showAdminTab('ablauf')})" onclick="tsKlick(function(){showAdminTab('ablauf')})">Bauablauf</div>
     <div class="admin-tab" id="atab-kalk" ontouchstart="tsTap(event,this,function(){showAdminTab('kalk')})" onclick="tsKlick(function(){showAdminTab('kalk')})">Kalkulation</div>
     <div class="admin-tab" id="atab-eint" ontouchstart="tsTap(event,this,function(){showAdminTab('eint')})" onclick="tsKlick(function(){showAdminTab('eint')})">Einteilung</div>
     <div class="admin-tab" id="atab-exp" ontouchstart="tsTap(event,this,function(){showAdminTab('exp')})" onclick="tsKlick(function(){showAdminTab('exp')})">Export</div>
   </div>
   <div class="admin-content">
+    <div class="admin-panel" id="apanel-bhz"></div>
     <div class="admin-panel act" id="apanel-frei"></div>
     <div class="admin-panel" id="apanel-ma"></div>
     <div class="admin-panel" id="apanel-proj"></div>
@@ -807,6 +810,7 @@ body:not(.theme-light) .fab-wrap .send-status{background:var(--s1);}
     <div class="admin-panel" id="apanel-ausw"></div>
     <div class="admin-panel" id="apanel-pfl"></div>
     <div class="admin-panel" id="apanel-cock"></div>
+    <div class="admin-panel" id="apanel-ablauf"></div>
     <div class="admin-panel" id="apanel-kalk"></div>
     <div class="admin-panel" id="apanel-eint"></div>
     <div class="admin-panel" id="apanel-exp"></div>
@@ -1353,7 +1357,7 @@ function doLogout(){
 
 async function loadProjekte(){const{data}=await sb.from('projekte').select('*').eq('aktiv',true).order('nr');if(data)PROJEKTE=data;}
 async function loadFahrzeuge(){const{data}=await sb.from('fahrzeuge').select('*').eq('aktiv',true).order('kennzeichen');if(data)FAHRZEUGE=data;}
-async function loadMitarbeiterListe(){const{data}=await sb.from('mitarbeiter').select('id,name,mitarbeiter_nr,kuerzel,qualifikation,rolle,aktiv');if(data)MALISTE=data;}
+async function loadMitarbeiterListe(){const{data}=await sb.from('mitarbeiter').select('id,name,nachname,mitarbeiter_nr,kuerzel,qualifikation,rolle,aktiv');if(data)MALISTE=data;}
 
 async function loadReports(){
   let q=sb.from(tblBerichte()).select('*').order('datum',{ascending:false}).order('erstellt_am',{ascending:false});
@@ -1446,11 +1450,13 @@ async function clearSig(){
 // Der Admin ist in drei Bereiche gegliedert. Die Tabs selbst (und ihre Render-Funktionen) sind unveraendert,
 // es wird nur gesteuert, welche Tabs im jeweiligen Bereich sichtbar sind.
 const ADMIN_BEREICHE=[
-  {key:'tb',name:'Tagesberichte',tabs:['frei','ber','abg','eint','exp']},
-  {key:'ctrl',name:'Controlling',tabs:['ausw','pfl','cock','kalk']},
+  {key:'tb',name:'Tagesberichte',tabs:['frei','bhz','ber','abg','eint','exp']},
+  {key:'ctrl',name:'Controlling',tabs:['ausw','pfl','cock','ablauf','kalk']},
   {key:'verw',name:'Verwaltung',tabs:['ma','proj','fz','email']}
 ];
-const ADMIN_TABS_BUCHHALTUNG=['frei','abg'];
+// Buchhaltung: Zeiten je Mitarbeiter (Einstieg), Freigabe je Bericht, Abgabe-Matrix und Export.
+// Der Export war bis 02.11.2026 nur im Admin erreichbar (Offene Punkte B, 29.10.).
+const ADMIN_TABS_BUCHHALTUNG=['bhz','frei','abg','exp'];
 let adminBereichAkt='tb';
 let _adminOpenTs=0;
 function adminBereichDef(key){
@@ -1461,7 +1467,7 @@ function adminBereichVonTab(tab){
   for(let i=0;i<ADMIN_BEREICHE.length;i++){if(ADMIN_BEREICHE[i].tabs.indexOf(tab)>=0)return ADMIN_BEREICHE[i].key;}
   return null;
 }
-// Welche Tabs darf diese Rolle in diesem Bereich sehen? Buchhaltung: nur Freigabe + Abgabe.
+// Welche Tabs darf diese Rolle in diesem Bereich sehen? Buchhaltung: siehe ADMIN_TABS_BUCHHALTUNG.
 function adminSichtbareTabs(rolle,bereichKey){
   if(rolle==='verwaltung')return ADMIN_TABS_BUCHHALTUNG.slice();
   return adminBereichDef(bereichKey).tabs.slice();
@@ -1502,7 +1508,7 @@ function openAdmin(bereich){
   inboxLaden();
   document.getElementById('admin-screen').style.display='flex';
   document.getElementById('admin-user-name').textContent=currentUser.name;
-  // Buchhaltung (verwaltung) sieht NUR Freigabe + Abgabe (Pruefliste + Sammelfreigabe); Admin sieht alles.
+  // Buchhaltung (verwaltung) sieht Zeiten, Freigabe, Abgabe und Export; Admin sieht alles.
   const nurBuchhaltung=(currentUser.rolle==='verwaltung');
   const badge=document.querySelector('#admin-screen .admin-badge');
   if(badge)badge.textContent=nurBuchhaltung?'Buchhaltung':'Admin';
@@ -1523,6 +1529,8 @@ function showAdminTab(name){
   if(name==='ma')renderAdminMA();if(name==='proj')renderAdminProj();if(name==='fz')renderAdminFZ();
   if(name==='email')renderAdminEmail();if(name==='ber')renderAdminBer();if(name==='exp')renderAdminExp();
   if(name==='abg')renderAdminAbgabe();
+  if(name==='bhz')renderAdminBhZeiten();
+  if(name==='ablauf')renderAdminAblauf();
   if(name==='ausw')renderAdminAusw();
   if(name==='pfl')renderAdminPflege();if(name==='cock')renderAdminCockpit();
   if(name==='kalk')renderKalkPanel('apanel-kalk');
@@ -1737,6 +1745,7 @@ async function editMA(id){
     '<div class="fg w25"><label>Kuerzel</label><input id="edit-kuerzel-'+id+'" value="'+(data.kuerzel||'')+'"></div></div>'+
     '<div class="row"><div class="fg w33"><label>Qualifikation</label><select id="edit-qual-'+id+'">'+
     ['Facharbeiter GaLa','Helfer','Azubi','Subunternehmer','VA','Werkstatt'].map(q=>'<option '+(data.qualifikation===q?'selected':'')+'>'+q+'</option>').join('')+'</select></div>'+
+    '<div class="fg w50"><label>Nachname (nur fuer die Sortierung)</label><input id="edit-nachname-'+id+'" value="'+_dfEsc(data.nachname||'')+'" placeholder="leer = letztes Wort des Namens"></div>'+
     '<div class="fg w33"><label>Rolle</label><select id="edit-rolle-'+id+'">'+
     ['arbeiter','vorarbeiter','werkstatt','azubi','projektleiter','admin'].map(r=>'<option value="'+r+'" '+(data.rolle===r?'selected':'')+'>'+r+'</option>').join('')+'</select></div>'+
     '<div class="fg w33"><label>Neues Passwort</label><input id="edit-pw-'+id+'" placeholder="Leer = unveraendert" type="text"></div></div>'+
@@ -1746,7 +1755,8 @@ async function editMA(id){
 }
 
 async function saveEditMA(id){
-  const updates={mitarbeiter_nr:document.getElementById('edit-nr-'+id).value.trim(),name:document.getElementById('edit-name-'+id).value.trim(),kuerzel:document.getElementById('edit-kuerzel-'+id).value.trim(),qualifikation:document.getElementById('edit-qual-'+id).value,rolle:document.getElementById('edit-rolle-'+id).value,module:modCheckboxLesen('edit-mod-'+id)};
+  const nnEl=document.getElementById('edit-nachname-'+id);
+  const updates={mitarbeiter_nr:document.getElementById('edit-nr-'+id).value.trim(),name:document.getElementById('edit-name-'+id).value.trim(),nachname:nnEl?nnEl.value.trim():'',kuerzel:document.getElementById('edit-kuerzel-'+id).value.trim(),qualifikation:document.getElementById('edit-qual-'+id).value,rolle:document.getElementById('edit-rolle-'+id).value,module:modCheckboxLesen('edit-mod-'+id)};
   const pw=document.getElementById('edit-pw-'+id).value.trim();if(pw)updates.passwort_hash=pw;
   const{error}=await sb.from('mitarbeiter').update(updates).eq('id',id);
   if(error){toast('Fehler: '+error.message,'err');return;}
@@ -1820,7 +1830,8 @@ async function editProj(id){
   el.innerHTML='<div style="width:100%"><div class="row"><div class="fg w33"><label>Projektnummer</label><input id="ep-nr-'+id+'" value="'+(data.nr||'')+'"></div>'+
     '<div class="fg w50"><label>Projektname / Baustelle</label><input id="ep-name-'+id+'" value="'+(data.name||'').replace(/"/g,'&quot;')+'"></div>'+
     '<div class="fg w25"><label>Fahrzeit</label><select id="ep-fz-'+id+'">'+[0,5,10,15,20,25,30,35,40,45,50,55,60,70,80,90,100,110,120].map(m=>'<option value="'+m+'" '+(parseInt(data.fahrzeit_min||0)===m?'selected':'')+'>'+m+'min</option>').join('')+'</select></div></div>'+
-    '<div class="row"><div class="fg w33"><label>Kategorie</label><select id="ep-kat-'+id+'" onchange="toggleEpLeist(\''+id+'\')"><option value="bau" '+(!istPflege?'selected':'')+'>Bau</option><option value="pflege" '+(istPflege?'selected':'')+'>Pflege</option></select></div></div>'+
+    '<div class="row"><div class="fg w33"><label>Kategorie</label><select id="ep-kat-'+id+'" onchange="toggleEpLeist(\''+id+'\')"><option value="bau" '+(!istPflege?'selected':'')+'>Bau</option><option value="pflege" '+(istPflege?'selected':'')+'>Pflege</option></select></div>'+
+    '<div class="fg w33"><label>Plan-Stunden (Soll)</label><input type="number" min="0" step="1" id="ep-plan-'+id+'" value="'+(data.plan_stunden!=null&&data.plan_stunden!==''?data.plan_stunden:'')+'" placeholder="--"></div></div>'+
     '<div id="ep-leist-wrap-'+id+'" style="display:'+(istPflege?'block':'none')+'"><div class="fg w100"><label>Leistungen (eine pro Zeile)</label><textarea id="ep-leist-'+id+'" style="min-height:90px">'+leistText+'</textarea></div></div>'+
     '<div style="display:flex;gap:6px"><button class="btn btn-sky" ontouchstart="saveEditProj(\''+id+'\')" onclick="saveEditProj(\''+id+'\')">Speichern</button>'+
     '<button class="btn" ontouchstart="renderAdminProj()" onclick="renderAdminProj()">Abbrechen</button></div></div>';
@@ -1830,7 +1841,10 @@ async function saveEditProj(id){
   const kat=document.getElementById('ep-kat-'+id)?.value||'bau';
   let leistungen=[];
   if(kat==='pflege'){const txt=document.getElementById('ep-leist-'+id)?.value||'';leistungen=txt.split('\n').map(l=>l.trim()).filter(Boolean);}
-  await sb.from('projekte').update({nr:document.getElementById('ep-nr-'+id).value.trim(),name:document.getElementById('ep-name-'+id).value.trim(),fahrzeit_min:parseInt(document.getElementById('ep-fz-'+id).value)||0,kategorie:kat,leistungen}).eq('id',id);
+  const planEl=document.getElementById('ep-plan-'+id);
+  const planWert=planEl?_auswNum(planEl.value):0;
+  const r=await sb.from('projekte').update({nr:document.getElementById('ep-nr-'+id).value.trim(),name:document.getElementById('ep-name-'+id).value.trim(),fahrzeit_min:parseInt(document.getElementById('ep-fz-'+id).value)||0,kategorie:kat,leistungen,plan_stunden:planWert>0?planWert:null}).eq('id',id);
+  if(r.error){console.error('Projekt speichern fehlgeschlagen:',r.error);toast('Speichern fehlgeschlagen: '+(r.error.message||''),'err');return;}
   await loadProjekte();toast('Gespeichert','ok');renderAdminProj();
 }
 async function adminDelProj(id,name){if(!confirm('Projekt "'+name+'" loeschen?'))return;await sb.from('projekte').update({aktiv:false}).eq('id',id);await loadProjekte();toast('Geloescht','err');renderAdminProj();}
@@ -2262,7 +2276,7 @@ function abgAggregieren(alle){
     const hit=MALISTE.find(function(m){return m.id===pid;});
     if(hit&&!MA_AUSWAHL_AUSGESCHLOSSEN.includes(hit.rolle)){personen.push(hit);inListe[pid]=true;}
   });
-  personen.sort(function(a,b){return (a.name||'').localeCompare(b.name||'','de');});
+  personen.sort(maCmp);
   const matrix={};
   personen.forEach(function(p){
     const tmap=ges.map[p.id]||{};
@@ -2822,10 +2836,10 @@ async function renderAdminExp(){
     '<button class="btn btn-sky" ontouchstart="expBuchhaltungCSV()" onclick="expBuchhaltungCSV()">CSV Buchhaltung</button>'+
     '<button class="btn btn-e" ontouchstart="expDFCSVAdmin()" onclick="expDFCSVAdmin()">Dataflor CSV</button>'+
     '<button class="btn btn-sky" ontouchstart="expNKImport()" onclick="expNKImport()">DATAflor NK-Import (XML)</button></div>'+
-    '<div style="font-size:10px;color:var(--m);line-height:1.5;margin-top:6px">CSV Buchhaltung: eine Zeile je Mitarbeiter, Tag und Projekt (aus den Zeiten der Vorarbeiter-Berichte plus eigene Berichte), mit Fahrzeit. Die Filter Projekt und Mitarbeiter gelten fuer die Aufstellung unten, die CSV Buchhaltung und die Dataflor CSV, nicht fuer den NK-Import.</div>'+
-    '<div class="row" style="margin-top:8px"><div class="fg w50"><label>Standard-Lohnart (DATAflor)</label><input id="exp-lohnart" inputmode="numeric" value="1" placeholder="z.B. 1"></div>'+
+    '<div style="font-size:10px;color:var(--m);line-height:1.5;margin-top:6px">CSV Buchhaltung: eine Zeile je Mitarbeiter, Tag und Projekt (aus den Zeiten der Vorarbeiter-Berichte plus eigene Berichte), mit Fahrzeit. Die Filter Projekt und Mitarbeiter gelten fuer die Aufstellung unten und fuer alle drei Dateien.</div>'+
+    '<div class="row" style="margin-top:8px"><div class="fg w50"><label>Fallback-Lohnart (DATAflor)</label><input id="exp-lohnart" inputmode="numeric" value="'+LOHNART_ARBEIT+'" placeholder="z.B. '+LOHNART_ARBEIT+'"></div>'+
     '<div class="fg w50" style="display:flex;align-items:flex-end"><label style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--c);margin:0;cursor:pointer"><input type="checkbox" id="exp-nk-zeiten" checked style="width:16px;height:16px"> Von/Bis-Zeiten ausgeben</label></div></div>'+
-    '<div style="font-size:10px;color:var(--m);line-height:1.5;margin-top:6px">NK-Import erzeugt eine schema-valide XML (DFNKImport) fuer den Digitalen Posteingang. Nur Berichte mit LV-Nummer werden verbucht; Zeilen mit Position gehen auf die Position, sonst als Taglohn. Lohnart und Personalnummern muessen im DATAflor BUSINESS existieren.</div></div>'+
+    '<div style="font-size:10px;color:var(--m);line-height:1.5;margin-top:6px">NK-Import erzeugt eine schema-valide XML (DFNKImport) fuer den Digitalen Posteingang - eine Buchung je Mitarbeiter, Tag, Projekt und Lohnart. Lohnart '+LOHNART_ARBEIT+' = Arbeitszeit inkl. Fahrtstunden, '+LOHNART_AZUBI+' = Azubi, '+LOHNART_NACHT+' = Nachtarbeit 22-5 Uhr (wird aus der Arbeitszeit herausgerechnet, kein Zuschlag). Bei geteilten Schichten werden keine Von/Bis-Zeiten uebergeben, nur die Stunden. Nur Zeilen mit LV-Nummer und Personalnummer werden verbucht; alles als Taglohn. Lohnarten und Personalnummern muessen im DATAflor BUSINESS existieren.</div></div>'+
     '<div class="a-sec"><div class="a-sec-title">Aufstellung Stunden je Monat, Mitarbeiter und Projekt</div><div id="exp-stats"><div class="empty"><div class="spin"></div></div></div></div>';
   expAufstellungLaden();
 }
@@ -2892,7 +2906,8 @@ function expLohnZeilen(berichte,maListe,projekte){
         zeilen.push({monat:monat,datum:b.datum,name:String(t.name).trim(),maNr:nr,projektId:pid,projektNr:pnr,projektName:projName(pid,pnr),
           von:expHHMM(t.von),bis:expHHMM(t.bis),pauseMin:nkNum(t.pause),arbeitH:arbeit,fahrtArt:art,fahrzeitMin:fzMin,fahrtH:fahrtH,gesamtH:gesamt,
           rolle:b.rolle||'',erfasstVon:b.mitarbeiter_name||'',eigen:false,vaKey:vk,fahrerBegr:b.fahrer_begruendung||'',hinweis:nr?'':'MA-Nr fehlt (Name nicht in Stammdaten)',
-          wetter:b.wetter||'',tae:t.tae||''});
+          wetter:b.wetter||'',tae:t.tae||'',
+          berichtId:b.id,qual:t.qual||'',abgenommen:!!b.abgenommen,freigegeben:!!b.bh_freigegeben});
       });
     }else{
       const art=b.fahrt_status||'fahrer';
@@ -2904,7 +2919,8 @@ function expLohnZeilen(berichte,maListe,projekte){
         projektId:b.projekt_id||'',projektNr:b.projekt_nr||'',projektName:projName(b.projekt_id,b.projekt_nr),
         von:expHHMM(b.von),bis:expHHMM(b.bis),pauseMin:nkNum(b.pause_min),arbeitH:arbeit,fahrtArt:art,fahrzeitMin:fzMin,fahrtH:fahrtH,gesamtH:g>0?g:(arbeit+fahrtH),
         rolle:b.rolle||'',erfasstVon:b.mitarbeiter_name||'',eigen:true,hinweis:'',
-        wetter:b.wetter||'',tae:Array.isArray(b.taetigkeiten)?b.taetigkeiten.join('|'):''});
+        wetter:b.wetter||'',tae:Array.isArray(b.taetigkeiten)?b.taetigkeiten.join('|'):'',
+        berichtId:b.id,qual:'',abgenommen:!!b.abgenommen,freigegeben:!!b.bh_freigegeben});
     }
   });
   // Doppelzaehlung sichtbar machen: eigener Bericht UND am selben Tag in einem VA-Bericht erfasst
@@ -2974,7 +2990,7 @@ function expSummen(zeilen){
 async function expLadeBerichte(von,bis,nurFrei){
   const alle=[];
   for(let start=0;;start+=1000){
-    let q=sb.from(tblBerichte()).select('id,datum,rolle,mitarbeiter_name,mitarbeiter_nr,projekt_id,projekt_nr,von,bis,pause_min,netto_arbeit_h,netto_gesamt_h,fahrzeit_min,fahrt_status,zeit_rows,mach_rows,wetter,taetigkeiten,fahrer_begruendung')
+    let q=sb.from(tblBerichte()).select('id,datum,rolle,mitarbeiter_name,mitarbeiter_nr,projekt_id,projekt_nr,von,bis,pause_min,netto_arbeit_h,netto_gesamt_h,fahrzeit_min,fahrt_status,zeit_rows,mach_rows,wetter,taetigkeiten,fahrer_begruendung,abgenommen,bh_freigegeben')
       .order('datum',{ascending:true}).order('id',{ascending:true});
     if(von)q=q.gte('datum',von);
     if(bis)q=q.lte('datum',bis);
@@ -3155,53 +3171,55 @@ function nkLohn(o){
   return x;
 }
 async function expNKImport(){
-  var von=document.getElementById('exp-von').value,bis=document.getElementById('exp-bis').value;
-  var nfEl=document.getElementById('exp-nur-frei');
-  var nurFrei=nfEl?nfEl.checked:true;
-  var lohnart=parseInt(((document.getElementById('exp-lohnart')||{value:'1'}).value||'1').trim(),10);
-  if(isNaN(lohnart)||lohnart<=0){toast('Bitte eine gueltige Standard-Lohnart eintragen','err');return;}
-  var zEl=document.getElementById('exp-nk-zeiten');
-  var mitZeiten=zEl?zEl.checked:true;
-  var q=sb.from(tblBerichte()).select('*').order('datum');
-  if(von)q=q.gte('datum',von);
-  if(bis)q=q.lte('datum',bis);
-  if(nurFrei)q=q.eq('bh_freigegeben',true);
-  var res=await q;
-  if(res.error){toast('Fehler beim Laden: '+res.error.message,'err');return;}
-  var data=res.data||[];
-  if(!data.length){toast(nurFrei?'Keine FREIGEGEBENEN Berichte im Zeitraum':'Keine Daten','err');return;}
-  if(data.length>=1000){toast('Zu viele Berichte im Zeitraum (1000 oder mehr) - bitte Zeitraum verkleinern, sonst fehlen Buchungen','err');return;}
-  var maRes=await sb.from('mitarbeiter').select('name,mitarbeiter_nr');
-  if(maRes.error){toast('Mitarbeiternummern konnten nicht geladen werden: '+maRes.error.message,'err');return;}
-  var nkNrNachName={};
-  (maRes.data||[]).forEach(function(m){var k=expNorm(m.name);if(k&&m.mitarbeiter_nr!=null&&m.mitarbeiter_nr!=='')nkNrNachName[k]=String(m.mitarbeiter_nr);});
-  var lohn=[],uebersprungen=0;
-  data.forEach(function(b){
-    var zr=b.zeit_rows||[];
-    var quelle=zr.length?zr:[null];
-    quelle.forEach(function(t){
-      var lvNr=(t&&t.projektNr)?t.projektNr:b.projekt_nr;
-      // Zeile aus der Zeiterfassung: eigene Nummer des Mitarbeiters (Zeile -> Stammdaten). Die Nummer des
-      // Vorarbeiters gilt nur fuer seine eigene Zeile - sonst wuerden fremde Stunden auf ihn gebucht.
-      var persNr='';
-      if(t){
-        persNr=t.personalNr?String(t.personalNr):(nkNrNachName[expNorm(t.name)]||'');
-        if(!persNr&&expNorm(t.name)===expNorm(b.mitarbeiter_name))persNr=b.mitarbeiter_nr||'';
-      }else{persNr=b.mitarbeiter_nr||'';}
-      if(!lvNr||!persNr){uebersprungen++;return;}
-      var stunden=t?nkNum(t.nettoArbeit):nkNum(b.netto_arbeit_h);
-      if(stunden<=0)return;
-      var von2=null,bis2=null;
-      if(mitZeiten){von2=nkZeit(t?t.von:b.von);bis2=nkZeit(t?t.bis:b.bis);}
-      lohn.push({datum:b.datum,lvNr:lvNr,posNr:(t&&t.pos)?t.pos:'',personalNr:persNr,lohnart:lohnart,von:von2,bis:bis2,pause:t?(nkNum(t.pause)/60):(nkNum(b.pause_min)/60),stunden:stunden,erfasstVon:b.mitarbeiter_name||''});
+  // Gleiche Zeilenbasis wie die CSV Buchhaltung (je Mitarbeiter, Tag, Projekt) - damit stimmen
+  // Aufstellung, CSV und DATAflor-Buchungen zusammen. Lohnarten: siehe bhBuchungen().
+  if(_expBusy||Date.now()-_expLetzterExport<1500)return;
+  _expLetzterExport=Date.now();
+  _expBusy=true;
+  try{
+    const fbEl=document.getElementById('exp-lohnart');
+    let fallback=parseInt(((fbEl?fbEl.value:'')||'').trim(),10);
+    if(isNaN(fallback)||fallback<=0){toast('Bitte eine gueltige Fallback-Lohnart eintragen','err');return;}
+    const zEl=document.getElementById('exp-nk-zeiten');
+    const mitZeiten=zEl?zEl.checked:true;
+    await expHoleZeilen();
+    expFilterOptionen();
+    const z=expAktFilter();
+    const nurFrei=document.getElementById('exp-nur-frei').checked;
+    if(!z.length){toast(nurFrei?'Keine FREIGEGEBENEN Zeiten im Zeitraum mit diesen Filtern':'Keine Daten im Zeitraum mit diesen Filtern','err');return;}
+    const maIdx=bhMaIndex();
+    const lohn=[];
+    let uebersprungen=0,geteilt=0;
+    z.forEach(function(x){
+      if(!x.projektNr||!x.maNr){uebersprungen++;return;}
+      const bu=bhBuchungen(x,maIdx);
+      if(!bu.length)return;
+      if(bu.length>1)geteilt++;
+      bu.forEach(function(b){
+        // Nur bei einer einzigen Buchung passen Von/Bis und Pause zur Zeile. Wird eine Schicht
+        // in Tag- und Nachtstunden geteilt, werden bewusst nur die Stunden uebergeben.
+        const einzeln=(bu.length===1);
+        lohn.push({datum:x.datum,lvNr:x.projektNr,posNr:'',personalNr:x.maNr,
+          lohnart:(b.lohnart>0?b.lohnart:fallback),
+          von:(mitZeiten&&einzeln)?nkZeit(x.von):null,
+          bis:(mitZeiten&&einzeln)?nkZeit(x.bis):null,
+          pause:einzeln?(nkNum(x.pauseMin)/60):0,
+          stunden:b.stunden,erfasstVon:x.erfasstVon||''});
+      });
     });
-  });
-  if(!lohn.length){toast('Keine verbuchbaren Zeilen (LV-Nr oder Personalnummer fehlt)','err');return;}
-  var xml='<?xml version="1.0" encoding="UTF-8"?>\n<DFNKImport>\n';
-  lohn.forEach(function(e){xml+=nkLohn(e);});
-  xml+='</DFNKImport>\n';
-  dlFile('KLEI_NK-Import_'+new Date().toISOString().split('T')[0]+'.xml',xml,'application/xml;charset=utf-8');
-  toast(lohn.length+' Lohnbuchungen exportiert'+(uebersprungen?' ('+uebersprungen+' ohne LV/Pers-Nr uebersprungen)':''),'ok');
+    if(!lohn.length){toast('Keine verbuchbaren Zeilen (LV-Nummer oder Personalnummer fehlt)','err');return;}
+    let xml='<?xml version="1.0" encoding="UTF-8"?>\n<DFNKImport>\n';
+    lohn.forEach(function(e){xml+=nkLohn(e);});
+    xml+='</DFNKImport>\n';
+    dlFile('KLEI_NK-Import_'+new Date().toISOString().split('T')[0]+'.xml',xml,'application/xml;charset=utf-8');
+    toast(lohn.length+' Lohnbuchungen exportiert'+(geteilt?' ('+geteilt+' Schicht(en) in Tag/Nacht geteilt)':'')+(uebersprungen?' - '+uebersprungen+' Zeile(n) ohne LV-/Personalnummer uebersprungen':''),uebersprungen?'err':'ok');
+  }catch(e){
+    console.error('NK-Import fehlgeschlagen:',e);
+    toast('NK-Import fehlgeschlagen: '+(e.message||String(e)),'err');
+  }finally{
+    _expBusy=false;
+    expAufstellungRender();
+  }
 }
 
 async function expDFCSVAdmin(){
@@ -3230,6 +3248,644 @@ async function expDFCSVAdmin(){
     _expBusy=false;
     expAufstellungRender();
   }
+}
+
+// ══════ LOHNARTEN DATAflor (Festlegung 02.11.2026) ══════
+// 21 = Arbeitszeit, 222 = Azubi, 24 = Nachtarbeit 22-5 Uhr.
+// Nachtstunden werden aus der Arbeitszeit HERAUSGERECHNET (Aufteilung, kein Zuschlag),
+// die Fahrtstunden laufen in der Arbeitszeit-Lohnart (21 bzw. 222) mit.
+const LOHNART_ARBEIT=21;
+const LOHNART_AZUBI=222;
+const LOHNART_NACHT=24;
+const NACHT_AB_MIN=22*60;   // 22:00
+const NACHT_BIS_MIN=5*60;   // 05:00
+
+function bhMin(hhmm){
+  const m=String(hhmm==null?'':hhmm).match(/^(\d{1,2}):(\d{2})/);
+  if(!m)return null;
+  const h=parseInt(m[1],10),mi=parseInt(m[2],10);
+  if(isNaN(h)||isNaN(mi))return null;
+  return h*60+mi;
+}
+// Nachtanteil einer Schicht in Minuten (Schichten ueber Mitternacht werden mitgerechnet).
+function bhNachtMinuten(vonMin,bisMin){
+  if(vonMin==null||bisMin==null)return 0;
+  let ende=bisMin;
+  if(ende<=vonMin)ende+=1440;
+  let nacht=0;
+  // Zwei Nachtfenster pruefen: 22:00 des Vortags bis 05:00 heute und 22:00 heute bis 05:00 morgen.
+  for(let tag=-1;tag<=1;tag++){
+    const fVon=tag*1440+NACHT_AB_MIN;
+    const fBis=tag*1440+1440+NACHT_BIS_MIN;
+    const a=Math.max(vonMin,fVon),b=Math.min(ende,fBis);
+    if(b>a)nacht+=(b-a);
+  }
+  return nacht;
+}
+// Teilt die Arbeitsstunden einer Abrechnungszeile in Tag- und Nachtstunden.
+// Die Pause geht zuerst von den Tagstunden ab (Pausen liegen in der Regel tagsueber);
+// erst wenn die Tagstunden aufgebraucht sind, verkuerzt sie die Nachtstunden.
+// Das Verhaeltnis wird auf die erfassten Arbeitsstunden normiert, weil nettoArbeit
+// von der Differenz von/bis abweichen kann (Handeingabe).
+function bhTagNacht(von,bis,pauseMin,arbeitH){
+  const a=Math.round((parseFloat(arbeitH)||0)*100)/100;
+  if(a<=0)return {tagH:0,nachtH:0,geteilt:false};
+  const vM=bhMin(von),bM=bhMin(bis);
+  if(vM==null||bM==null)return {tagH:a,nachtH:0,geteilt:false};
+  const ende=(bM<=vM)?bM+1440:bM;
+  const spanne=ende-vM;
+  if(spanne<=0)return {tagH:a,nachtH:0,geteilt:false};
+  let nachtMin=bhNachtMinuten(vM,bM);
+  let tagMin=Math.max(0,spanne-nachtMin);
+  const p=Math.max(0,Math.round(parseFloat(pauseMin)||0));
+  const pauseTag=Math.min(p,tagMin);
+  tagMin-=pauseTag;
+  nachtMin=Math.max(0,nachtMin-(p-pauseTag));
+  const summe=tagMin+nachtMin;
+  if(summe<=0)return {tagH:a,nachtH:0,geteilt:false};
+  let nachtH=Math.round((a*(nachtMin/summe))*100)/100;
+  if(nachtH>a)nachtH=a;
+  if(nachtH<0)nachtH=0;
+  const tagH=Math.round((a-nachtH)*100)/100;
+  return {tagH:tagH,nachtH:nachtH,geteilt:(nachtH>0&&tagH>0)};
+}
+// Stammdaten-Index ueber den normierten Namen (fuer Rolle/Qualifikation je Abrechnungszeile)
+function bhMaIndex(){
+  const idx={};
+  (MALISTE||[]).forEach(function(m){const k=expNorm(m.name);if(k)idx[k]=m;});
+  return idx;
+}
+// Azubi: Stammdaten schlagen die im Bericht gespeicherte Qualifikation, die veraltet sein kann.
+function bhIstAzubi(z,maIdx){
+  const m=(maIdx||{})[expNorm(z.name)];
+  if(m)return (String(m.rolle||'')==='azubi'||String(m.qualifikation||'')==='Azubi');
+  return String(z.qual||'')==='Azubi';
+}
+// Buchungszeilen zu einer Abrechnungszeile: Tagstunden plus Fahrt auf 21 bzw. 222, Nachtstunden auf 24.
+// Grundlage ist bewusst die Spalte "Gesamt" (Arbeit inkl. anteiliger Fahrt) - dieselbe Zahl, die in der
+// Aufstellung und in der Buchhaltungs-CSV steht. Sonst koennte die Summe der DATAflor-Buchungen von der
+// Stundenliste abweichen, wenn netto_gesamt_h im Bericht nicht genau Arbeit + Fahrt entspricht.
+function bhBuchungen(z,maIdx){
+  const arbeitH=Math.round((parseFloat(z.arbeitH)||0)*100)/100;
+  const fahrtH=Math.round((parseFloat(z.fahrtH)||0)*100)/100;
+  let ges=Math.round((parseFloat(z.gesamtH)||0)*100)/100;
+  if(ges<=0)ges=Math.round((arbeitH+fahrtH)*100)/100;
+  if(ges<=0)return [];
+  const tn=bhTagNacht(z.von,z.bis,z.pauseMin,arbeitH);
+  let nachtH=tn.nachtH>ges?ges:tn.nachtH;
+  const tagGes=Math.round((ges-nachtH)*100)/100;
+  const laTag=bhIstAzubi(z,maIdx)?LOHNART_AZUBI:LOHNART_ARBEIT;
+  const out=[];
+  if(tagGes>0)out.push({lohnart:laTag,stunden:tagGes,nacht:false});
+  if(nachtH>0)out.push({lohnart:LOHNART_NACHT,stunden:nachtH,nacht:true});
+  return out;
+}
+function bhLohnartText(z,maIdx){
+  const bu=bhBuchungen(z,maIdx);
+  if(!bu.length)return '--';
+  return bu.map(function(b){return b.lohnart+': '+expZahl(b.stunden);}).join(' · ');
+}
+
+// ══════ BUCHHALTUNG: ZEITEN JE MITARBEITER (Positionen, Filter, Summen, Freigabe) ══════
+// Die Freigabe selbst bleibt auf Berichtsebene (Spalte berichte.bh_freigegeben) - eine Zeile
+// der Zeiterfassung ist kein eigener Datensatz. Freigegeben werden also die Berichte, in denen
+// die Zeiten des Mitarbeiters stehen; das steht so auch im Bestaetigungsdialog.
+let _bhZeilen=null,_bhKey='',_bhBusy=false;
+let _bhOffen={};      // aufgeklappte Mitarbeiter (normierter Name)
+let _bhGruppen=[];    // letzter Renderstand - Buttons arbeiten mit dem Index, nicht mit dem Namen
+
+function renderAdminBhZeiten(){
+  const el=document.getElementById('apanel-bhz');
+  if(!el)return;
+  const heute=new Date();
+  const monat=heute.getFullYear()+'-'+('0'+(heute.getMonth()+1)).slice(-2);
+  const mg=expMonatsGrenzen(monat);
+  el.innerHTML='<div class="a-sec"><div class="a-sec-title">Zeiten je Mitarbeiter</div>'+
+    '<div class="row"><div class="fg w33"><label>Monat</label><input type="month" id="bhz-monat" value="'+monat+'" onchange="bhzMonatSetzen()"></div>'+
+    '<div class="fg w33"><label>Von</label><input type="date" id="bhz-von" value="'+mg.von+'" onchange="bhzZeitraumGeaendert()"></div>'+
+    '<div class="fg w33"><label>Bis</label><input type="date" id="bhz-bis" value="'+mg.bis+'" onchange="bhzZeitraumGeaendert()"></div></div>'+
+    '<div class="row"><div class="fg w33"><label>Mitarbeiter</label><select id="bhz-f-ma" onchange="bhzRender()"><option value="">Alle Mitarbeiter</option></select></div>'+
+    '<div class="fg w33"><label>Projekt</label><select id="bhz-f-proj" onchange="bhzRender()"><option value="">Alle Projekte</option></select></div>'+
+    '<div class="fg w33"><label>Status</label><select id="bhz-f-status" onchange="bhzRender()"><option value="">Alle Zeiten</option><option value="offen">Noch nicht freigegeben</option><option value="frei">Freigegeben</option></select></div></div>'+
+    '<div style="font-size:10px;color:var(--m);line-height:1.5">Eine Zeile je Mitarbeiter, Tag und Projekt - aus den Zeiten der Vorarbeiter-Berichte plus den eigenen Berichten. Lohnart: '+LOHNART_ARBEIT+' Arbeitszeit (Fahrt laeuft mit), '+LOHNART_AZUBI+' Azubi, '+LOHNART_NACHT+' Nachtarbeit 22-5 Uhr.</div></div>'+
+    '<div id="bhz-list"><div class="empty"><div class="spin"></div></div></div>';
+  bhzLaden();
+}
+function bhzMonatSetzen(){
+  const g=expMonatsGrenzen(document.getElementById('bhz-monat').value);
+  if(!g){toast('Bitte einen Monat waehlen (Format JJJJ-MM)','err');return;}
+  document.getElementById('bhz-von').value=g.von;
+  document.getElementById('bhz-bis').value=g.bis;
+  bhzLaden();
+}
+function bhzZeitraumGeaendert(){
+  const mEl=document.getElementById('bhz-monat');
+  const g=mEl?expMonatsGrenzen(mEl.value):null;
+  if(mEl&&g&&(g.von!==document.getElementById('bhz-von').value||g.bis!==document.getElementById('bhz-bis').value))mEl.value='';
+  bhzLaden();
+}
+// Laedt immer ALLE Berichte des Zeitraums (offen und freigegeben) - der Status ist hier ein Filter,
+// weil die Buchhaltung ja gerade das Offene sehen und freigeben soll.
+async function bhzHoleZeilen(){
+  const von=document.getElementById('bhz-von').value,bis=document.getElementById('bhz-bis').value;
+  if(von&&bis&&von>bis)throw new Error('"Von" liegt nach "Bis"');
+  const key=von+'|'+bis+'|'+(TESTMODUS?1:0);
+  if(_bhZeilen&&_bhKey===key)return _bhZeilen;
+  const ber=await expLadeBerichte(von,bis,false);
+  _bhZeilen=expLohnZeilen(ber,MALISTE||[],PROJEKTE);
+  _bhKey=key;
+  return _bhZeilen;
+}
+async function bhzLaden(){
+  const ziel=document.getElementById('bhz-list');
+  if(!ziel)return;
+  if(_bhBusy)return;
+  _bhBusy=true;
+  ziel.innerHTML='<div class="empty"><div class="spin"></div></div>';
+  try{
+    await bhzHoleZeilen();
+    bhzFilterOptionen();
+    bhzRender();
+  }catch(e){
+    console.error('Zeiten je Mitarbeiter konnten nicht geladen werden:',e);
+    const z2=document.getElementById('bhz-list')||ziel;
+    z2.innerHTML='<div style="color:var(--r);font-size:12px;padding:8px">Zeiten konnten nicht geladen werden: '+_dfEsc(e.message||String(e))+'</div>';
+    toast('Zeiten konnten nicht geladen werden: '+(e.message||String(e)),'err');
+  }finally{_bhBusy=false;}
+}
+function bhzFilterOptionen(){
+  const mSel=document.getElementById('bhz-f-ma'),pSel=document.getElementById('bhz-f-proj');
+  if(!mSel||!pSel)return;
+  const mAlt=mSel.value,pAlt=pSel.value;
+  const mMap={},pMap={};
+  (_bhZeilen||[]).forEach(function(z){
+    const mk=expNorm(z.name);
+    if(mk&&!mMap[mk])mMap[mk]=z.name+(z.maNr?' #'+z.maNr:'');
+    const pk=z.projektId||('nr:'+z.projektNr);
+    if(!pMap[pk])pMap[pk]=(z.projektNr?z.projektNr+' - ':'')+(z.projektName||(z.projektNr?'':'ohne Projekt'));
+  });
+  // Mitarbeiter nach Nachname sortieren, damit die Buchhaltung dieselbe Reihenfolge wie in der Abgabeliste sieht
+  const mKeys=Object.keys(mMap).sort(function(a,b){
+    return maCmp(bhMaFuerKey(a)||{name:mMap[a]},bhMaFuerKey(b)||{name:mMap[b]});
+  });
+  const pKeys=Object.keys(pMap).sort(function(a,b){return pMap[a].localeCompare(pMap[b],'de');});
+  mSel.innerHTML='<option value="">Alle Mitarbeiter</option>'+mKeys.map(function(k){return '<option value="'+_dfEsc(k)+'">'+_dfEsc(mMap[k])+'</option>';}).join('');
+  pSel.innerHTML='<option value="">Alle Projekte</option>'+pKeys.map(function(k){return '<option value="'+_dfEsc(k)+'">'+_dfEsc(pMap[k])+'</option>';}).join('');
+  if(mAlt&&mMap[mAlt])mSel.value=mAlt;
+  if(pAlt&&pMap[pAlt])pSel.value=pAlt;
+}
+function bhMaFuerKey(k){
+  const l=MALISTE||[];
+  for(let i=0;i<l.length;i++){if(expNorm(l[i].name)===k)return l[i];}
+  return null;
+}
+function bhzAktFilter(){
+  const mSel=document.getElementById('bhz-f-ma'),pSel=document.getElementById('bhz-f-proj'),sSel=document.getElementById('bhz-f-status');
+  const mKey=mSel?mSel.value:'',pKey=pSel?pSel.value:'',status=sSel?sSel.value:'';
+  return (_bhZeilen||[]).filter(function(z){
+    if(mKey&&expNorm(z.name)!==mKey)return false;
+    if(pKey&&(z.projektId||('nr:'+z.projektNr))!==pKey)return false;
+    if(status==='offen'&&z.freigegeben)return false;
+    if(status==='frei'&&!z.freigegeben)return false;
+    return true;
+  });
+}
+// Gruppiert die gefilterten Zeilen je Mitarbeiter und rechnet Summen und Lohnarten zusammen.
+function bhzGruppen(zeilen,maIdx){
+  const map={},liste=[];
+  (zeilen||[]).forEach(function(z){
+    const k=expNorm(z.name);
+    let g=map[k];
+    if(!g){
+      g=map[k]={key:k,name:z.name,maNr:z.maNr,zeilen:[],tage:{},arbeitH:0,fahrtH:0,gesamtH:0,
+        lohnarten:{},offen:0,frei:0,berichte:{},offeneBerichte:{},ohneNr:0};
+      liste.push(g);
+    }
+    if(!g.maNr&&z.maNr)g.maNr=z.maNr;
+    g.zeilen.push(z);
+    g.tage[z.datum]=true;
+    g.arbeitH+=z.arbeitH;g.fahrtH+=z.fahrtH;g.gesamtH+=z.gesamtH;
+    if(!z.maNr)g.ohneNr++;
+    if(z.freigegeben)g.frei++;else g.offen++;
+    if(z.berichtId){
+      g.berichte[z.berichtId]=true;
+      if(!z.freigegeben)g.offeneBerichte[z.berichtId]=true;
+    }
+    bhBuchungen(z,maIdx).forEach(function(b){
+      g.lohnarten[b.lohnart]=Math.round(((g.lohnarten[b.lohnart]||0)+b.stunden)*100)/100;
+    });
+  });
+  liste.forEach(function(g){
+    g.anzTage=Object.keys(g.tage).length;
+    g.arbeitH=Math.round(g.arbeitH*100)/100;
+    g.fahrtH=Math.round(g.fahrtH*100)/100;
+    g.gesamtH=Math.round(g.gesamtH*100)/100;
+    g.anzBerichte=Object.keys(g.berichte).length;
+    g.anzOffeneBerichte=Object.keys(g.offeneBerichte).length;
+  });
+  liste.sort(function(a,b){return maCmp(bhMaFuerKey(a.key)||{name:a.name},bhMaFuerKey(b.key)||{name:b.name});});
+  return liste;
+}
+function bhzRender(){
+  const ziel=document.getElementById('bhz-list');
+  if(!ziel)return;
+  const maIdx=bhMaIndex();
+  const zeilen=bhzAktFilter();
+  if(!zeilen.length){
+    ziel.innerHTML='<div class="a-sec"><div style="color:var(--m);font-size:11px;padding:8px">Keine Zeiten im Zeitraum mit diesen Filtern.</div></div>';
+    return;
+  }
+  const gruppen=bhzGruppen(zeilen,maIdx);
+  _bhGruppen=gruppen;
+  const mono='font-family:\'IBM Plex Mono\',monospace;';
+  let gA=0,gF=0,gG=0,gOffen=0,gLa={};
+  gruppen.forEach(function(g){
+    gA+=g.arbeitH;gF+=g.fahrtH;gG+=g.gesamtH;gOffen+=g.offen;
+    Object.keys(g.lohnarten).forEach(function(la){gLa[la]=Math.round(((gLa[la]||0)+g.lohnarten[la])*100)/100;});
+  });
+  const laGesText=Object.keys(gLa).sort(function(a,b){return parseInt(a,10)-parseInt(b,10);})
+    .map(function(la){return 'Lohnart '+la+': '+expZahl(gLa[la])+' h';}).join(' · ');
+  let html='<div class="a-sec"><div class="a-sec-title">Summe '+gruppen.length+' Mitarbeiter</div>'+
+    '<div style="display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--c);'+mono+'">'+
+    '<span>Arbeit '+expZahl(gA)+' h</span><span>Fahrt '+expZahl(gF)+' h</span>'+
+    '<span style="font-weight:700">Gesamt '+expZahl(gG)+' h</span>'+
+    '<span style="color:'+(gOffen?'var(--r)':'var(--g)')+'">'+(gOffen?gOffen+' Positionen offen':'alles freigegeben')+'</span></div>'+
+    (laGesText?'<div style="font-size:10px;color:var(--m);margin-top:6px;'+mono+'">'+laGesText+'</div>':'')+'</div>';
+  gruppen.forEach(function(g,gi){
+    const auf=!!_bhOffen[g.key];
+    const laText=Object.keys(g.lohnarten).sort(function(a,b){return parseInt(a,10)-parseInt(b,10);})
+      .map(function(la){return la+': '+expZahl(g.lohnarten[la])+' h';}).join(' · ');
+    html+='<div class="a-sec" style="padding-bottom:6px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;cursor:pointer" '+tsAttr('bhzToggle('+gi+')')+'>'+
+      '<div><div style="font-size:13px;font-weight:600;color:var(--t)">'+_dfEsc(g.name)+
+      '<span style="'+mono+'font-size:10px;color:var(--m);font-weight:400"> #'+_dfEsc(g.maNr||'ohne Nr')+'</span></div>'+
+      '<div style="'+mono+'font-size:10px;color:var(--m);margin-top:3px">'+g.anzTage+' Tage · '+g.zeilen.length+' Positionen · '+g.anzBerichte+' Berichte</div>'+
+      (laText?'<div style="'+mono+'font-size:10px;color:var(--m);margin-top:2px">Lohnart '+laText+'</div>':'')+
+      (g.ohneNr?'<div style="font-size:10px;color:var(--r);margin-top:2px">'+g.ohneNr+' Position(en) ohne Mitarbeiternummer - fehlt in den Stammdaten</div>':'')+'</div>'+
+      '<div style="text-align:right">'+
+      '<div style="'+mono+'font-size:15px;font-weight:700;color:var(--t)">'+expZahl(g.gesamtH)+' h</div>'+
+      '<div style="'+mono+'font-size:10px;color:var(--m)">Arbeit '+expZahl(g.arbeitH)+' · Fahrt '+expZahl(g.fahrtH)+'</div>'+
+      '<div style="'+mono+'font-size:8px;padding:2px 7px;border-radius:8px;display:inline-block;margin-top:4px;'+
+      (g.offen?'background:var(--rg);color:var(--r)':'background:var(--gg);color:var(--gl)')+'">'+
+      (g.offen?g.offen+' von '+g.zeilen.length+' offen':'freigegeben ✓')+'</div>'+
+      '<div style="font-size:10px;color:var(--m);margin-top:3px">'+(auf?'zuklappen':'Positionen zeigen')+'</div></div></div>';
+    if(auf)html+=bhzPositionen(g,maIdx);
+    if(g.anzOffeneBerichte&&abgDarfFreigeben()){
+      html+='<div style="margin-top:8px"><button class="btn btn-sky" '+tsAttr('bhzFreigabe('+gi+')')+'>'+
+        g.anzOffeneBerichte+' Bericht'+(g.anzOffeneBerichte===1?'':'e')+' mit diesen Zeiten freigeben</button></div>';
+    }
+    html+='</div>';
+  });
+  ziel.innerHTML=html;
+}
+function bhzPositionen(g,maIdx){
+  const mono='font-family:\'IBM Plex Mono\',monospace;';
+  const th='text-align:left;font-size:10px;color:var(--m);padding:5px 6px;border-bottom:1px solid var(--b);white-space:nowrap;';
+  const td='font-size:11px;color:var(--c);padding:5px 6px;border-bottom:1px solid var(--b);';
+  const tdn=td+mono+'text-align:right;white-space:nowrap;';
+  const sort=g.zeilen.slice().sort(function(a,b){
+    return String(a.datum).localeCompare(String(b.datum))||String(a.von).localeCompare(String(b.von));
+  });
+  let h='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:8px"><table style="width:100%;border-collapse:collapse">'+
+    '<tr><th style="'+th+'">Datum</th><th style="'+th+'">Projekt</th><th style="'+th+'">Von</th><th style="'+th+'">Bis</th>'+
+    '<th style="'+th+'text-align:right">Pause</th><th style="'+th+'text-align:right">Arbeit</th><th style="'+th+'text-align:right">Fahrt</th>'+
+    '<th style="'+th+'text-align:right">Gesamt</th><th style="'+th+'">Lohnart</th><th style="'+th+'">Status</th></tr>';
+  sort.forEach(function(z){
+    h+='<tr><td style="'+td+mono+'white-space:nowrap">'+_dfEsc(fmtD(z.datum))+'</td>'+
+      '<td style="'+td+'">'+_dfEsc((z.projektNr?z.projektNr+' ':'')+(z.projektName||''))+'</td>'+
+      '<td style="'+td+mono+'">'+_dfEsc(z.von||'--')+'</td><td style="'+td+mono+'">'+_dfEsc(z.bis||'--')+'</td>'+
+      '<td style="'+tdn+'">'+Math.round(z.pauseMin)+'</td>'+
+      '<td style="'+tdn+'">'+expZahl(z.arbeitH)+'</td><td style="'+tdn+'">'+expZahl(z.fahrtH)+'</td>'+
+      '<td style="'+tdn+'font-weight:600">'+expZahl(z.gesamtH)+'</td>'+
+      '<td style="'+td+mono+'font-size:10px;white-space:nowrap">'+_dfEsc(bhLohnartText(z,maIdx))+'</td>'+
+      '<td style="'+td+'font-size:10px;white-space:nowrap;color:'+(z.freigegeben?'var(--g)':'var(--m)')+'">'+
+      (z.freigegeben?'frei ✓':(z.abgenommen?'abgenommen':'offen'))+'</td></tr>';
+  });
+  h+='</table></div>';
+  return h;
+}
+function bhzToggle(gi){
+  const g=_bhGruppen[gi];
+  if(!g)return;
+  if(_bhOffen[g.key])delete _bhOffen[g.key];else _bhOffen[g.key]=true;
+  bhzRender();
+}
+// Freigabe der Berichte, in denen die gefilterten Zeiten dieses Mitarbeiters stehen.
+// Gleiche Wirkung wie die Sammelfreigabe in der Abgabeliste: nur Kennzeichen setzen, keine Mail.
+async function bhzFreigabe(gi){
+  if(!abgDarfFreigeben()){toast('Keine Berechtigung zur Freigabe','err');return;}
+  if(!unterschriftData){toast('Bitte zuerst Ihre Unterschrift im Profil zeichnen','err');openProfil();return;}
+  const g=_bhGruppen[gi];
+  if(!g){toast('Die Liste hat sich geaendert - bitte neu laden','err');return;}
+  const ids=Object.keys(g.offeneBerichte);
+  if(!ids.length){toast('Keine offenen Berichte in dieser Auswahl','info');return;}
+  let txt=ids.length+' Bericht'+(ids.length===1?'':'e')+' mit den Zeiten von '+g.name+' final freigeben?'+
+    '\n\nBetroffen sind '+g.offen+' offene Position(en) mit '+expZahl(g.gesamtH)+' h in der aktuellen Auswahl.';
+  if(g.ohneNr)txt+='\n\nAchtung: '+g.ohneNr+' Position(en) ohne Mitarbeiternummer - die fehlen spaeter im DATAflor-Export.';
+  txt+='\n\nHinweis: In einem Vorarbeiter-Bericht stehen auch die Zeiten der anderen Kolonnenmitglieder.'+
+    ' Mit der Freigabe gelten diese Berichte komplett als freigegeben.'+
+    '\n\nEs werden nur die Freigabe-Kennzeichen gesetzt. Keine Mails, keine neue PDF-Ablage.';
+  if(!confirm(txt))return;
+  try{
+    let vorhanden=[];
+    for(let i=0;i<ids.length;i+=200){
+      const r=await sb.from(tblBerichte()).select('id,abgenommen_sig,abgenommen_von').in('id',ids.slice(i,i+200));
+      if(r.error)throw r.error;
+      vorhanden=vorhanden.concat(r.data||[]);
+    }
+    const basis={bh_freigegeben:true,bh_freigegeben_von:currentUser.name,bh_freigegeben_am:new Date().toISOString()};
+    const mitSig=[],ohneSigMitVon=[],ohneSigOhneVon=[];
+    vorhanden.forEach(function(b){
+      if(b.abgenommen_sig)mitSig.push(b.id);
+      else if(b.abgenommen_von)ohneSigMitVon.push(b.id);
+      else ohneSigOhneVon.push(b.id);
+    });
+    for(let k=0;k<3;k++){
+      const liste=(k===0)?mitSig:((k===1)?ohneSigMitVon:ohneSigOhneVon);
+      const daten=(k===0)?basis:((k===1)
+        ?Object.assign({},basis,{abgenommen_sig:unterschriftData})
+        :Object.assign({},basis,{abgenommen_sig:unterschriftData,abgenommen_von:currentUser.name}));
+      for(let i=0;i<liste.length;i+=200){
+        const teil=liste.slice(i,i+200);
+        if(!teil.length)continue;
+        const r=await sb.from(tblBerichte()).update(daten).in('id',teil);
+        if(r.error)throw r.error;
+      }
+    }
+    toast(vorhanden.length+' Bericht'+(vorhanden.length===1?'':'e')+' freigegeben','ok');
+    _bhZeilen=null;_bhKey='';_expZeilen=null;_expKey='';
+    bhzLaden();
+  }catch(e){
+    console.error('Freigabe aus der Zeitenliste fehlgeschlagen:',e);
+    toast('Freigabe fehlgeschlagen: '+(e.message||String(e)),'err');
+  }
+}
+
+// ══════ BAUABLAUF JE PROJEKT (nur lesend) ══════
+// Rekonstruiert aus den Berichten, was auf einer Baustelle Woche fuer Woche passiert ist:
+// Stunden, Personen, Leistungen aus steps[], Geraete aus mach_rows[], Wetter, Maengel.
+// Die Ist-Stunden kommen aus derselben Funktion wie die Buchhaltungszeilen (expLohnZeilen),
+// damit Controlling und Abrechnung nicht auseinanderlaufen.
+let _ablBerichte=null,_ablKey='',_ablBusy=false,_ablWochenOffen={};
+
+function ablIsoKW(datum){
+  const p=String(datum||'').substring(0,10).split('-');
+  if(p.length!==3)return null;
+  const d=new Date(Date.UTC(parseInt(p[0],10),parseInt(p[1],10)-1,parseInt(p[2],10)));
+  if(isNaN(d.getTime()))return null;
+  d.setUTCDate(d.getUTCDate()+4-(d.getUTCDay()||7));
+  const jahr=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  const kw=Math.ceil((((d-jahr)/86400000)+1)/7);
+  return {kw:kw,jahr:d.getUTCFullYear(),key:d.getUTCFullYear()+'-'+('0'+kw).slice(-2)};
+}
+
+function renderAdminAblauf(){
+  const el=document.getElementById('apanel-ablauf');
+  if(!el)return;
+  const projOpts=(PROJEKTE||[]).slice().sort(function(a,b){
+    return String(a.nr||'').localeCompare(String(b.nr||''),'de');
+  }).map(function(p){
+    return '<option value="'+_dfEsc(p.id)+'">'+_dfEsc((p.nr?p.nr+' - ':'')+(p.name||''))+'</option>';
+  }).join('');
+  el.innerHTML='<div class="a-sec"><div class="a-sec-title">Bauablauf je Baustelle</div>'+
+    '<div class="row"><div class="fg w50"><label>Baustelle</label><select id="abl-proj" onchange="ablLaden()"><option value="">- waehlen -</option>'+projOpts+'</select></div>'+
+    '<div class="fg w25"><label>Von</label><input type="date" id="abl-von" onchange="ablLaden()"></div>'+
+    '<div class="fg w25"><label>Bis</label><input type="date" id="abl-bis" onchange="ablLaden()"></div></div>'+
+    '<div style="font-size:10px;color:var(--m);line-height:1.5">Ohne Datum wird alles geladen, was zu dieser Baustelle erfasst ist. Die Stunden stammen aus den Zeiten der Vorarbeiter-Berichte plus den eigenen Berichten - dieselbe Grundlage wie die Buchhaltungs-Aufstellung. Diese Ansicht schreibt nichts, ausser wenn du die Plan-Stunden aenderst.</div></div>'+
+    '<div id="abl-inhalt"></div>';
+}
+
+async function ablLadeBerichte(von,bis){
+  const alle=[];
+  for(let start=0;;start+=1000){
+    let q=sb.from(tblBerichte()).select('id,datum,rolle,mitarbeiter_name,mitarbeiter_nr,projekt_id,projekt_nr,von,bis,pause_min,netto_arbeit_h,netto_gesamt_h,fahrzeit_min,fahrt_status,zeit_rows,mach_rows,steps,taetigkeiten,taetigkeit_text,besonder,maengel,wetter,boden,nied_mm,temperatur,lieferungen,abgenommen,bh_freigegeben,fahrer_begruendung')
+      .order('datum',{ascending:true}).order('id',{ascending:true});
+    if(von)q=q.gte('datum',von);
+    if(bis)q=q.lte('datum',bis);
+    const r=await q.range(start,start+999);
+    if(r.error)throw new Error(r.error.message||'Unbekannter Datenbankfehler');
+    const d=r.data||[];
+    for(let i=0;i<d.length;i++)alle.push(d[i]);
+    if(d.length<1000)break;
+  }
+  return alle;
+}
+
+async function ablLaden(){
+  const ziel=document.getElementById('abl-inhalt');
+  if(!ziel)return;
+  const pid=(document.getElementById('abl-proj')||{value:''}).value;
+  if(!pid){ziel.innerHTML='';return;}
+  if(_ablBusy)return;
+  _ablBusy=true;
+  ziel.innerHTML='<div class="a-sec"><div class="empty"><div class="spin"></div></div></div>';
+  try{
+    const von=(document.getElementById('abl-von')||{value:''}).value;
+    const bis=(document.getElementById('abl-bis')||{value:''}).value;
+    if(von&&bis&&von>bis)throw new Error('"Von" liegt nach "Bis"');
+    const key=von+'|'+bis+'|'+(TESTMODUS?1:0);
+    if(!_ablBerichte||_ablKey!==key){
+      _ablBerichte=await ablLadeBerichte(von,bis);
+      _ablKey=key;
+    }
+    _ablWochenOffen={};
+    ablRender(pid);
+  }catch(e){
+    console.error('Bauablauf konnte nicht geladen werden:',e);
+    const z2=document.getElementById('abl-inhalt')||ziel;
+    z2.innerHTML='<div class="a-sec"><div style="color:var(--r);font-size:12px;padding:8px">Bauablauf konnte nicht geladen werden: '+_dfEsc(e.message||String(e))+'</div></div>';
+    toast('Bauablauf konnte nicht geladen werden: '+(e.message||String(e)),'err');
+  }finally{_ablBusy=false;}
+}
+
+// Fasst alles zusammen, was zu dieser Baustelle gehoert - je Kalenderwoche.
+function ablAuswerten(pid){
+  const zeilen=expLohnZeilen(_ablBerichte||[],MALISTE||[],PROJEKTE).filter(function(z){
+    return String(z.projektId||'')===String(pid);
+  });
+  const wochen={},reihe=[];
+  function woche(datum){
+    const k=ablIsoKW(datum);
+    if(!k)return null;
+    let w=wochen[k.key];
+    if(!w){
+      w=wochen[k.key]={key:k.key,kw:k.kw,jahr:k.jahr,von:datum,bis:datum,stunden:0,fahrt:0,
+        personen:{},tage:{},berichte:{},leistungen:{},geraete:{},wetter:{},maengel:0,besonder:[]};
+      reihe.push(w);
+    }
+    if(datum<w.von)w.von=datum;
+    if(datum>w.bis)w.bis=datum;
+    return w;
+  }
+  zeilen.forEach(function(z){
+    const w=woche(z.datum);
+    if(!w)return;
+    w.stunden+=z.gesamtH;
+    w.fahrt+=z.fahrtH;
+    w.personen[expNorm(z.name)]=z.name;
+    w.tage[z.datum]=true;
+    if(z.berichtId)w.berichte[z.berichtId]=true;
+  });
+  // Leistungen, Geraete, Wetter und Maengel aus den Berichten selbst
+  (_ablBerichte||[]).forEach(function(b){
+    let gehoert=String(b.projekt_id||'')===String(pid);
+    let st=b.steps;
+    if(typeof st==='string'){try{st=JSON.parse(st);}catch(e){console.error('Bauablauf: steps nicht lesbar, Bericht '+b.id,e);st=[];}}
+    st=Array.isArray(st)?st:[];
+    let mr=b.mach_rows;
+    if(typeof mr==='string'){try{mr=JSON.parse(mr);}catch(e){console.error('Bauablauf: mach_rows nicht lesbar, Bericht '+b.id,e);mr=[];}}
+    mr=Array.isArray(mr)?mr:[];
+    let zr=b.zeit_rows;
+    if(typeof zr==='string'){try{zr=JSON.parse(zr);}catch(e){console.error('Bauablauf: zeit_rows nicht lesbar, Bericht '+b.id,e);zr=[];}}
+    zr=Array.isArray(zr)?zr:[];
+    if(!gehoert){
+      for(let i=0;i<zr.length;i++){if(String(zr[i]&&zr[i].projektId||'')===String(pid)){gehoert=true;break;}}
+    }
+    if(!gehoert){
+      for(let i=0;i<st.length;i++){if(String(st[i]&&st[i].projektId||'')===String(pid)){gehoert=true;break;}}
+    }
+    if(!gehoert)return;
+    const w=woche(b.datum);
+    if(!w)return;
+    w.berichte[b.id]=true;
+    st.forEach(function(s){
+      if(!s)return;
+      const sp=String(s.projektId||b.projekt_id||'');
+      if(sp&&sp!==String(pid))return;
+      const txt=String(s.leistung||s.txt||'').trim();
+      if(!txt)return;
+      const k=txt.toLowerCase().substring(0,60);
+      if(!w.leistungen[k])w.leistungen[k]={txt:txt,menge:0,eh:s.eh||'',pos:s.pos||'',anzahl:0};
+      w.leistungen[k].anzahl++;
+      const m=parseFloat(String(s.menge==null?'':s.menge).replace(',','.'));
+      if(!isNaN(m))w.leistungen[k].menge+=m;
+      if(!w.leistungen[k].pos&&s.pos)w.leistungen[k].pos=s.pos;
+    });
+    mr.forEach(function(g){
+      if(!g)return;
+      const gp=String(g.projektId||b.projekt_id||'');
+      if(gp&&gp!==String(pid))return;
+      const bez=String(g.geraetBez||g.geraetNr||'').trim();
+      if(!bez)return;
+      if(!w.geraete[bez])w.geraete[bez]={bez:bez,std:0};
+      w.geraete[bez].std+=(parseFloat(String(g.netto==null?'':g.netto).replace(',','.'))||0);
+    });
+    if(b.wetter)w.wetter[b.wetter]=(w.wetter[b.wetter]||0)+1;
+    let mg=b.maengel;
+    if(typeof mg==='string'){try{mg=JSON.parse(mg);}catch(e){mg=[];}}
+    if(Array.isArray(mg))w.maengel+=mg.length;
+    if(b.besonder&&String(b.besonder).trim())w.besonder.push({datum:b.datum,wer:b.mitarbeiter_name||'',txt:String(b.besonder).trim()});
+  });
+  reihe.sort(function(a,b){return a.key.localeCompare(b.key);});
+  reihe.forEach(function(w){
+    w.stunden=Math.round(w.stunden*100)/100;
+    w.fahrt=Math.round(w.fahrt*100)/100;
+    w.anzPersonen=Object.keys(w.personen).length;
+    w.anzTage=Object.keys(w.tage).length;
+    w.anzBerichte=Object.keys(w.berichte).length;
+  });
+  return reihe;
+}
+
+function ablRender(pid){
+  const ziel=document.getElementById('abl-inhalt');
+  if(!ziel)return;
+  const proj=(PROJEKTE||[]).find(function(p){return String(p.id)===String(pid);});
+  const wochen=ablAuswerten(pid);
+  const mono='font-family:\'IBM Plex Mono\',monospace;';
+  if(!wochen.length){
+    ziel.innerHTML='<div class="a-sec"><div style="color:var(--m);font-size:11px;padding:8px">Zu dieser Baustelle sind im gewaehlten Zeitraum keine Stunden erfasst.</div></div>';
+    return;
+  }
+  const istGes=Math.round(wochen.reduce(function(s,w){return s+w.stunden;},0)*100)/100;
+  const plan=getPlanH(pid);
+  const rest=Math.round((plan-istGes)*100)/100;
+  const proz=plan>0?Math.round(istGes/plan*1000)/10:0;
+  const tage=wochen.reduce(function(s,w){return s+w.anzTage;},0);
+  const alleP={};wochen.forEach(function(w){Object.keys(w.personen).forEach(function(k){alleP[k]=true;});});
+
+  let html='<div class="a-sec"><div class="a-sec-title">'+_dfEsc((proj&&proj.nr?proj.nr+' - ':'')+((proj&&proj.name)||''))+'</div>'+
+    '<div class="row" style="align-items:flex-end">'+
+    '<div class="fg w25"><label>Plan-Stunden (Soll)</label><input type="number" min="0" step="1" id="abl-plan" value="'+(plan>0?plan:'')+'" placeholder="--" onchange="ablPlanSetzen(\''+_dfEsc(pid)+'\',this.value)"></div>'+
+    '<div class="fg w75"><div style="display:flex;gap:16px;flex-wrap:wrap;'+mono+'font-size:12px;padding-bottom:9px">'+
+    '<span>Ist <strong style="font-size:15px">'+expZahl(istGes)+' h</strong></span>'+
+    (plan>0?'<span style="color:'+(rest<0?'var(--r)':'var(--g)')+'">'+(rest<0?'Ueberschritten um '+expZahl(-rest):'Rest '+expZahl(rest))+' h</span><span>'+proz.toString().replace('.',',')+' % verbraucht</span>':'<span style="color:var(--m)">kein Soll hinterlegt</span>')+
+    '<span>'+wochen.length+' Wochen</span><span>'+tage+' Einsatztage</span><span>'+Object.keys(alleP).length+' Personen</span>'+
+    '</div></div></div>'+
+    (plan>0?'':'<div style="font-size:10px;color:var(--m)">Das Soll traegst du hier ein; es wird in der Baustelle gespeichert und gilt fuer alle Geraete. Frueher lag diese Zahl nur im Browser des jeweiligen Geraets.</div>')+
+    '</div>';
+
+  // Balken je Woche
+  const maxH=wochen.reduce(function(m,w){return Math.max(m,w.stunden);},0)||1;
+  const bw=Math.max(14,Math.min(42,Math.floor(760/wochen.length)));
+  const W=Math.max(320,wochen.length*bw+60),H=150;
+  let bars='';
+  wochen.forEach(function(w,i){
+    const h=Math.max(1,(w.stunden/maxH)*100);
+    const x=50+i*bw;
+    bars+='<rect x="'+x+'" y="'+(120-h).toFixed(1)+'" width="'+(bw-3)+'" height="'+h.toFixed(1)+'" rx="2" fill="var(--sky)"></rect>';
+    if(i%Math.ceil(wochen.length/12)===0||wochen.length<=12){
+      bars+='<text x="'+(x+(bw-3)/2)+'" y="136" text-anchor="middle" font-size="9" fill="var(--m)" font-family="IBM Plex Mono, monospace">'+w.kw+'</text>';
+    }
+  });
+  bars+='<line x1="46" y1="120" x2="'+(W-6)+'" y2="120" stroke="var(--b)" stroke-width="1"></line>';
+  bars+='<text x="42" y="24" text-anchor="end" font-size="9" fill="var(--m)" font-family="IBM Plex Mono, monospace">'+expZahl(maxH)+'</text>';
+  bars+='<text x="42" y="123" text-anchor="end" font-size="9" fill="var(--m)" font-family="IBM Plex Mono, monospace">0</text>';
+  bars+='<text x="'+(W/2)+'" y="149" text-anchor="middle" font-size="9" fill="var(--m)">Kalenderwoche</text>';
+  html+='<div class="a-sec"><div class="a-sec-title">Stunden je Woche</div>'+
+    '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><svg viewBox="0 0 '+W+' '+H+'" style="width:100%;min-width:'+Math.min(W,620)+'px;height:auto;display:block">'+bars+'</svg></div></div>';
+
+  // Wochentabelle
+  const th='text-align:left;font-size:10px;color:var(--m);padding:6px 7px;border-bottom:1px solid var(--b);white-space:nowrap;';
+  const td='font-size:11.5px;color:var(--c);padding:6px 7px;border-bottom:1px solid var(--b);vertical-align:top;';
+  const tdn=td+mono+'text-align:right;white-space:nowrap;';
+  html+='<div class="a-sec"><div class="a-sec-title">Woche fuer Woche</div>'+
+    '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="width:100%;border-collapse:collapse">'+
+    '<tr><th style="'+th+'">KW</th><th style="'+th+'">Zeitraum</th><th style="'+th+'text-align:right">Std.</th>'+
+    '<th style="'+th+'text-align:right">Tage</th><th style="'+th+'text-align:right">Pers.</th>'+
+    '<th style="'+th+'">Leistungen</th><th style="'+th+'">Geraete</th><th style="'+th+'">Wetter</th></tr>';
+  wochen.forEach(function(w,i){
+    const leist=Object.keys(w.leistungen).map(function(k){
+      const l=w.leistungen[k];
+      return _dfEsc(l.txt)+(l.menge>0?' <span style="color:var(--m)">'+expZahl(l.menge)+' '+_dfEsc(l.eh||'')+'</span>':'')+(l.pos?' <span style="color:var(--m)">Pos. '+_dfEsc(l.pos)+'</span>':'');
+    }).slice(0,4).join('<br>');
+    const ger=Object.keys(w.geraete).map(function(k){
+      return _dfEsc(w.geraete[k].bez)+' <span style="color:var(--m)">'+expZahl(w.geraete[k].std)+' h</span>';
+    }).slice(0,3).join('<br>');
+    const wet=Object.keys(w.wetter).sort(function(a,b){return w.wetter[b]-w.wetter[a];}).slice(0,2)
+      .map(function(k){return _dfEsc(k)+' ('+w.wetter[k]+')';}).join(', ');
+    html+='<tr '+tsAttr('ablWoche('+i+',\''+_dfEsc(pid)+'\')')+' style="cursor:pointer">'+
+      '<td style="'+td+mono+'white-space:nowrap">'+w.kw+'<span style="color:var(--m)">/'+String(w.jahr).substring(2)+'</span></td>'+
+      '<td style="'+td+mono+'white-space:nowrap;font-size:10px">'+_dfEsc(fmtD(w.von))+'<br>'+_dfEsc(fmtD(w.bis))+'</td>'+
+      '<td style="'+tdn+'font-weight:600">'+expZahl(w.stunden)+'</td>'+
+      '<td style="'+tdn+'">'+w.anzTage+'</td><td style="'+tdn+'">'+w.anzPersonen+'</td>'+
+      '<td style="'+td+'">'+(leist||'<span style="color:var(--m)">--</span>')+
+      (w.maengel?'<div style="color:var(--r);font-size:10px;margin-top:3px">'+w.maengel+' Mangel-Eintrag(e)</div>':'')+'</td>'+
+      '<td style="'+td+'font-size:10.5px">'+(ger||'<span style="color:var(--m)">--</span>')+'</td>'+
+      '<td style="'+td+'font-size:10.5px">'+(wet||'<span style="color:var(--m)">--</span>')+'</td></tr>';
+    if(_ablWochenOffen[i]&&w.besonder.length){
+      html+='<tr><td colspan="8" style="'+td+'background:var(--s2)">'+
+        '<div style="font-size:10px;color:var(--m);margin-bottom:4px">Besonderheiten in dieser Woche</div>'+
+        w.besonder.slice(0,8).map(function(b){
+          return '<div style="font-size:11px;margin-bottom:3px"><span style="'+mono+'color:var(--m)">'+_dfEsc(fmtD(b.datum))+'</span> '+_dfEsc(b.txt)+'</div>';
+        }).join('')+'</td></tr>';
+    }else if(_ablWochenOffen[i]){
+      html+='<tr><td colspan="8" style="'+td+'background:var(--s2);color:var(--m);font-size:10.5px">Keine Besonderheiten erfasst.</td></tr>';
+    }
+  });
+  html+='<tr><td colspan="2" style="'+td+'font-weight:700">Summe</td><td style="'+tdn+'font-weight:700">'+expZahl(istGes)+'</td>'+
+    '<td style="'+tdn+'font-weight:700">'+tage+'</td><td colspan="4" style="'+td+'"></td></tr>';
+  html+='</table></div><div style="font-size:10px;color:var(--m);margin-top:6px">Eine Zeile antippen zeigt die Besonderheiten dieser Woche. Leistungen und Geraete sind je Woche auf die haeufigsten gekuerzt.</div></div>';
+  ziel.innerHTML=html;
+}
+
+function ablWoche(i,pid){
+  if(_ablWochenOffen[i])delete _ablWochenOffen[i];else _ablWochenOffen[i]=true;
+  ablRender(pid);
+}
+async function ablPlanSetzen(pid,val){
+  await setPlanH(pid,val);
+  ablRender(pid);
 }
 
 // ══════ AUSWERTUNG (Admin) ══════
@@ -3861,15 +4517,38 @@ function _cockpitAgg(f){
   }
   return agg;
 }
+// Plan-Stunden (Soll) stehen seit 03.11.2026 in projekte.plan_stunden und gelten damit fuer
+// alle Geraete. Vorher lagen sie nur im localStorage des jeweiligen Browsers; dieser Wert wird
+// noch gelesen, solange in der Datenbank nichts steht, und beim naechsten Speichern abgeloest.
 function _ctrlPlanKey(id){return 'klei_plan_h_'+id;}
-function getPlanH(id){let v=0;try{v=_auswNum(localStorage.getItem(_ctrlPlanKey(id)));}catch(e){}return v;}
-function setPlanH(id,val){
+function getPlanH(id){
+  const p=(PROJEKTE||[]).find(function(x){return String(x.id)===String(id);});
+  if(p&&p.plan_stunden!=null&&p.plan_stunden!==''){
+    const v=_auswNum(p.plan_stunden);
+    if(v>0)return v;
+  }
+  let alt=0;
+  try{alt=_auswNum(localStorage.getItem(_ctrlPlanKey(id)));}catch(e){
+    console.error('Plan-Stunden: localStorage nicht lesbar',e);
+  }
+  return alt;
+}
+async function setPlanH(id,val){
   const n=_auswNum(val);
-  try{
-    if(n>0)localStorage.setItem(_ctrlPlanKey(id),String(n));
-    else localStorage.removeItem(_ctrlPlanKey(id));
-  }catch(e){}
-  renderCockpitListe();
+  const r=await sb.from('projekte').update({plan_stunden:n>0?n:null}).eq('id',id);
+  if(r.error){
+    console.error('Plan-Stunden speichern fehlgeschlagen:',r.error);
+    toast('Plan-Stunden konnten nicht gespeichert werden: '+(r.error.message||''),'err');
+    return;
+  }
+  const p=(PROJEKTE||[]).find(function(x){return String(x.id)===String(id);});
+  if(p)p.plan_stunden=n>0?n:null;
+  // Der alte geraetelokale Wert ist jetzt abgeloest und wuerde sonst weiter mitreden
+  try{localStorage.removeItem(_ctrlPlanKey(id));}catch(e){
+    console.error('Plan-Stunden: alter localStorage-Wert nicht loeschbar',e);
+  }
+  toast(n>0?'Plan-Stunden gespeichert':'Plan-Stunden entfernt','ok');
+  if(typeof renderCockpitListe==='function')renderCockpitListe();
 }
 
 // Cockpit: Liste aller Baustellen ODER Detailansicht einer Baustelle (_cpOffen). Die Details klappen
@@ -6751,11 +7430,25 @@ function filterRowProj(inp){
 // oder von inaktivem Mitarbeiter) bleibt als Option erhalten.
 // Rollen, die NICHT in der VA-Namensauswahl erscheinen sollen (Buero/Leitung):
 const MA_AUSWAHL_AUSGESCHLOSSEN=['admin','verwaltung','projektleiter'];
+// Sortierung der Mitarbeiterlisten: Nachname zuerst. Gepflegt wird er in der Spalte
+// mitarbeiter.nachname; fehlt sie, wird das letzte Wort des Namens genommen. Der vollstaendige
+// Name haengt als zweiter Schluessel dran, damit gleiche Nachnamen stabil stehen.
+function maSortKey(m){
+  if(!m)return '';
+  const name=String(m.name==null?'':m.name).trim();
+  let nn=String(m.nachname==null?'':m.nachname).trim();
+  if(!nn){
+    const teile=name.split(/\s+/);
+    nn=teile.length>1?teile[teile.length-1]:name;
+  }
+  return (nn+' '+name).toLowerCase();
+}
+function maCmp(a,b){return maSortKey(a).localeCompare(maSortKey(b),'de');}
 function maAuswahlListe(){
   return MALISTE.filter(m=>m.aktiv!==false&&m.name&&!MA_AUSWAHL_AUSGESCHLOSSEN.includes(m.rolle));
 }
 function maRowOpts(sel){
-  const list=maAuswahlListe().slice().sort((a,b)=>(a.name||'').localeCompare(b.name||'','de'));
+  const list=maAuswahlListe().slice().sort(maCmp);
   let html='<option value="">- Name -</option>'+list.map(m=>'<option value="'+_dfEsc(m.name)+'" '+(sel===m.name?'selected':'')+'>'+_dfEsc(m.name)+(m.mitarbeiter_nr?' #'+m.mitarbeiter_nr:'')+'</option>').join('');
   if(sel&&!list.some(m=>m.name===sel))html+='<option value="'+_dfEsc(sel)+'" selected>'+_dfEsc(sel)+(zeitNameInStamm(sel)?'':' (nicht in Stammdaten!)')+'</option>';
   return html;
@@ -9241,4 +9934,3 @@ async function bhGegenzeichnen(id){
 </script>
 </body>
 </html>
-
