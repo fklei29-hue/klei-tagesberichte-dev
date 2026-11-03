@@ -4104,68 +4104,385 @@ function vgTaetigkeitenListe(b){
   return t.map(function(x){return String(x==null?'':x).trim();}).filter(Boolean);
 }
 
-function vgArbeitsarten(){
-  const mono='font-family:\'IBM Plex Mono\',monospace;';
-  const zeilen=expLohnZeilen(_vgBerichte||[],MALISTE||[],PROJEKTE);
-  // Stunden je Bericht aus den Abrechnungszeilen (nicht aus netto_gesamt_h,
-  // weil dort die Kolonnenstunden eines VA-Berichts nicht vollstaendig stehen)
-  const stdJeBericht={};
-  zeilen.forEach(function(z){
-    if(!z.berichtId)return;
-    stdJeBericht[z.berichtId]=(stdJeBericht[z.berichtId]||0)+z.gesamtH;
+// ══════ ARBEITSARTEN AUS FREITEXT ERKENNEN ══════
+// Die Taetigkeiten-Checkliste wird nur in rund einem Drittel der Berichte angehakt.
+// Die uebrigen Berichte beschreiben die Arbeit im Freitext (steps[].txt, taetigkeit_text,
+// besonder). Dieses Begriffsverzeichnis ordnet solche Texte denselben Obergruppen zu -
+// deterministisch, nachvollziehbar und ohne jedes Modell. Jeder Treffer ist im
+// Controlling mit dem gefundenen Begriff einsehbar, damit falsche Regeln auffallen.
+//
+// Pflege des Verzeichnisses: neue Begriffe hier eintragen. Die Liste der nicht
+// zugeordneten Woerter steht unten im Vergleichs-Tab und sagt, was fehlt.
+const ARBEITSART_BEGRIFFE={
+  'Erdarbeiten':['erdarbeit','oberboden','mutterboden','aushub','abtrag','abgetrag','planum','verdicht',
+                 'auffuell','aufgefuell','bodenaustausch','baggern','erdmasse','humus','abschieb','abgeschob'],
+  'Unterbau':['tragschicht','frostschutz','schottertrag','unterbau','schotter','kiestrag',
+              'lastplatte','ev2','proctor','deckschicht'],
+  'Wegebau':['pflaster','wegebau','asphalt','wegedecke','plattenbelag','platten verleg',
+             'fahrbahn','pflasterdecke','rasengitter','verbundstein'],
+  'Einfassung':['randstein','bordstein','kantenstein','tiefbord','hochbord','einfassung',
+                'rasenkante','palisade','winkelstuetz','rinnenstein'],
+  'Entwaesserung':['drainage','draenage','rigole','schacht','sickerpack','entwaesser',
+                   'rinne','ablauf','kg-rohr','kgrohr','revisionsschacht','pumpensumpf','sickerschacht'],
+  'Rasen':['rasen','ansaat','nachsaat','maehen','vertikutier','rollrasen','sportrasen',
+           'aerifizier','besanden','duengen','rasentrag'],
+  'Vegetation':['pflanz','gehoelz','strauch','hecke','baum','staude','rindenmulch','bewaesser',
+                'heckenschnitt','strauchschnitt','rueckschnitt','gehoelzschnitt','wurzel'],
+  'Pflege':['pflege','unkraut','jaeten','laub','kehren','wildkraut','gruenpflege','ausputzen'],
+  'Elektro':['elektro','kabel','leerrohr','beleuchtung','flutlicht','trafo','verkabel'],
+  'Abbruch':['abbruch','rueckbau','demontage','aufbrech','aufgebroch','abgebroch','schutt',
+             'entsorg','altbelag','altbestand'],
+  'Treppen':['treppe','stufe','blockstufe','podest'],
+  'Mauern':['mauer','naturstein','trockenmauer','l-stein','verblend'],
+  'Baustelle allgemein':['baustelleneinrichtung','einrichten','absperr','bauzaun','aufraeum',
+                         'baustelle reinig','umsetzen','ruesten','container'],
+  'Vorbereitung':['vorbereitung','einmessen','eingemessen','absteck','abgesteckt','vermess',
+                  'aufmass','einweisung','besprechung','arbeitsvorbereitung'],
+  'Werkstatt allgemein':['werkstatt','wartung','inspektion'],
+  'Oelwechsel':['oelwechsel','filterwechsel','schmier'],
+  'Reparatur':['reparatur','instandsetz','defekt','ersatzteil']
+};
+const ARTEN_MAX_JE_BERICHT=3;   // mehr als drei Obergruppen je Bericht sind keine Aussage mehr
+
+function vgNormText(s){
+  return String(s==null?'':s).toLowerCase()
+    .replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue')
+    .replace(/ß/g,'ss').replace(/\s+/g,' ').trim();
+}
+
+// Sammelt allen Freitext eines Berichts, der eine Arbeit beschreibt
+function vgFreitext(b){
+  const teile=[];
+  let st=b.steps;
+  if(typeof st==='string'){try{st=JSON.parse(st);}catch(e){console.error('Arbeitsarten: steps nicht lesbar, Bericht '+b.id,e);st=[];}}
+  if(Array.isArray(st)){
+    st.forEach(function(s){
+      if(!s)return;
+      if(s.txt)teile.push(String(s.txt));
+      if(s.leistung)teile.push(String(s.leistung));
+    });
+  }
+  if(b.taetigkeit_text)teile.push(String(b.taetigkeit_text));
+  if(b.besonder)teile.push(String(b.besonder));
+  return teile.join(' . ');
+}
+
+// Liefert die erkannten Obergruppen samt dem Begriff, der getroffen hat.
+// Mehrere Treffer sind erlaubt; bei mehr als ARTEN_MAX_JE_BERICHT gewinnen die
+// laengsten (also spezifischsten) Begriffe.
+function vgArtenAusText(text){
+  const t=vgNormText(text);
+  if(!t)return [];
+  const treffer=[];
+  Object.keys(ARBEITSART_BEGRIFFE).forEach(function(art){
+    let bester='';
+    ARBEITSART_BEGRIFFE[art].forEach(function(b){
+      if(t.indexOf(b)>=0&&b.length>bester.length)bester=b;
+    });
+    if(bester)treffer.push({art:art,begriff:bester});
   });
-  const arten={};
-  let mitArt=0,ohneArt=0,stdMitArt=0,stdOhneArt=0;
-  (_vgBerichte||[]).forEach(function(b){
-    const std=stdJeBericht[b.id]||0;
-    const liste=vgTaetigkeitenListe(b);
-    if(!liste.length){
-      ohneArt++;stdOhneArt+=std;
-      return;
-    }
-    mitArt++;stdMitArt+=std;
-    const anteil=std/liste.length;
-    liste.forEach(function(t){
-      if(!arten[t])arten[t]={name:t,stunden:0,berichte:0};
-      arten[t].stunden+=anteil;
-      arten[t].berichte++;
+  treffer.sort(function(a,b){return b.begriff.length-a.begriff.length;});
+  return treffer.slice(0,ARTEN_MAX_JE_BERICHT);
+}
+
+// Woerter, die in keinem Begriffsverzeichnis stehen - die Pflegeliste fuer Florian
+const VG_STOPP=['und','oder','der','die','das','den','dem','des','ein','eine','einen','einem',
+  'mit','auf','fuer','von','vom','bei','beim','zum','zur','aus','nach','ueber','unter','wurde',
+  'wurden','haben','hat','wird','werden','sind','ist','war','waren','nicht','noch','heute',
+  'weiter','weitere','fertig','begonnen','abgeschlossen','arbeiten','arbeit','gemacht','siehe',
+  'sowie','bzw','ca','ggf','etc','alle','alles','kein','keine','sehr','viel','mehr','teil',
+  'teils','dann','auch','wegen','durch','ohne','gegen','pro','stk','stck','stunden','std'];
+function vgOffeneWoerter(texte){
+  const bekannt={};
+  Object.keys(ARBEITSART_BEGRIFFE).forEach(function(a){
+    ARBEITSART_BEGRIFFE[a].forEach(function(b){bekannt[b]=true;});
+  });
+  const zaehl={};
+  (texte||[]).forEach(function(eintrag){
+    const worte=vgNormText(eintrag.text).split(/[^a-z0-9-]+/);
+    const gesehen={};
+    worte.forEach(function(w){
+      if(w.length<4)return;
+      if(VG_STOPP.indexOf(w)>=0)return;
+      if(/^[0-9-]+$/.test(w))return;
+      let istBekannt=false;
+      Object.keys(bekannt).forEach(function(b){if(w.indexOf(b)>=0||b.indexOf(w)>=0)istBekannt=true;});
+      if(istBekannt)return;
+      if(gesehen[w])return;
+      gesehen[w]=true;
+      if(!zaehl[w])zaehl[w]={wort:w,berichte:0,stunden:0};
+      zaehl[w].berichte++;
+      zaehl[w].stunden+=eintrag.stunden;
     });
   });
+  return Object.keys(zaehl).map(function(k){
+    zaehl[k].stunden=Math.round(zaehl[k].stunden*100)/100;
+    return zaehl[k];
+  }).sort(function(a,b){return b.stunden-a.stunden;});
+}
+
+// ══════ AUSWERTUNG: ARBEITSARTEN JE BERICHT, PROJEKT UND MASCHINE ══════
+// Je Bericht wird festgestellt, welche Arbeitsarten darin stecken und woher die
+// Erkenntnis stammt. Die Stunden kommen aus expLohnZeilen und sind damit bereits
+// je Projekt aufgeteilt (Multi-Baustellen-Split); sie werden anschliessend
+// gleichmaessig auf die Arbeitsarten des Berichts verteilt.
+function vgArtenAuswertung(){
+  const zeilen=expLohnZeilen(_vgBerichte||[],MALISTE||[],PROJEKTE);
+  const projName={};
+  (PROJEKTE||[]).forEach(function(p){projName[String(p.id)]=(p.nr?p.nr+' ':'')+(p.name||'');});
+
+  // Stunden und Personen je Bericht und Projekt
+  const jeBericht={};
+  zeilen.forEach(function(z){
+    if(!z.berichtId)return;
+    let b=jeBericht[z.berichtId];
+    if(!b)b=jeBericht[z.berichtId]={gesamt:0,proj:{},personen:{}};
+    b.gesamt+=z.gesamtH;
+    const pk=String(z.projektId||('nr:'+z.projektNr));
+    b.proj[pk]=(b.proj[pk]||0)+z.gesamtH;
+    b.personen[expNorm(z.name)]=true;
+  });
+
+  const arten={};          // Arbeitsart -> {stunden, berichte, proj{}, maschinen{}, personen{}, quellen}
+  const offeneTexte=[];
+  let nHaken=0,nText=0,nOffen=0,hHaken=0,hText=0,hOffen=0;
+
+  (_vgBerichte||[]).forEach(function(b){
+    const info=jeBericht[b.id];
+    const std=info?info.gesamt:0;
+    const haken=vgTaetigkeitenListe(b);
+    let liste=[],quelle='';
+    if(haken.length){
+      liste=haken.map(function(t){return {art:t,begriff:''};});
+      quelle='haken';nHaken++;hHaken+=std;
+    }else{
+      const txt=vgFreitext(b);
+      const tr=vgArtenAusText(txt);
+      if(tr.length){
+        liste=tr;quelle='text';nText++;hText+=std;
+      }else{
+        nOffen++;hOffen+=std;
+        if(txt)offeneTexte.push({text:txt,stunden:std,datum:b.datum,id:b.id});
+        return;
+      }
+    }
+    // Maschinen des Berichts
+    let mr=b.mach_rows;
+    if(typeof mr==='string'){try{mr=JSON.parse(mr);}catch(e){console.error('Arbeitsarten: mach_rows nicht lesbar, Bericht '+b.id,e);mr=[];}}
+    mr=Array.isArray(mr)?mr:[];
+    const anteil=1/liste.length;
+
+    liste.forEach(function(tr){
+      const art=tr.art;
+      let a=arten[art];
+      if(!a)a=arten[art]={name:art,stunden:0,berichte:0,proj:{},maschinen:{},personen:{},
+                          vonHaken:0,vonText:0,begriffe:{}};
+      a.stunden+=std*anteil;
+      a.berichte++;
+      if(quelle==='haken')a.vonHaken++;else{a.vonText++;if(tr.begriff)a.begriffe[tr.begriff]=(a.begriffe[tr.begriff]||0)+1;}
+      if(info){
+        Object.keys(info.proj).forEach(function(pk){
+          if(!a.proj[pk])a.proj[pk]={stunden:0,name:projName[pk]||pk.replace(/^nr:/,'')||'ohne Projekt'};
+          a.proj[pk].stunden+=info.proj[pk]*anteil;
+        });
+        Object.keys(info.personen).forEach(function(p){a.personen[p]=true;});
+      }
+      mr.forEach(function(g){
+        if(!g)return;
+        const bez=String(g.geraetBez||g.geraetNr||'').trim();
+        if(!bez)return;
+        if(!a.maschinen[bez])a.maschinen[bez]=0;
+        a.maschinen[bez]+=(parseFloat(String(g.netto==null?'':g.netto).replace(',','.'))||0)*anteil;
+      });
+    });
+  });
+
   const liste=Object.keys(arten).map(function(k){
     const a=arten[k];
     a.stunden=Math.round(a.stunden*100)/100;
+    a.anzPersonen=Object.keys(a.personen).length;
+    a.projListe=Object.keys(a.proj).map(function(pk){
+      return {key:pk,name:a.proj[pk].name,stunden:Math.round(a.proj[pk].stunden*100)/100};
+    }).filter(function(p){return p.stunden>=0.05;}).sort(function(x,y){return y.stunden-x.stunden;});
+    a.maschListe=Object.keys(a.maschinen).map(function(m){
+      return {name:m,std:Math.round(a.maschinen[m]*100)/100};
+    }).filter(function(m){return m.std>=0.05;}).sort(function(x,y){return y.std-x.std;});
+    a.begriffListe=Object.keys(a.begriffe).map(function(b){return {begriff:b,n:a.begriffe[b]};})
+      .sort(function(x,y){return y.n-x.n;});
     return a;
   }).sort(function(x,y){return y.stunden-x.stunden;});
-  if(!liste.length){
+
+  return {arten:liste,offeneTexte:offeneTexte,
+    nHaken:nHaken,nText:nText,nOffen:nOffen,
+    hHaken:Math.round(hHaken*100)/100,hText:Math.round(hText*100)/100,hOffen:Math.round(hOffen*100)/100,
+    projName:projName};
+}
+
+// ── Darstellung: Arbeitsarten, Matrix und Pflegeliste ──────────────────
+let _vgArtOffen={},_vgArtErg=null;
+
+function vgArtToggle(i){
+  const a=(_vgArtErg&&_vgArtErg.arten)?_vgArtErg.arten[i]:null;
+  if(!a)return;
+  if(_vgArtOffen[a.name])delete _vgArtOffen[a.name];else _vgArtOffen[a.name]=true;
+  vgRender();
+}
+
+function vgArbeitsarten(){
+  const mono='font-family:\'IBM Plex Mono\',monospace;';
+  const e=vgArtenAuswertung();
+  _vgArtErg=e;
+  const arten=e.arten;
+  const nGes=e.nHaken+e.nText+e.nOffen;
+  const hGes=Math.round((e.hHaken+e.hText+e.hOffen)*100)/100;
+  if(!arten.length){
     return '<div class="a-sec"><div class="a-sec-title">Stunden je Arbeitsart</div>'+
-      '<div style="color:var(--m);font-size:11px;padding:4px">In diesem Zeitraum wurden keine Taetigkeiten angehakt.</div></div>';
+      '<div style="color:var(--m);font-size:11px;padding:4px">In diesem Zeitraum liess sich keine Arbeitsart bestimmen.</div></div>';
   }
-  const ges=liste.reduce(function(s,a){return s+a.stunden;},0);
-  const quote=(mitArt+ohneArt)>0?Math.round(mitArt/(mitArt+ohneArt)*1000)/10:0;
-  const max=liste[0].stunden||1;
+  const stdGes=arten.reduce(function(s,a){return s+a.stunden;},0);
+
+  // ── Herkunft der Zuordnung ──
+  const anteil=function(h){return hGes>0?Math.round(h/hGes*1000)/10:0;};
+  let html='<div class="a-sec"><div class="a-sec-title">Woher die Zuordnung stammt</div>'+
+    '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;max-width:620px">'+
+    '<tr><th style="text-align:left;font-size:10px;color:var(--m);padding:5px 7px;border-bottom:1px solid var(--b)">Quelle</th>'+
+    '<th style="text-align:right;font-size:10px;color:var(--m);padding:5px 7px;border-bottom:1px solid var(--b)">Berichte</th>'+
+    '<th style="text-align:right;font-size:10px;color:var(--m);padding:5px 7px;border-bottom:1px solid var(--b)">Stunden</th>'+
+    '<th style="text-align:right;font-size:10px;color:var(--m);padding:5px 7px;border-bottom:1px solid var(--b)">Anteil</th></tr>'+
+    '<tr><td style="font-size:11.5px;padding:5px 7px;border-bottom:1px solid var(--b);color:var(--g)">Taetigkeit angehakt</td>'+
+    '<td style="'+mono+'font-size:11.5px;text-align:right;padding:5px 7px;border-bottom:1px solid var(--b)">'+e.nHaken+'</td>'+
+    '<td style="'+mono+'font-size:11.5px;text-align:right;padding:5px 7px;border-bottom:1px solid var(--b)">'+expZahl(e.hHaken)+'</td>'+
+    '<td style="'+mono+'font-size:11.5px;text-align:right;padding:5px 7px;border-bottom:1px solid var(--b)">'+String(anteil(e.hHaken)).replace('.',',')+' %</td></tr>'+
+    '<tr><td style="font-size:11.5px;padding:5px 7px;border-bottom:1px solid var(--b);color:var(--sky)">aus dem Text erkannt</td>'+
+    '<td style="'+mono+'font-size:11.5px;text-align:right;padding:5px 7px;border-bottom:1px solid var(--b)">'+e.nText+'</td>'+
+    '<td style="'+mono+'font-size:11.5px;text-align:right;padding:5px 7px;border-bottom:1px solid var(--b)">'+expZahl(e.hText)+'</td>'+
+    '<td style="'+mono+'font-size:11.5px;text-align:right;padding:5px 7px;border-bottom:1px solid var(--b)">'+String(anteil(e.hText)).replace('.',',')+' %</td></tr>'+
+    '<tr><td style="font-size:11.5px;padding:5px 7px;color:var(--r)">nicht zuzuordnen</td>'+
+    '<td style="'+mono+'font-size:11.5px;text-align:right;padding:5px 7px">'+e.nOffen+'</td>'+
+    '<td style="'+mono+'font-size:11.5px;text-align:right;padding:5px 7px">'+expZahl(e.hOffen)+'</td>'+
+    '<td style="'+mono+'font-size:11.5px;text-align:right;padding:5px 7px">'+String(anteil(e.hOffen)).replace('.',',')+' %</td></tr></table></div>'+
+    '<div style="font-size:10px;color:var(--m);line-height:1.5;margin-top:8px">Angehakte Taetigkeiten haben Vorrang. Nur wenn keine gesetzt ist, wird der Freitext der Arbeitsschritte durchsucht &ndash; mit einem festen Begriffsverzeichnis, nicht mit einem Modell. Hat ein Bericht mehrere Arbeitsarten, werden seine Stunden gleichmaessig verteilt.</div></div>';
+
+  // ── Arbeitsarten, aufklappbar ──
   const th='text-align:left;font-size:10px;color:var(--m);padding:6px 7px;border-bottom:1px solid var(--b);white-space:nowrap;';
-  const td='font-size:11.5px;color:var(--c);padding:6px 7px;border-bottom:1px solid var(--b);';
+  const td='font-size:11.5px;color:var(--c);padding:6px 7px;border-bottom:1px solid var(--b);vertical-align:top;';
   const tdn=td+mono+'text-align:right;white-space:nowrap;';
-  let html='<div class="a-sec"><div class="a-sec-title">Stunden je Arbeitsart</div>'+
-    '<div style="font-size:10px;color:var(--m);line-height:1.5;margin-bottom:10px">'+
-    '<strong style="color:var(--c)">Abdeckung '+quote.toString().replace('.',',')+' %</strong> &ndash; '+mitArt+' von '+(mitArt+ohneArt)+
-    ' Berichten im Zeitraum haben Taetigkeiten angehakt. Die uebrigen '+ohneArt+' Berichte mit '+expZahl(stdOhneArt)+
-    ' h sind hier nicht enthalten. Hat ein Bericht mehrere Taetigkeiten, werden seine Stunden gleichmaessig darauf verteilt. '+
-    'Die Zahlen zeigen also Verhaeltnisse zwischen Arbeitsarten, keine vollstaendige Erhebung.</div>'+
+  const max=arten[0].stunden||1;
+  html+='<div class="a-sec"><div class="a-sec-title">Stunden je Arbeitsart</div>'+
     '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="width:100%;border-collapse:collapse">'+
     '<tr><th style="'+th+'">Arbeitsart</th><th style="'+th+'text-align:right">Stunden</th>'+
-    '<th style="'+th+'text-align:right">Anteil</th><th style="'+th+'">&nbsp;</th><th style="'+th+'text-align:right">Berichte</th></tr>';
-  liste.forEach(function(a){
-    const anteil=ges>0?Math.round(a.stunden/ges*1000)/10:0;
+    '<th style="'+th+'text-align:right">Anteil</th><th style="'+th+'">&nbsp;</th>'+
+    '<th style="'+th+'text-align:right">Baustellen</th><th style="'+th+'text-align:right">Personen</th>'+
+    '<th style="'+th+'">Quelle</th></tr>';
+  arten.forEach(function(a,i){
+    const auf=!!_vgArtOffen[a.name];
+    const pz=stdGes>0?Math.round(a.stunden/stdGes*1000)/10:0;
     const breite=Math.max(1,Math.round(a.stunden/max*100));
-    html+='<tr><td style="'+td+'">'+_dfEsc(a.name)+'</td>'+
+    html+='<tr style="cursor:pointer" '+tsAttr('vgArtToggle('+i+')')+'>'+
+      '<td style="'+td+'"><strong>'+_dfEsc(a.name)+'</strong><div style="font-size:9px;color:var(--m)">'+(auf?'zuklappen':'Baustellen zeigen')+'</div></td>'+
       '<td style="'+tdn+'font-weight:600">'+expZahl(a.stunden)+'</td>'+
-      '<td style="'+tdn+'">'+anteil.toString().replace('.',',')+' %</td>'+
-      '<td style="'+td+'width:36%"><div style="height:7px;border-radius:4px;background:var(--sky);width:'+breite+'%"></div></td>'+
-      '<td style="'+tdn+'">'+a.berichte+'</td></tr>';
+      '<td style="'+tdn+'">'+String(pz).replace('.',',')+' %</td>'+
+      '<td style="'+td+'width:22%"><div style="height:7px;border-radius:4px;background:var(--sky);width:'+breite+'%;margin-top:4px"></div></td>'+
+      '<td style="'+tdn+'">'+a.projListe.length+'</td>'+
+      '<td style="'+tdn+'">'+a.anzPersonen+'</td>'+
+      '<td style="'+td+'font-size:10px;white-space:nowrap">'+
+        (a.vonHaken?'<span style="color:var(--g)">'+a.vonHaken+' angehakt</span>':'')+
+        (a.vonHaken&&a.vonText?'<br>':'')+
+        (a.vonText?'<span style="color:var(--sky)">'+a.vonText+' aus Text</span>':'')+'</td></tr>';
+    if(auf){
+      let det='<div style="font-size:10px;color:var(--m);margin-bottom:5px">Stunden je Baustelle</div>';
+      det+=a.projListe.slice(0,14).map(function(p){
+        const b2=Math.max(1,Math.round(p.stunden/(a.projListe[0].stunden||1)*100));
+        return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">'+
+          '<span style="flex:1 1 auto;min-width:0;font-size:11px">'+_dfEsc(p.name)+'</span>'+
+          '<span style="'+mono+'font-size:11px;white-space:nowrap">'+expZahl(p.stunden)+' h</span>'+
+          '<span style="flex:0 0 90px"><span style="display:block;height:6px;border-radius:3px;background:var(--sky);opacity:.6;width:'+b2+'%"></span></span></div>';
+      }).join('');
+      if(a.projListe.length>14)det+='<div style="font-size:10px;color:var(--m)">... und '+(a.projListe.length-14)+' weitere</div>';
+      if(a.maschListe.length){
+        det+='<div style="font-size:10px;color:var(--m);margin:9px 0 4px">Maschinenstunden</div>'+
+          '<div style="'+mono+'font-size:11px;color:var(--c)">'+
+          a.maschListe.slice(0,8).map(function(m){return _dfEsc(m.name)+' '+expZahl(m.std)+' h';}).join(' &middot; ')+'</div>';
+      }
+      if(a.begriffListe.length){
+        det+='<div style="font-size:10px;color:var(--m);margin:9px 0 4px">Aus dem Text erkannt an den Begriffen</div>'+
+          '<div style="'+mono+'font-size:10.5px;color:var(--m)">'+
+          a.begriffListe.slice(0,10).map(function(b){return _dfEsc(b.begriff)+' ('+b.n+')';}).join(', ')+'</div>';
+      }
+      html+='<tr><td colspan="7" style="'+td+'background:var(--s2)">'+det+'</td></tr>';
+    }
   });
-  html+='<tr><td style="'+td+'font-weight:700">Summe</td><td style="'+tdn+'font-weight:700">'+expZahl(ges)+'</td>'+
-    '<td colspan="3" style="'+td+'"></td></tr></table></div></div>';
+  html+='<tr><td style="'+td+'font-weight:700">Summe</td><td style="'+tdn+'font-weight:700">'+expZahl(stdGes)+'</td>'+
+    '<td colspan="5" style="'+td+'"></td></tr></table></div></div>';
+
+  html+=vgMatrix(e);
+  html+=vgPflegeliste(e);
+  return html;
+}
+
+// ── Matrix Arbeitsart x Baustelle ───────────────────────────────────────
+function vgMatrix(e){
+  const mono='font-family:\'IBM Plex Mono\',monospace;';
+  const proj={};
+  e.arten.forEach(function(a){
+    a.projListe.forEach(function(p){proj[p.key]=(proj[p.key]||0)+p.stunden;});
+  });
+  const top=Object.keys(proj).sort(function(x,y){return proj[y]-proj[x];}).slice(0,6);
+  if(!top.length)return '';
+  const namen={};
+  e.arten.forEach(function(a){a.projListe.forEach(function(p){namen[p.key]=p.name;});});
+  const th='text-align:right;font-size:10px;color:var(--m);padding:6px 7px;border-bottom:1px solid var(--b);';
+  const td='font-size:11.5px;color:var(--c);padding:6px 7px;border-bottom:1px solid var(--b);';
+  const tdn=td+mono+'text-align:right;white-space:nowrap;';
+  let html='<div class="a-sec"><div class="a-sec-title">Arbeitsart je Baustelle</div>'+
+    '<div style="font-size:10px;color:var(--m);line-height:1.5;margin-bottom:8px">Die sechs Baustellen mit den meisten Stunden. So siehst du, wofuer auf welcher Baustelle wie lange gearbeitet wurde &ndash; und wo dieselbe Arbeit deutlich laenger gedauert hat.</div>'+
+    '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="width:100%;border-collapse:collapse;min-width:640px">'+
+    '<tr><th style="'+th+'text-align:left">Arbeitsart</th>';
+  top.forEach(function(k){
+    html+='<th style="'+th+'">'+_dfEsc(String(namen[k]||'').substring(0,22))+'</th>';
+  });
+  html+='<th style="'+th+'">uebrige</th><th style="'+th+'">Summe</th></tr>';
+  e.arten.forEach(function(a){
+    const jeProj={};
+    a.projListe.forEach(function(p){jeProj[p.key]=p.stunden;});
+    let rest=a.stunden;
+    html+='<tr><td style="'+td+'">'+_dfEsc(a.name)+'</td>';
+    top.forEach(function(k){
+      const v=jeProj[k]||0;
+      rest-=v;
+      html+='<td style="'+tdn+(v>0?'':'color:var(--m)')+'">'+(v>0?expZahl(v):'&middot;')+'</td>';
+    });
+    rest=Math.round(Math.max(0,rest)*100)/100;
+    html+='<td style="'+tdn+'color:var(--m)">'+(rest>0?expZahl(rest):'&middot;')+'</td>'+
+      '<td style="'+tdn+'font-weight:600">'+expZahl(a.stunden)+'</td></tr>';
+  });
+  html+='</table></div></div>';
+  return html;
+}
+
+// ── Pflegeliste: was das Begriffsverzeichnis noch nicht kennt ───────────
+function vgPflegeliste(e){
+  if(!e.offeneTexte.length)return '';
+  const mono='font-family:\'IBM Plex Mono\',monospace;';
+  const woerter=vgOffeneWoerter(e.offeneTexte).slice(0,30);
+  const texte=e.offeneTexte.slice().sort(function(a,b){return b.stunden-a.stunden;}).slice(0,12);
+  let html='<div class="a-sec"><div class="a-sec-title">Noch nicht zugeordnet</div>'+
+    '<div style="font-size:10px;color:var(--m);line-height:1.5;margin-bottom:9px">'+
+    e.nOffen+' Berichte mit '+expZahl(e.hOffen)+' h liessen sich weder ueber die Checkliste noch ueber den Text zuordnen. '+
+    'Die Woerter darunter kommen in diesen Texten vor und stehen in keinem Begriffsverzeichnis &ndash; sag mir, welche davon zu welcher Arbeitsart gehoeren, dann sind sie beim naechsten Mal dabei.</div>';
+  if(woerter.length){
+    html+='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">'+
+      woerter.map(function(w){
+        return '<span style="'+mono+'font-size:10.5px;background:var(--s2);border:1px solid var(--b);border-radius:12px;padding:3px 9px;color:var(--c)">'+
+          _dfEsc(w.wort)+' <span style="color:var(--m)">'+expZahl(w.stunden)+' h</span></span>';
+      }).join('')+'</div>';
+  }
+  html+='<div style="font-size:10px;color:var(--m);margin-bottom:5px">Die Texte mit den meisten Stunden</div>'+
+    texte.map(function(t){
+      return '<div style="font-size:11px;color:var(--c);margin-bottom:4px;line-height:1.45">'+
+        '<span style="'+mono+'color:var(--m)">'+_dfEsc(fmtD(t.datum))+' &middot; '+expZahl(t.stunden)+' h</span> &ndash; '+
+        _dfEsc(String(t.text).substring(0,160))+(String(t.text).length>160?' ...':'')+'</div>';
+    }).join('')+'</div>';
   return html;
 }
 
