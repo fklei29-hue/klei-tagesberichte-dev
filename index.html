@@ -1074,6 +1074,11 @@ const FIRMA_ADRESSE='Stettiner Str. 14-16 - 34225 Baunatal';
 const FIRMA_TEL='+49 (0) 5601 8056';
 const FIRMA_WEB='www.klei-sportplatzbau.de';
 const FIRMA_LOGO='https://www.klei-sportplatzbau.de/images/logos/KLEI_LOGO_FARBIG_RGB_72DPI.png';
+// Dasselbe Logo noch einmal fest in der Datei. Das PDF kann das Bild NICHT von der Webseite
+// holen: der Umweg ueber <canvas> braucht eine CORS-Freigabe, die der Webserver nicht schickt -
+// deshalb blieb der Briefkopf links leer. Mit der Data-URL braucht das PDF kein Netz.
+// Austauschen: neues PNG als Base64 (data:image/png;base64,...) hier eintragen.
+const FIRMA_LOGO_DATA='data:image/png;base64,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';
 
 const{createClient}=supabase;
 const sb=createClient(SUPA_URL,SUPA_KEY);
@@ -5705,6 +5710,10 @@ function exportCockpitCSV(){
 var EINTEILUNG_AKTIV=false;
 
 var EINT_ALIASE=[];      // {alias_norm, alias_anzeige, mitarbeiter_id}
+var EINT_PROJ_ALLE=[];   // alle Projekte inkl. der inaktiven - nur fuer den Import
+// Fahrzeit-Stufen des Projekt-Tabs. Der Entwurf rastet auf dieselben Werte ein,
+// damit die Auswahl im Projekt-Tab den Wert spaeter auch anzeigen kann.
+var EINT_FZ_STUFEN=[0,5,10,15,20,25,30,35,40,45,50,55,60,70,80,90,100,110,120];
 var EINT_HEUTE=[];       // alle Einteilungszeilen des heutigen Tages
 var EINT_VORSCHAU=null;  // geparste, noch nicht gespeicherte Datei
 var EINT_CDN='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
@@ -5762,24 +5771,150 @@ async function ladeEintAliase(){
   return {ok:true,fehler:''};
 }
 
-// ---- Namensaufloesung: Alias, voller Name, Kuerzel, eindeutiger Nachname ----
+// ---- Alle Projekte laden, auch die deaktivierten ----
+// PROJEKTE enthaelt nur aktiv=true. Ein geloeschtes (= deaktiviertes) Projekt saehe im Import
+// deshalb aus wie eine unbekannte Nummer - und wuerde als Doppel neu angelegt. Darum hier
+// einmal die vollstaendige Liste.
+async function ladeEintProjekteAlle(){
+  var r=await _eintLadeAlle('projekte','id,nr,name,kategorie,fahrzeit_min,aktiv',null);
+  if(!r.ok){
+    EINT_PROJ_ALLE=[];
+    console.error('EINTEILUNG: Projektliste konnte nicht geladen werden - '+r.fehler);
+    return {ok:false,fehler:r.fehler};
+  }
+  EINT_PROJ_ALLE=r.daten;
+  return {ok:true,fehler:''};
+}
+
+// Projektnummer in den Stammdaten suchen - erst aktiv, dann alle.
+function eintProjSuche(nr,auchInaktiv){
+  var n=_eintNorm(nr);
+  if(!n)return null;
+  var liste=auchInaktiv?EINT_PROJ_ALLE:PROJEKTE;
+  for(var i=0;i<liste.length;i++){if(_eintNorm(liste[i].nr)===n)return liste[i];}
+  return null;
+}
+
+// Fahrzeit aus der Datei auf die naechste Stufe des Projekt-Tabs runden.
+function eintFzStufe(min){
+  var n=parseInt(min,10);
+  if(isNaN(n)||n<0)return 0;
+  var best=0,diff=-1;
+  EINT_FZ_STUFEN.forEach(function(st){
+    var d=Math.abs(st-n);
+    if(diff<0||d<diff){diff=d;best=st;}
+  });
+  return best;
+}
+
+// Projektname aus dem Baustellentext der Einteilung vorschlagen. Die fuehrende Postleitzahl
+// faellt weg, der Rest bleibt stehen - der Vorschlag ist im Entwurf editierbar.
+function eintProjNameVorschlag(bez){
+  var t=String(bez==null?'':bez).replace(/\s+/g,' ').trim();
+  t=t.replace(/^\d{5}\s*,?\s*/,'');
+  return t.substring(0,90);
+}
+
+// ---- Stammdatenname zerlegen ----
+// In mitarbeiter.name stehen beide Schreibweisen nebeneinander: "Nachname, Vorname" und
+// "Vorname Nachname". Die frueher benutzte Regel "letztes Wort = Nachname" liefert bei der
+// Komma-Schreibweise den VORnamen - deshalb lief die Zuordnung reiner Nachnamen aus der
+// Einteilungsdatei ins Leere. Die gepflegte Spalte mitarbeiter.nachname wird mitgenommen,
+// ist aber per SQL mit dem letzten Wort vorbelegt und darum nur ein Kandidat unter mehreren.
+function _eintNameTeile(m){
+  var name=String(m&&m.name!=null?m.name:'').trim();
+  var vor='',nach='';
+  if(name.indexOf(',')>=0){
+    var t=name.split(',');
+    nach=String(t[0]||'').trim();
+    vor=String(t[1]||'').trim();
+  }else{
+    var w=name.split(/\s+/).filter(Boolean);
+    if(w.length>1){vor=w[0];nach=w[w.length-1];}
+    else{vor='';nach=w.length?w[0]:'';}
+  }
+  var spalte=String(m&&m.nachname!=null?m.nachname:'').trim();
+  var kand=[];
+  var merk=function(x){var n=_eintNorm(x);if(n&&kand.indexOf(n)<0)kand.push(n);};
+  if(spalte)merk(spalte);
+  merk(nach);
+  var teile=name.replace(/,/g,' ').split(/\s+/).filter(Boolean).map(_eintNorm).filter(Boolean);
+  return {
+    vor:_eintNorm(vor),
+    nach:_eintNorm(nach),
+    nachKand:kand,
+    teile:teile,
+    sortiert:teile.slice().sort().join('')
+  };
+}
+
+// Eine Stufe auswerten: genau ein Treffer zaehlt, mehrere bedeuten "mehrdeutig" und
+// werden bewusst NICHT geraten, sondern bleiben zum Zuordnen von Hand offen.
+function _eintStufe(liste,quelle){
+  if(liste.length===1)return {id:liste[0].id,quelle:quelle};
+  if(liste.length>1)return {id:null,quelle:'mehrdeutig'};
+  return null;
+}
+
+// ---- Namensaufloesung: Alias, voller Name, Kuerzel, Nachname, Initial+Nachname, Vorname ----
+function _eintSucheStufen(norm,woerter){
+  var tr=null,i;
+  var teileNorm=(woerter||[]).map(_eintNorm).filter(Boolean);
+  var sortiert=teileNorm.slice().sort().join('');
+  var info=[];
+  for(i=0;i<MALISTE.length;i++)info.push(_eintNameTeile(MALISTE[i]));
+
+  // 1) Voller Name - Wortfolge egal ("Klei, Florian" = "Florian Klei")
+  var voll=[];
+  for(i=0;i<MALISTE.length;i++){
+    if(_eintNorm(MALISTE[i].name)===norm||(sortiert&&info[i].sortiert===sortiert))voll.push(MALISTE[i]);
+  }
+  tr=_eintStufe(voll,'name');if(tr)return tr;
+
+  // 2) Kuerzel
+  var kz=MALISTE.filter(function(m){return m.kuerzel&&_eintNorm(m.kuerzel)===norm;});
+  tr=_eintStufe(kz,'kuerzel');if(tr)return tr;
+
+  // 3) Nachname (Spalte nachname, Teil vor dem Komma oder letztes Wort)
+  var nach=[];
+  for(i=0;i<MALISTE.length;i++){if(info[i].nachKand.indexOf(norm)>=0)nach.push(MALISTE[i]);}
+  tr=_eintStufe(nach,'nachname');if(tr)return tr;
+
+  // 4) Initial + Nachname: "S. Klei" und "U.Klei" werden zu "sklei"/"uklei" normalisiert
+  var ini=[];
+  for(i=0;i<MALISTE.length;i++){
+    var v=info[i].vor,n2=info[i].nach;
+    if(!v||!n2)continue;
+    if(norm===v.charAt(0)+n2||norm===v.substring(0,2)+n2)ini.push(MALISTE[i]);
+  }
+  tr=_eintStufe(ini,'initial');if(tr)return tr;
+
+  // 5) Eindeutiger Vorname - letzte Stufe, greift nur wenn kein Nachname gepasst hat
+  var vorn=[];
+  for(i=0;i<MALISTE.length;i++){if(info[i].vor&&info[i].vor===norm)vorn.push(MALISTE[i]);}
+  tr=_eintStufe(vorn,'vorname');if(tr)return tr;
+
+  return {id:null,quelle:'unbekannt'};
+}
+
 function eintFindeMitarbeiter(rohName){
   var norm=_eintNorm(rohName);
   if(!norm)return {id:null,quelle:'leer'};
   var al=EINT_ALIASE.find(function(a){return a.alias_norm===norm&&a.mitarbeiter_id;});
   if(al)return {id:al.mitarbeiter_id,quelle:'alias'};
-  var voll=MALISTE.filter(function(m){return _eintNorm(m.name)===norm;});
-  if(voll.length===1)return {id:voll[0].id,quelle:'name'};
-  if(voll.length>1)return {id:null,quelle:'mehrdeutig'};
-  var kz=MALISTE.filter(function(m){return m.kuerzel&&_eintNorm(m.kuerzel)===norm;});
-  if(kz.length===1)return {id:kz[0].id,quelle:'kuerzel'};
-  if(kz.length>1)return {id:null,quelle:'mehrdeutig'};
-  var nach=MALISTE.filter(function(m){
-    var teile=String(m.name||'').trim().split(/\s+/);
-    return teile.length>0&&_eintNorm(teile[teile.length-1])===norm;
-  });
-  if(nach.length===1)return {id:nach[0].id,quelle:'nachname'};
-  if(nach.length>1)return {id:null,quelle:'mehrdeutig'};
+  var woerter=String(rohName).replace(/[.,;]/g,' ').split(/\s+/).filter(Boolean);
+  var tr=_eintSucheStufen(norm,woerter);
+  if(tr.id||tr.quelle==='mehrdeutig')return tr;
+  // Zusaetze vor dem Namen ("BF Louis"): die Woerter einzeln probieren, von hinten nach vorn.
+  // Kurze Bruchstuecke (bis zwei Zeichen) bleiben aussen vor, sonst traefe jedes Kuerzel irgendwen.
+  if(woerter.length>1){
+    for(var w=woerter.length-1;w>=0;w--){
+      var tn=_eintNorm(woerter[w]);
+      if(tn.length<3)continue;
+      var t2=_eintSucheStufen(tn,[woerter[w]]);
+      if(t2.id)return {id:t2.id,quelle:'teil'};
+    }
+  }
   return {id:null,quelle:'unbekannt'};
 }
 
@@ -5799,6 +5934,27 @@ function eintSplitNamen(txt,auchSlash){
     if(s.length>60)return;                      // offensichtlich kein Name
     out.push(s);
   });
+  return eintNamenPaareZusammen(out);
+}
+
+// "Klei, Florian" wird vom Trennzeichen Komma in zwei Stuecke zerlegt. Ergeben zwei
+// aufeinanderfolgende Stuecke zusammen einen VOLLEN Treffer in den Stammdaten, gehoeren
+// sie zusammen und werden wieder vereint. Nur ein voller Treffer zaehlt - ein Nachnamens-
+// oder Vornamenstreffer wuerde sonst zufaellig benachbarte Namen verkleben.
+function eintNamenPaareZusammen(liste){
+  if(!liste||liste.length<2)return liste;
+  if(!MALISTE||!MALISTE.length)return liste;
+  var out=[],i=0;
+  while(i<liste.length){
+    if(i+1<liste.length){
+      var komb=liste[i]+' '+liste[i+1];
+      var tr=eintFindeMitarbeiter(komb);
+      if(tr.id&&(tr.quelle==='name'||tr.quelle==='alias')){
+        out.push(komb);i+=2;continue;
+      }
+    }
+    out.push(liste[i]);i++;
+  }
   return out;
 }
 
@@ -5879,9 +6035,13 @@ function eintParseBlatt(aoa){
     else if(bezN.indexOf('buero')===0||(bezN.indexOf('werkstatt')>=0&&bezN.indexOf('bauhof')>=0))typ='intern';
 
     var projNr=cProj>=0?String(r[cProj]==null?'':r[cProj]).trim():'';
-    var pTreffer=null;
+    var pTreffer=null,pInaktiv=null;
     if(projNr){
-      pTreffer=PROJEKTE.find(function(p){return _eintNorm(p.nr)===_eintNorm(projNr);})||null;
+      pTreffer=eintProjSuche(projNr,false);
+      if(!pTreffer){
+        var pAlt=eintProjSuche(projNr,true);
+        if(pAlt)pInaktiv=pAlt;
+      }
     }
     var fzRoh=cFz>=0?String(r[cFz]==null?'':r[cFz]).trim():'';
     var fzZahl=parseInt(fzRoh.replace(/[^0-9]/g,''),10);
@@ -5909,6 +6069,7 @@ function eintParseBlatt(aoa){
       projNr:projNr,
       projekt:pTreffer,
       projektFehlt:(projNr!==''&&!pTreffer),
+      projektInaktiv:pInaktiv,
       fahrzeitDatei:fzZahl,
       fahrzeitStamm:pTreffer?(parseInt(pTreffer.fahrzeit_min||0,10)||0):null,
       fahrzeugNr:cFzg>=0?String(r[cFzg]==null?'':r[cFzg]).trim():'',
@@ -6235,6 +6396,7 @@ function eintDateiGewaehlt(){
         eintStatus('FEHLER: Die gespeicherten Zuordnungen konnten nicht geladen werden ('+aRes.fehler+'). Ohne sie waeren alle Namen offen. Import abgebrochen.','var(--r)');
         return;
       }
+      var pRes=await ladeEintProjekteAlle();
       var wb=null;
       try{
         wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
@@ -6250,6 +6412,7 @@ function eintDateiGewaehlt(){
       var aoa=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''});
       EINT_VORSCHAU=eintParseBlatt(aoa);
       EINT_VORSCHAU.dateiname=datei.name;
+      if(!pRes.ok)EINT_VORSCHAU.warnungen.push('Die vollstaendige Projektliste konnte nicht geladen werden ('+pRes.fehler+'). Deaktivierte Projekte werden deshalb nicht erkannt - vor dem Anlegen bitte im Projekt-Tab gegenpruefen.');
       if(!EINT_VORSCHAU.datum){
         var m2=String(datei.name).match(/(\d{4})[.\-_](\d{2})[.\-_](\d{2})/);
         if(m2)EINT_VORSCHAU.datum=m2[1]+'-'+m2[2]+'-'+m2[3];
@@ -6530,6 +6693,7 @@ function eintPdfGewaehlt(datei){
         eintStatus('FEHLER: Die gespeicherten Zuordnungen konnten nicht geladen werden ('+aRes.fehler+'). Ohne sie waeren alle Namen offen. Import abgebrochen.','var(--r)');
         return;
       }
+      var pRes=await ladeEintProjekteAlle();
       var erg=null;
       try{
         erg=await eintPdfLesen(new Uint8Array(ev.target.result));
@@ -6540,6 +6704,7 @@ function eintPdfGewaehlt(datei){
       }
       EINT_VORSCHAU=eintParseBlatt(erg.aoa);
       EINT_VORSCHAU.dateiname=datei.name;
+      if(!pRes.ok)EINT_VORSCHAU.warnungen.push('Die vollstaendige Projektliste konnte nicht geladen werden ('+pRes.fehler+'). Deaktivierte Projekte werden deshalb nicht erkannt - vor dem Anlegen bitte im Projekt-Tab gegenpruefen.');
       if(!EINT_VORSCHAU.datum){
         var m2=String(datei.name).match(/(\d{4})[.\-_](\d{2})[.\-_](\d{2})/);
         if(m2)EINT_VORSCHAU.datum=m2[1]+'-'+m2[2]+'-'+m2[3];
@@ -6558,8 +6723,12 @@ function eintPdfGewaehlt(datei){
   });
 }
 
+// Fuer die Einteilung werden ALLE aktiven Mitarbeiter angeboten. maAuswahlListe() blendet
+// Buero und Leitung aus - das ist in den Zeiten-Zeilen richtig, hier aber falsch: in der
+// Einteilung stehen auch Buero-, Werkstatt- und Bauhofzeilen, deren Namen sonst nicht von
+// Hand zuzuordnen waeren. Sortierung wie ueberall nach Nachname.
 function eintMaOpts(sel){
-  var list=maAuswahlListe().slice().sort(function(a,b){return (a.name||'').localeCompare(b.name||'','de');});
+  var list=MALISTE.filter(function(m){return m.aktiv!==false&&m.name;}).slice().sort(maCmp);
   return '<option value="">- nicht zuordnen -</option>'+list.map(function(m){
     return '<option value="'+_dfEsc(m.id)+'"'+(sel===m.id?' selected':'')+'>'+_dfEsc(m.name)+(m.mitarbeiter_nr?' #'+m.mitarbeiter_nr:'')+'</option>';
   }).join('');
@@ -6620,6 +6789,44 @@ function renderEintVorschau(){
     h+='</tbody></table></div></div>';
   }
 
+  // Fehlende Projekte als Anlege-Entwurf
+  var entwAlle=eintProjEntwuerfe();
+  var entwNeu=entwAlle.filter(function(e){return !e.inaktiv;});
+  var entwInaktiv=entwAlle.filter(function(e){return !!e.inaktiv;});
+  if(entwNeu.length){
+    h+='<div style="background:var(--s3);border:1px solid var(--sky);border-radius:var(--rad);padding:10px;margin-bottom:10px">'+
+      '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--sky);letter-spacing:1px;margin-bottom:6px">PROJEKTE FEHLEN ('+entwNeu.length+')</div>'+
+      '<div style="font-size:11px;color:var(--t);line-height:1.5;margin-bottom:8px">Diese Projektnummern stehen in der Einteilung, aber nicht in den Stammdaten. Alle Felder sind vorausgefuellt und aenderbar. Was angehakt ist, wird angelegt und sofort mit der Vorschau verknuepft - gespeichert wird die Einteilung dadurch noch nicht.</div>'+
+      '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Anlegen</th><th>Nummer</th><th>Projektname</th><th>Kategorie</th><th>Fahrzeit</th></tr></thead><tbody>';
+    entwNeu.forEach(function(e){
+      var k=_dfEsc(e.key);
+      h+='<tr><td style="text-align:center"><input type="checkbox" '+(e.anlegen?'checked':'')+' onchange="eintProjFeld(\''+k+'\',\'anlegen\',this.checked)"></td>'+
+        '<td><input value="'+_dfEsc(e.nr)+'" style="width:96px;font-size:10px" onchange="eintProjFeld(\''+k+'\',\'nr\',this.value)">'+
+        (e.unvollstaendig?'<div style="font-size:9px;color:var(--o);margin-top:2px">Nummer unvollstaendig - bitte ergaenzen</div>':'')+'</td>'+
+        '<td><input value="'+_dfEsc(e.name)+'" style="width:100%;min-width:200px;font-size:10px" onchange="eintProjFeld(\''+k+'\',\'name\',this.value)">'+
+        '<div style="font-size:9px;color:var(--m);margin-top:2px">aus: '+_dfEsc(e.zeilen.slice(0,2).join(' | ').substring(0,70))+(e.zeilen.length>2?' (+'+(e.zeilen.length-2)+')':'')+'</div></td>'+
+        '<td><select style="font-size:10px" onchange="eintProjFeld(\''+k+'\',\'kat\',this.value)">'+
+        '<option value="bau"'+(e.kat==='bau'?' selected':'')+'>Bau</option>'+
+        '<option value="pflege"'+(e.kat==='pflege'?' selected':'')+'>Pflege</option></select></td>'+
+        '<td><select style="font-size:10px" onchange="eintProjFeld(\''+k+'\',\'fahrzeit\',this.value)">'+
+        EINT_FZ_STUFEN.map(function(st){return '<option value="'+st+'"'+(parseInt(e.fahrzeit,10)===st?' selected':'')+'>'+st+' min</option>';}).join('')+
+        '</select></td></tr>';
+    });
+    h+='</tbody></table></div>'+
+      '<div style="margin-top:8px"><button class="btn btn-sky" ontouchstart="eintProjekteAnlegen()" onclick="eintProjekteAnlegen()">+ Markierte Projekte anlegen</button></div>'+
+      '<div style="font-size:10px;color:var(--m);margin-top:6px">Pflege-Leistungen (die Zeilen mit "(6x)") traegst du danach im Projekt-Tab nach.</div>'+
+      '</div>';
+  }
+  if(entwInaktiv.length){
+    h+='<div style="background:var(--earthg);border:1px solid var(--earth);border-radius:var(--rad);padding:8px 10px;margin-bottom:10px">'+
+      '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--earth);letter-spacing:1px;margin-bottom:4px">PROJEKT VORHANDEN, ABER DEAKTIVIERT ('+entwInaktiv.length+')</div>'+
+      entwInaktiv.map(function(e){
+        return '<div style="font-size:11px;color:var(--t);line-height:1.5">'+_dfEsc(e.nr)+' - '+_dfEsc(String(e.inaktiv.name||'').substring(0,50))+'</div>';
+      }).join('')+
+      '<div style="font-size:10px;color:var(--m);margin-top:4px">Diese Nummern gibt es schon, sie sind nur deaktiviert. Sie werden deshalb nicht zum Anlegen angeboten - ein zweites Projekt mit derselben Nummer waere ein Doppel. Die Einteilungszeilen bleiben vorerst ohne Projektbezug.</div>'+
+      '</div>';
+  }
+
   // Fahrzeit-Gegenprobe
   if(fzAbw.length){
     h+='<div style="background:var(--earthg);border:1px solid var(--earth);border-radius:var(--rad);padding:8px 10px;margin-bottom:10px">'+
@@ -6662,6 +6869,101 @@ function eintSetzeZuordnung(zIdx,pIdx,maId){
   z.personen[pIdx].mitarbeiter_id=maId||null;
   z.personen[pIdx].quelle=maId?'manuell':'unbekannt';
   renderEintVorschau();
+}
+
+// ══════ EINTEILUNG: FEHLENDE PROJEKTE ALS ENTWURF ══════
+// Je unbekannter Projektnummer ein vorausgefuellter Entwurf. Mehrere Zeilen mit derselben
+// Nummer ergeben einen Entwurf. Die Entwuerfe haengen an der Vorschau, damit Aenderungen
+// ein erneutes Zeichnen der Vorschau ueberstehen.
+function eintProjEntwuerfe(){
+  var v=EINT_VORSCHAU;
+  if(!v)return [];
+  if(v.projEntwuerfe)return v.projEntwuerfe;
+  var map={},liste=[];
+  v.zeilen.forEach(function(z){
+    if(!z.projektFehlt)return;
+    var key=_eintNorm(z.projNr);
+    if(!key)return;
+    if(map[key]){
+      if(map[key].zeilen.indexOf(z.bez)<0)map[key].zeilen.push(z.bez);
+      return;
+    }
+    var unvollstaendig=/\.{2,}|\u2026/.test(String(z.projNr));
+    map[key]={
+      key:key,
+      nr:String(z.projNr).trim(),
+      name:eintProjNameVorschlag(z.bez),
+      kat:(_eintNorm(z.bez).indexOf('pflege')===0?'pflege':'bau'),
+      fahrzeit:eintFzStufe(z.fahrzeitDatei),
+      inaktiv:z.projektInaktiv||null,
+      unvollstaendig:unvollstaendig,
+      anlegen:(!z.projektInaktiv&&!unvollstaendig),
+      zeilen:[z.bez]
+    };
+    liste.push(map[key]);
+  });
+  v.projEntwuerfe=liste;
+  return liste;
+}
+
+// Feld eines Entwurfs aendern. Bewusst ohne erneutes Zeichnen, sonst springt der Cursor.
+function eintProjFeld(key,feld,wert){
+  var liste=eintProjEntwuerfe();
+  for(var i=0;i<liste.length;i++){
+    if(liste[i].key!==key)continue;
+    if(feld==='anlegen')liste[i].anlegen=!!wert;
+    else if(feld==='fahrzeit')liste[i].fahrzeit=parseInt(wert,10)||0;
+    else liste[i][feld]=String(wert==null?'':wert);
+    return;
+  }
+}
+
+// Nach dem Anlegen die Vorschau neu gegen die Projektliste haengen.
+function eintProjekteNeuVerknuepfen(){
+  var v=EINT_VORSCHAU;
+  if(!v)return;
+  v.zeilen.forEach(function(z){
+    if(!z.projNr)return;
+    var p=eintProjSuche(z.projNr,false);
+    z.projekt=p;
+    z.projektFehlt=!p;
+    z.projektInaktiv=p?null:eintProjSuche(z.projNr,true);
+    z.fahrzeitStamm=p?(parseInt(p.fahrzeit_min||0,10)||0):null;
+  });
+  v.projEntwuerfe=null;
+}
+
+async function eintProjekteAnlegen(){
+  if(!EINT_VORSCHAU){eintStatus('Keine Vorschau offen.','var(--r)');return;}
+  var liste=eintProjEntwuerfe().filter(function(e){return e.anlegen&&!e.inaktiv;});
+  if(!liste.length){eintStatus('Kein Projekt angehakt.','var(--r)');return;}
+  var ohneName=liste.filter(function(e){return !String(e.name||'').trim();});
+  if(ohneName.length){eintStatus('FEHLER: '+ohneName.length+' Projekt(e) ohne Namen. Bitte Namen eintragen.','var(--r)');return;}
+  var doppelt=liste.filter(function(e){return !!eintProjSuche(e.nr,true);});
+  if(doppelt.length){eintStatus('FEHLER: Die Nummer '+doppelt[0].nr+' gibt es schon. Bitte Vorschau neu laden.','var(--r)');return;}
+  if(!confirm(liste.length+' Projekt(e) anlegen?\n\nSie erscheinen danach im Projekt-Tab und sind sofort mit der Einteilung verknuepft.'))return;
+
+  eintStatus('Projekte werden angelegt...','var(--m)');
+  var saetze=liste.map(function(e){
+    return {
+      nr:String(e.nr||'').trim(),
+      name:String(e.name).trim(),
+      fahrzeit_min:parseInt(e.fahrzeit,10)||0,
+      kategorie:(e.kat==='pflege'?'pflege':'bau'),
+      leistungen:[],
+      aktiv:true
+    };
+  });
+  var res=await sb.from('projekte').insert(saetze);
+  if(res.error){eintStatus('FEHLER beim Anlegen: '+res.error.message,'var(--r)');return;}
+
+  await loadProjekte();
+  var pr=await ladeEintProjekteAlle();
+  eintProjekteNeuVerknuepfen();
+  renderEintVorschau();
+  toast(saetze.length+' Projekt(e) angelegt','ok');
+  if(!pr.ok)eintStatus('Angelegt, aber die vollstaendige Projektliste liess sich nicht neu laden ('+pr.fehler+'). Inaktive Projekte werden bis zum naechsten Import nicht erkannt.','var(--o)');
+  else eintStatus(saetze.length+' Projekt(e) angelegt und mit der Vorschau verknuepft.','var(--g)');
 }
 
 function eintVorschauVerwerfen(){
@@ -7499,18 +7801,26 @@ async function generatePDF(report){
   const FIT=(txt,maxW,sz,bold)=>{doc.setFontSize(sz||8);doc.setFont('helvetica',bold?'bold':'normal');let t=clean(txt);if(doc.getTextWidth(t)<=maxW)return t;while(t.length>1&&doc.getTextWidth(t+'..')>maxW)t=t.slice(0,-1);return t+'..';};
 
   // LOGO
+  // Erst die eingebettete Data-URL (kein Netz, kein CORS), nur wenn die fehlt der alte Weg ueber
+  // die Firmenwebseite. Fehlschlaege werden gemeldet statt still geschluckt.
   try{
-    const logoData=await new Promise(resolve=>{
-      const img=new Image();img.crossOrigin='anonymous';
-      img.onload=()=>{try{const c=document.createElement('canvas');c.width=img.naturalWidth||200;c.height=img.naturalHeight||80;c.getContext('2d').drawImage(img,0,0);resolve(c.toDataURL('image/png'));}catch(e){resolve(null);}};
-      img.onerror=()=>resolve(null);img.src=FIRMA_LOGO;setTimeout(()=>resolve(null),3000);
-    });
+    let logoData=FIRMA_LOGO_DATA||'';
+    if(!logoData){
+      logoData=await new Promise(resolve=>{
+        const img=new Image();img.crossOrigin='anonymous';
+        img.onload=()=>{try{const c=document.createElement('canvas');c.width=img.naturalWidth||200;c.height=img.naturalHeight||80;c.getContext('2d').drawImage(img,0,0);resolve(c.toDataURL('image/png'));}catch(e){console.error('PDF: Logo liess sich nicht aus der Webseite lesen (CORS) - '+e.message);resolve(null);}};
+        img.onerror=()=>{console.error('PDF: Logo konnte von der Webseite nicht geladen werden.');resolve(null);};
+        img.src=FIRMA_LOGO;setTimeout(()=>resolve(null),3000);
+      });
+    }
     if(logoData&&logoData.length>100){
       const tmp=new Image();tmp.src=logoData;await new Promise(r=>{tmp.onload=r;setTimeout(r,500);});
-      const lH=14,lW=Math.min(lH*(tmp.naturalWidth/tmp.naturalHeight),52);
+      const lH=14,lW=Math.min(lH*((tmp.naturalWidth||1)/(tmp.naturalHeight||1)),52);
       doc.addImage(logoData,'PNG',M,y,lW,lH);
+    }else{
+      console.error('PDF: Kein Logo verfuegbar - der Briefkopf bleibt links leer.');
     }
-  }catch(e){}
+  }catch(e){console.error('PDF: Logo konnte nicht eingefuegt werden - '+e.message);}
 
   doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(...C.dunkel);doc.text(FIRMA_NAME,W-M,y+7,{align:'right'});
   doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...C.grau);
