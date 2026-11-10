@@ -751,6 +751,61 @@ body:not(.theme-light) .fab-wrap .send-status{background:var(--s1);}
   .fab-btns .lbl-s{display:inline;}
   .fab-btns .btn{padding:12px 16px;font-size:13.5px;}
 }
+
+/* Hinweismeldung: darf nie Taps abfangen. Ausgeblendet lag sie unsichtbar ueber der Sende-Leiste
+   (opacity 0, aber weiter antippbar) - kurze Tipps auf "Senden" gingen dadurch ins Leere. */
+.toast{pointer-events:none;}
+/* ══════ Berichts-Assistent (Vollbild, grosse Bedienung fuer Handy und iPad) ══════ */
+#bas-inhalt{font-size:15px;line-height:1.45;color:var(--t);}
+#bas-inhalt input,#bas-inhalt select,#bas-inhalt textarea{font-size:16px;min-height:48px;padding:10px 12px;}
+#bas-inhalt textarea{min-height:88px;}
+#bas-inhalt label{font-size:12px;color:var(--m);}
+#bas-inhalt .btn{min-height:48px;font-size:15px;padding:10px 16px;justify-content:center;text-align:center;}
+#bas-inhalt .btn.bas-klein{min-height:40px;font-size:13px;padding:8px 12px;}
+#bas-inhalt .btn.bas-gross{min-height:62px;font-size:17px;}
+#bas-inhalt .delbtn{min-width:44px;min-height:44px;font-size:18px;}
+.bas-titel{font-weight:700;font-size:22px;color:var(--c);line-height:1.25;}
+.bas-unter{font-size:15px;color:var(--earth);font-weight:600;margin-bottom:14px;}
+.bas-lbl{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--m);letter-spacing:1px;margin-bottom:6px;}
+.bas-hinweis{font-size:13px;color:var(--m);line-height:1.5;}
+.bas-name{font-size:16px;font-weight:600;color:var(--c);}
+.bas-nr{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--m);font-weight:400;}
+.bas-zeit{display:flex;gap:8px;}
+.bas-zeit .fg{flex:1;min-width:0;}
+.bas-person{background:var(--s1);border:1px solid var(--gd);border-radius:8px;padding:12px;margin-bottom:8px;}
+.bas-zeile{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:8px 0;flex-wrap:wrap;}
+.bas-zt{font-size:14px;color:var(--t);}
+.bas-zt.bas-eigen{color:var(--earth);font-weight:600;}
+.bas-fahrt{display:flex;gap:6px;align-items:center;margin-top:10px;}
+.bas-fl{font-size:12px;color:var(--m);flex:0 0 40px;}
+.bas-liste{border:1px solid var(--b);border-radius:8px;background:var(--s1);overflow:hidden;}
+.bas-wahl{display:flex;align-items:center;gap:12px;padding:13px 12px;border-bottom:1px solid var(--b);cursor:pointer;user-select:none;-webkit-user-select:none;}
+.bas-wahl:last-child{border-bottom:none;}
+.bas-plus{width:28px;height:28px;flex:0 0 28px;border-radius:50%;border:2px solid var(--gd);color:var(--gd);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;line-height:1;}
+.bas-summe{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--m);margin-top:4px;line-height:1.7;}
+.bas-fuss{position:sticky;bottom:0;display:flex;gap:8px;margin-top:18px;padding:10px 0 calc(10px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--b);z-index:2;}
+#bas-inhalt .bas-fuss .btn{min-height:56px;font-size:16px;}
+.bas-mitte{text-align:center;padding:10vh 0 0;}
+.bas-haken{width:76px;height:76px;margin:0 auto 16px;border-radius:50%;background:var(--g);color:#fff;font-size:44px;line-height:76px;font-weight:700;}
+/* Feldreihen: Raster statt Umbruch - auf dem Handy zwei Spalten, breite Felder ueber die ganze Zeile */
+.bas-reihe{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.bas-reihe .fg{min-width:0;flex:none;}
+.bas-reihe .bas-breit{grid-column:1/-1;}
+.bas-reihe.bas-drei{grid-template-columns:1fr 1fr 1fr;}
+.bas-projwahl{display:grid;grid-template-columns:110px 1fr;gap:6px;}
+.bas-projwahl select{min-width:0;}
+#bas-inhalt input,#bas-inhalt select{max-width:100%;box-sizing:border-box;}
+@media(min-width:640px){.bas-reihe{grid-template-columns:repeat(4,1fr);}.bas-reihe .bas-breit{grid-column:span 2;}}
+@media(max-width:380px){.bas-projwahl{grid-template-columns:1fr;}.bas-reihe.bas-drei{grid-template-columns:1fr 1fr;}}
+/* Testmodus-Banner und Notch/Dynamic Island: Kopf des Assistenten nicht verdecken */
+#bas-box{padding-top:calc(16px + env(safe-area-inset-top,0px))!important;}
+body.tm-an #bas-box{padding-top:calc(34px + env(safe-area-inset-top,0px))!important;}
+#bas-leiste{position:fixed;left:0;right:0;bottom:0;z-index:650;display:none;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));background:var(--s1);border-top:2px solid var(--gd);box-shadow:0 -6px 20px rgba(0,0,0,.2);}
+.bas-leiste-t{font-size:13px;color:var(--c);flex:1;min-width:200px;line-height:1.4;}
+.bas-leiste-k{display:flex;gap:8px;flex:1;min-width:260px;}
+#bas-leiste .btn{min-height:50px;font-size:14px;padding:10px 12px;flex:1;justify-content:center;text-align:center;}
+body.bas-nach #fab-wrap{display:none!important;}
+body.bas-nach .content{padding-bottom:180px;}
 </style>
 </head>
 <body class="theme-light">
@@ -1037,10 +1092,11 @@ body:not(.theme-light) .fab-wrap .send-status{background:var(--s1);}
 </div>
 
 <div id="mo-bas" style="position:fixed;inset:0;background:var(--bg);z-index:670;display:none;align-items:stretch;justify-content:center;padding:0;">
-  <div id="bas-box" style="background:var(--bg);width:100%;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 16px 40px;box-sizing:border-box">
-    <div id="bas-inhalt" style="max-width:820px;margin:0 auto"></div>
+  <div id="bas-box" style="background:var(--bg);width:100%;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px 0;box-sizing:border-box">
+    <div id="bas-inhalt" style="max-width:860px;margin:0 auto"></div>
   </div>
 </div>
+<div id="bas-leiste"></div>
 <div id="mo-split" style="position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:690;display:none;align-items:center;justify-content:center;padding:16px;">
   <div style="background:var(--s1);border:2px solid var(--earth);border-radius:8px;padding:22px;width:min(480px,95vw);max-height:88vh;overflow-y:auto">
     <div style="font-weight:700;font-size:16px;color:var(--c);margin-bottom:6px">Mehrere Baustellen erkannt</div>
@@ -7619,6 +7675,8 @@ async function saveAndSendVA(){
   const projIds=splitProjektIds(zeitRows,d.steps,projektId);
   if(!currentId && projIds.length>1){
     // Erst Uebersicht zeigen und bestaetigen lassen — gesendet wird erst nach "Ja"
+    // Aus dem Assistenten: dessen Fertig-Seite war schon die Bestaetigung
+    if(_vaOhneNachfrage){await saveAndSendVASplit(d,zeitRows,projektId,projIds);return;}
     showSplitConfirm(d,zeitRows,projektId,projIds);
     return;
   }
@@ -7635,7 +7693,7 @@ async function saveAndSendVA(){
 
   // Bestaetigung vor dem Senden. Bei Mehr-Baustellen-Split kam die Abfrage
   // bereits ueber den Split-Dialog (siehe oben) — hier nur der normale Fall.
-  if(!confirm('Bericht jetzt speichern und als PDF senden?'))return;
+  if(!_vaOhneNachfrage&&!confirm('Bericht jetzt speichern und als PDF senden?'))return;
 
   const st=document.getElementById('va-send-status');
   if(st){st.className='send-status show sending';st.textContent='Speichern...';}
@@ -7654,6 +7712,7 @@ async function saveAndSendVA(){
   const reportForPDF={...d,id:savedId,role:'va',projektNr:projekt?.nr||'',zeitRows,machRows:getMachRows(),steps:getSteps(),lieferungen:getLiefData(),maengel:getMangelData(),zusatzProjekte,sig_mitarbeiter:unterschriftData,sig_bauleiter:null};
   const vers=await sendPDFMail(reportForPDF,'va-send-status');
   await markiereVersand(savedId,vers);
+  _vaSendErgebnis={ok:!!vers.ok,mehrere:false,text:vers.ok?'Bericht gesendet':'Bericht ist gespeichert, aber NICHT versendet'+(vers.fehler?': '+vers.fehler:'')};
   if(!vers.ok){
     // Bericht ist gespeichert, aber NICHT versendet: Formular und Entwurf
     // bleiben stehen, damit der Versand wiederholt werden kann.
@@ -7810,6 +7869,7 @@ async function saveAndSendVASplit(base,zeitRows,hauptProjektId,projIds){
   if(nichtGesendet)meldung+=', '+nichtGesendet+' gespeichert aber NICHT versendet';
   if(fehler)meldung+=', '+fehler+' nicht gespeichert';
   if(st){st.className='send-status show '+(problem?'err':'ok');st.textContent=meldung+'.';}
+  _vaSendErgebnis={ok:!problem,mehrere:true,text:meldung};
   toast(meldung,problem?'err':'ok');
   if(problem){
     // Entwurf und Formular bleiben stehen, solange nicht alles sauber raus ist.
@@ -8014,6 +8074,7 @@ function basOeffnen(){
     var haupt=vp?vp.value:'';
     _bas=basNeuerStand((dEl&&dEl.value)||todayStr(),haupt?getProjektKat(haupt):currentVAKat(),haupt);
   }
+  basLeisteWeg();
   basRender();
   mo.style.display='flex';
 }
@@ -8022,8 +8083,8 @@ function basSchliessen(){
 }
 function basAbbrechen(){
   if(!confirm('Assistent abbrechen? Die Eingaben im Assistenten gehen verloren.'))return;
-  basSicherungLoeschen();_bas=null;basSchliessen();
-  toast('Assistent abgebrochen - das Formular ist unveraendert','info');
+  basSicherungLoeschen();_bas=null;basLeisteWeg();basSchliessen();
+  toast('Assistent abgebrochen','info');
 }
 
 // ---- Eingaben ----
@@ -8034,6 +8095,7 @@ function basSetzeP(i,feld,v){
   if(feld==='kat'){p.projektId='';basRender();return;}
   if(feld==='projektId'){basSichern();basInfoProjekte();return;}
   basSichern();
+  if(feld==='von'||feld==='bis'||feld==='pause')basListeRender(i);
 }
 function basProjektPlus(){
   var l=_bas.projekte;
@@ -8069,7 +8131,7 @@ function basEigen(i,id){
 }
 function basSetzePerson(i,id,feld,v){
   var e=_bas.projekte[i]&&_bas.projekte[i].personen[id];if(!e)return;
-  e[feld]=v;basSichern();
+  e[feld]=v;basSichern();basListeRender(i);
 }
 function basFilter(i,v){_bas.filter=v||'';basListeRender(i);}
 function basGeraetPlus(nr){
@@ -8136,27 +8198,29 @@ function basProjektTitel(i){
 function basKopf(titel,unter){
   var l=basSchritte(),pos=_bas.schritt+1,proz=Math.round(pos/l.length*100);
   return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'+
-    '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--earth);letter-spacing:1px">NEUER BERICHT &middot; SCHRITT '+pos+' VON '+l.length+'</div>'+
-    '<button class="btn" style="font-size:10px;padding:4px 9px" '+tsAttr('basAbbrechen()')+'>Abbrechen</button></div>'+
+    '<div class="bas-lbl" style="color:var(--earth);margin:0">NEUER BERICHT &middot; SCHRITT '+pos+' VON '+l.length+'</div>'+
+    '<button class="btn bas-klein" '+tsAttr('basAbbrechen()')+'>Abbrechen</button></div>'+
     '<div style="height:5px;background:var(--s3);border-radius:3px;margin-bottom:12px;overflow:hidden"><div style="height:5px;width:'+proz+'%;background:var(--g)"></div></div>'+
-    '<div style="font-weight:700;font-size:17px;color:var(--c);margin-bottom:'+(unter?'2':'12')+'px">'+titel+'</div>'+
-    (unter?'<div style="font-size:12px;color:var(--earth);font-weight:600;margin-bottom:12px">'+unter+'</div>':'');
+    '<div class="bas-titel" style="margin-bottom:'+(unter?'2':'12')+'px">'+titel+'</div>'+
+    (unter?'<div class="bas-unter">'+unter+'</div>':'');
 }
 function basFuss(weiterTxt,weiterAufruf){
-  return '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px">'+
-    (_bas.schritt>0?'<button class="btn" style="flex:1;min-width:110px;padding:14px" '+tsAttr('basZurueck()')+'>Zurueck</button>':'')+
-    '<button class="btn btn-p" style="flex:2;min-width:160px;padding:14px;font-size:14px" '+tsAttr(weiterAufruf||'basWeiter()')+'>'+(weiterTxt||'Weiter')+'</button></div>';
+  return '<div class="bas-fuss">'+
+    (_bas.schritt>0?'<button class="btn" style="flex:1;min-width:104px" '+tsAttr('basZurueck()')+'>Zurueck</button>':'')+
+    '<button class="btn btn-p" style="flex:2;min-width:150px" '+tsAttr(weiterAufruf||'basWeiter()')+'>'+(weiterTxt||'Weiter')+'</button></div>';
 }
+
 function basKarte(inhalt,haupt){
   return '<div style="background:var(--s3);border:1px solid '+(haupt?'var(--gd)':'var(--b)')+';border-radius:6px;padding:10px;margin-bottom:8px">'+inhalt+'</div>';
 }
 function basZeitFelder(von,bis,pause,aufrufVon,aufrufBis,aufrufPause){
-  return '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">'+
-    '<div class="fg"><label>Von</label><input type="time" value="'+_dfEsc(von||'')+'" style="width:112px" onchange="'+aufrufVon+'"></div>'+
-    '<div class="fg"><label>Bis</label><input type="time" value="'+_dfEsc(bis||'')+'" style="width:112px" onchange="'+aufrufBis+'"></div>'+
-    '<div class="fg"><label>Pause</label><select style="width:92px" onchange="'+aufrufPause+'">'+
+  return '<div class="bas-zeit">'+
+    '<div class="fg"><label>Von</label><input type="time" value="'+_dfEsc(von||'')+'" onchange="'+aufrufVon+'"></div>'+
+    '<div class="fg"><label>Bis</label><input type="time" value="'+_dfEsc(bis||'')+'" onchange="'+aufrufBis+'"></div>'+
+    '<div class="fg"><label>Pause</label><select onchange="'+aufrufPause+'">'+
     PAUSEN.map(function(x){return '<option value="'+x+'"'+(parseInt(pause)===x?' selected':'')+'>'+x+' min</option>';}).join('')+'</select></div></div>';
 }
+
 function basInfoProjekte(){
   var el=document.getElementById('bas-info-proj');if(!el)return;
   var n=_bas.projekte.filter(function(p){return p.projektId;}).length;
@@ -8185,55 +8249,75 @@ function basRenderProjekte(){
   _bas.projekte.forEach(function(p,i){
     h+=basKarte(
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'+
-      '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);letter-spacing:1px">'+(i===0?'PROJEKT 1 (HAUPTPROJEKT)':'PROJEKT '+(i+1))+'</div>'+
+      '<div class="bas-lbl">'+(i===0?'PROJEKT 1 (HAUPTPROJEKT)':'PROJEKT '+(i+1))+'</div>'+
       (i>0?'<button class="delbtn" style="color:var(--r)" '+tsAttr('basProjektWeg('+i+')')+'>&#x2715;</button>':'')+'</div>'+
-      '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
-      '<select style="flex:0 0 100px" onchange="basSetzeP('+i+',\'kat\',this.value)"><option value="bau"'+(p.kat!=='pflege'?' selected':'')+'>Bau</option><option value="pflege"'+(p.kat==='pflege'?' selected':'')+'>Pflege</option></select>'+
-      '<select style="flex:1;min-width:170px" onchange="basSetzeP('+i+',\'projektId\',this.value)">'+projektOptsByKat(p.kat==='pflege'?'pflege':'bau',p.projektId||'')+'</select></div>',i===0);
+      '<div class="bas-projwahl">'+
+      '<select onchange="basSetzeP('+i+',\'kat\',this.value)"><option value="bau"'+(p.kat!=='pflege'?' selected':'')+'>Bau</option><option value="pflege"'+(p.kat==='pflege'?' selected':'')+'>Pflege</option></select>'+
+      '<select onchange="basSetzeP('+i+',\'projektId\',this.value)">'+projektOptsByKat(p.kat==='pflege'?'pflege':'bau',p.projektId||'')+'</select></div>',i===0);
   });
-  h+='<button class="btn" style="padding:11px 14px" '+tsAttr('basProjektPlus()')+'>+ weiteres Projekt hinzufuegen</button>'+
-    '<div id="bas-info-proj" style="font-size:11px;color:var(--m);margin-top:10px;line-height:1.5"></div>'+
+  h+='<button class="btn" '+tsAttr('basProjektPlus()')+'>+ weiteres Projekt hinzufuegen</button>'+
+    '<div id="bas-info-proj" class="bas-hinweis" style="margin-top:10px"></div>'+
     basFuss('Weiter zu den Zeiten');
   return h;
 }
 function basRenderZeiten(i){
   var p=_bas.projekte[i];
   return basKopf('Wer war dabei, und wie lange?',basProjektTitel(i))+
-    basKarte('<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);letter-spacing:1px;margin-bottom:6px">ARBEITSZEIT FUER ALLE AUF DIESEM PROJEKT</div>'+
-      basZeitFelder(p.von,p.bis,p.pause,'basSetzeP('+i+',\'von\',this.value)','basSetzeP('+i+',\'bis\',this.value)','basSetzeP('+i+',\'pause\',this.value)'),true)+
-    '<input type="text" placeholder="Name suchen..." value="'+_dfEsc(_bas.filter)+'" oninput="basFilter('+i+',this.value)" style="width:100%;margin-bottom:6px">'+
-    '<div id="bas-ma-zahl" style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:var(--gl);margin-bottom:6px"></div>'+
-    '<div id="bas-ma-liste" style="max-height:46vh;overflow-y:auto;border:1px solid var(--b);border-radius:6px"></div>'+
-    '<div style="font-size:11px;color:var(--m);margin-top:8px;line-height:1.5">Name antippen = war dabei. Bei jeder Person waehlst du Fahrer, Beifahrer oder Privat. Wer andere Zeiten hatte: &quot;eigene Zeit&quot;.</div>'+
+    basKarte('<div class="bas-lbl">1. ARBEITSZEIT AUF DIESEM PROJEKT</div>'+
+      basZeitFelder(p.von,p.bis,p.pause,'basSetzeP('+i+',\'von\',this.value)','basSetzeP('+i+',\'bis\',this.value)','basSetzeP('+i+',\'pause\',this.value)')+
+      '<div class="bas-hinweis" style="margin-top:6px">Gilt fuer alle. Wer spaeter kam oder frueher ging, bekommt unten eine eigene Zeit.</div>',true)+
+    '<div class="bas-lbl" id="bas-ma-zahl" style="margin-top:14px"></div>'+
+    '<div id="bas-dabei"></div>'+
+    '<div class="bas-lbl" style="margin-top:14px">3. PERSON HINZUFUEGEN</div>'+
+    '<input type="text" placeholder="Name suchen..." value="'+_dfEsc(_bas.filter)+'" oninput="basFilter('+i+',this.value)" style="margin-bottom:6px">'+
+    '<div id="bas-ma-liste" class="bas-liste"></div>'+
     basFuss(i<_bas.projekte.length-1?'Weiter zu Projekt '+(i+2):'Weiter zu den Geraeten');
 }
+
 function basFahrtKnopf(i,id,wert,txt,aktiv){
-  return '<button class="btn'+(aktiv?' btn-p':'')+'" style="flex:1;font-size:11px;padding:8px 6px" '+tsAttr('basFahrt('+i+',\''+id+'\',\''+wert+'\')')+'>'+txt+'</button>';
+  return '<button class="btn'+(aktiv?' btn-p':'')+'" style="flex:1" '+tsAttr('basFahrt('+i+',\''+id+'\',\''+wert+'\')')+'>'+txt+'</button>';
 }
+function basZeitText(f){
+  return (f.von&&f.bis?f.von+' bis '+f.bis+' Uhr':'Zeit fehlt noch')+' &middot; '+(parseInt(f.pause)||0)+' min Pause';
+}
+
 function basListeRender(i){
-  var el=document.getElementById('bas-ma-liste');if(!el)return;
-  var p=_bas.projekte[i],f=_dfNorm(_bas.filter);
-  var list=basMaListe().filter(function(m){return !f||_dfNorm(m.name).indexOf(f)>=0;});
-  el.innerHTML=list.length?list.map(function(m){
-    var e=p.personen[m.id],an=!!(e&&e.an),z='';
-    if(an){
+  var p=_bas.projekte[i];if(!p)return;
+  var alle=basMaListe();
+  // --- Karten der Personen, die dabei waren ---
+  var da=document.getElementById('bas-dabei');
+  if(da){
+    var dabei=alle.filter(function(m){var e=p.personen[m.id];return !!(e&&e.an);});
+    da.innerHTML=dabei.length?dabei.map(function(m){
+      var e=p.personen[m.id],f=basFenster(p,m.id),z='';
+      z+='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">'+
+        '<div class="bas-name">'+_dfEsc(m.name)+(m.mitarbeiter_nr?' <span class="bas-nr">#'+_dfEsc(m.mitarbeiter_nr)+'</span>':'')+'</div>'+
+        '<button class="btn bas-klein" '+tsAttr('basPerson('+i+',\''+m.id+'\')')+'>Entfernen</button></div>';
+      // Zeit: steht immer lesbar da; ein Knopf oeffnet die Felder fuer eine abweichende Zeit
+      z+='<div class="bas-zeile"><div class="bas-zt'+(e.eigen?' bas-eigen':'')+'">'+(e.eigen?'Eigene Zeit: ':'Zeit: ')+basZeitText(f)+'</div>'+
+        '<button class="btn bas-klein" '+tsAttr('basEigen('+i+',\''+m.id+'\')')+'>'+(e.eigen?'Wie alle anderen':'Andere Zeit')+'</button></div>';
+      if(e.eigen)z+=basZeitFelder(e.von,e.bis,e.pause,
+        'basSetzePerson('+i+',\''+m.id+'\',\'von\',this.value)','basSetzePerson('+i+',\''+m.id+'\',\'bis\',this.value)','basSetzePerson('+i+',\''+m.id+'\',\'pause\',this.value)');
       if(basSchonVorher(_bas.projekte,i,m.id)){
-        z+='<div style="font-size:10px;color:var(--m);margin-top:6px">Fahrt ist schon bei einem frueheren Projekt erfasst (zaehlt nur einmal am Tag).</div>';
+        z+='<div class="bas-hinweis" style="margin-top:8px">Fahrt: schon bei einem frueheren Projekt erfasst (zaehlt nur einmal am Tag).</div>';
       }else{
-        z+='<div style="display:flex;gap:6px;margin-top:8px">'+basFahrtKnopf(i,m.id,'fahrer','Fahrer',e.fahrt==='fahrer')+basFahrtKnopf(i,m.id,'beifahrer','Beifahrer',e.fahrt==='beifahrer')+basFahrtKnopf(i,m.id,'privat','Privat',e.fahrt==='privat')+'</div>';
+        z+='<div class="bas-fahrt"><div class="bas-fl">Fahrt</div>'+basFahrtKnopf(i,m.id,'fahrer','Fahrer',e.fahrt==='fahrer')+basFahrtKnopf(i,m.id,'beifahrer','Beifahrer',e.fahrt==='beifahrer')+basFahrtKnopf(i,m.id,'privat','Privat',e.fahrt==='privat')+'</div>';
       }
-      z+='<div style="margin-top:6px"><button class="btn" style="font-size:10px;padding:5px 9px" '+tsAttr('basEigen('+i+',\''+m.id+'\')')+'>'+(e.eigen?'eigene Zeit entfernen':'eigene Zeit')+'</button></div>';
-      if(e.eigen)z+='<div style="margin-top:6px">'+basZeitFelder(e.von,e.bis,e.pause,
-        'basSetzePerson('+i+',\''+m.id+'\',\'von\',this.value)','basSetzePerson('+i+',\''+m.id+'\',\'bis\',this.value)','basSetzePerson('+i+',\''+m.id+'\',\'pause\',this.value)')+'</div>';
-    }
-    return '<div style="padding:10px;border-bottom:1px solid var(--b);background:'+(an?'var(--gg)':'transparent')+'">'+
-      '<div style="display:flex;align-items:center;gap:10px;cursor:pointer" '+tsAttr('basPerson('+i+',\''+m.id+'\')')+'>'+
-      '<div style="width:22px;height:22px;flex:0 0 22px;border-radius:4px;border:2px solid '+(an?'var(--g)':'var(--b)')+';display:flex;align-items:center;justify-content:center;color:var(--g);font-weight:700;font-size:14px">'+(an?'&#x2713;':'')+'</div>'+
-      '<div style="font-size:13px;color:var(--c)">'+_dfEsc(m.name)+(m.mitarbeiter_nr?' <span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m)">#'+_dfEsc(m.mitarbeiter_nr)+'</span>':'')+'</div></div>'+z+'</div>';
-  }).join(''):'<div style="padding:12px;font-size:11px;color:var(--m)">Kein Name passt zur Suche</div>';
-  var zahl=document.getElementById('bas-ma-zahl');
-  if(zahl){var n=Object.keys(p.personen).filter(function(id){return p.personen[id].an;}).length;zahl.textContent=n+' Person'+(n===1?'':'en')+' ausgewaehlt';}
+      return '<div class="bas-person">'+z+'</div>';
+    }).join(''):'<div class="bas-hinweis" style="padding:10px 2px">Noch niemand ausgewaehlt. Tippe unten die Namen an.</div>';
+    var zahl=document.getElementById('bas-ma-zahl');
+    if(zahl)zahl.textContent='2. DABEI: '+dabei.length+' PERSON'+(dabei.length===1?'':'EN');
+  }
+  // --- Liste der uebrigen Namen zum Hinzufuegen ---
+  var el=document.getElementById('bas-ma-liste');if(!el)return;
+  var f2=_dfNorm(_bas.filter);
+  var rest=alle.filter(function(m){var e=p.personen[m.id];return !(e&&e.an)&&(!f2||_dfNorm(m.name).indexOf(f2)>=0);});
+  el.innerHTML=rest.length?rest.map(function(m){
+    return '<div class="bas-wahl" '+tsAttr('basPerson('+i+',\''+m.id+'\')')+'><div class="bas-plus">+</div>'+
+      '<div class="bas-name">'+_dfEsc(m.name)+(m.mitarbeiter_nr?' <span class="bas-nr">#'+_dfEsc(m.mitarbeiter_nr)+'</span>':'')+'</div></div>';
+  }).join(''):'<div class="bas-hinweis" style="padding:12px">'+(f2?'Kein Name passt zur Suche':'Alle Personen sind ausgewaehlt')+'</div>';
 }
+
 function basGeraeteRows(){
   return _bas.geraete.filter(function(g){return g.geraetNr;}).map(function(g){
     var p=_bas.projekte[g.pIdx]||_bas.projekte[0];
@@ -8246,30 +8330,33 @@ function basFahrerHinweisRender(){
   var wer=st.fahrerIds.map(function(id){return _dfEsc(namen[id]||'?');}).join(', ');
   var knoepfe=FAHRZEUG_GERAETE.map(function(nr){
     var g=GERAETE.find(function(x){return x.nr===nr;});
-    return g?'<button class="btn" style="font-size:11px;padding:7px 10px" '+tsAttr('basGeraetPlus(\''+nr+'\')')+'>+ '+_dfEsc(g.bez)+'</button>':'';
+    return g?'<button class="btn bas-klein" '+tsAttr('basGeraetPlus(\''+nr+'\')')+'>+ '+_dfEsc(g.bez)+'</button>':'';
   }).join('');
   var farbe=st.fehlen?'var(--o)':'var(--gd)',bg=st.fehlen?'rgba(212,120,42,.12)':'var(--gg)';
   el.innerHTML='<div style="background:'+bg+';border:1px solid '+farbe+';border-radius:6px;padding:10px;margin-bottom:10px">'+
-    '<div style="font-size:12px;font-weight:700;color:var(--c)">'+st.fahrer+' Fahrer'+(wer?' ('+wer+')':'')+' &middot; '+st.fahrzeuge+' Fahrzeug'+(st.fahrzeuge===1?'':'e')+' eingetragen</div>'+
-    (st.fehlen?'<div style="font-size:11px;color:var(--t);margin:4px 0 8px;line-height:1.5">Zu jedem Fahrer gehoert ein Fahrzeug. Es fehl'+(st.fehlen===1?'t noch 1 Fahrzeug':'en noch '+st.fehlen+' Fahrzeuge')+' - bitte hinzufuegen oder bei den Zeiten jemanden auf Beifahrer stellen.</div>':
-      '<div style="font-size:11px;color:var(--m);margin:4px 0 8px">'+(st.fahrer?'Passt: zu jedem Fahrer ist ein Fahrzeug eingetragen.':'Kein Fahrer eingetragen.')+'</div>')+
+    '<div class="bas-name">'+st.fahrer+' Fahrer'+(wer?' ('+wer+')':'')+' &middot; '+st.fahrzeuge+' Fahrzeug'+(st.fahrzeuge===1?'':'e')+' eingetragen</div>'+
+    (st.fehlen?'<div class="bas-hinweis" style="color:var(--t);margin:4px 0 8px">Zu jedem Fahrer gehoert ein Fahrzeug. Es fehl'+(st.fehlen===1?'t noch 1 Fahrzeug':'en noch '+st.fehlen+' Fahrzeuge')+' - bitte hinzufuegen oder bei den Zeiten jemanden auf Beifahrer stellen.</div>':
+      '<div class="bas-hinweis" style="margin:4px 0 8px">'+(st.fahrer?'Passt: zu jedem Fahrer ist ein Fahrzeug eingetragen.':'Kein Fahrer eingetragen.')+'</div>')+
     '<div style="display:flex;gap:6px;flex-wrap:wrap">'+knoepfe+'</div></div>';
 }
 function basRenderGeraete(){
   var mehrere=_bas.projekte.length>1;
   var h=basKopf('Welche Geraete und Fahrzeuge waren im Einsatz?')+'<div id="bas-fahrer-hinweis"></div>';
   _bas.geraete.forEach(function(g,k){
-    h+=basKarte('<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:flex-end">'+
-      '<div class="fg" style="flex:1;min-width:190px"><label>Geraet / Fahrzeug</label><select onchange="basSetzeG('+k+',\'geraetNr\',this.value)"><option value="">- waehlen -</option>'+
+    h+=basKarte('<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'+
+      '<div class="bas-lbl" style="margin:0">GERAET '+(k+1)+'</div>'+
+      '<button class="delbtn" style="color:var(--r)" '+tsAttr('basGeraetWeg('+k+')')+'>&#x2715;</button></div>'+
+      '<div class="bas-reihe">'+
+      '<div class="fg bas-breit"><label>Geraet / Fahrzeug</label><select onchange="basSetzeG('+k+',\'geraetNr\',this.value)"><option value="">- waehlen -</option>'+
       GERAETE.map(function(x){return '<option value="'+x.nr+'"'+(g.geraetNr===x.nr?' selected':'')+'>'+x.nr+' - '+_dfEsc(x.bez)+'</option>';}).join('')+'</select></div>'+
-      '<div class="fg"><label>Kfz/Nr.</label><input type="text" value="'+_dfEsc(g.fahrzeugnr||'')+'" style="width:90px" onchange="basSetzeG('+k+',\'fahrzeugnr\',this.value)"></div>'+
-      '<div class="fg"><label>Stunden</label><input type="number" min="0" step="0.5" value="'+_dfEsc(g.netto||'')+'" style="width:76px" onchange="basSetzeG('+k+',\'netto\',this.value)"></div>'+
-      (mehrere?'<div class="fg" style="flex:1;min-width:150px"><label>Projekt</label><select onchange="basSetzeG('+k+',\'pIdx\',this.value)">'+
+      '<div class="fg"><label>Kfz/Nr.</label><input type="text" value="'+_dfEsc(g.fahrzeugnr||'')+'" onchange="basSetzeG('+k+',\'fahrzeugnr\',this.value)"></div>'+
+      '<div class="fg"><label>Stunden</label><input type="number" inputmode="decimal" min="0" step="0.5" value="'+_dfEsc(g.netto||'')+'" onchange="basSetzeG('+k+',\'netto\',this.value)"></div>'+
+      (mehrere?'<div class="fg bas-breit"><label>Projekt</label><select onchange="basSetzeG('+k+',\'pIdx\',this.value)">'+
         _bas.projekte.map(function(p,i){return '<option value="'+i+'"'+(g.pIdx===i?' selected':'')+'>'+_dfEsc(getProjektLabel(p.projektId))+'</option>';}).join('')+'</select></div>':'')+
-      '<button class="delbtn" style="color:var(--r)" '+tsAttr('basGeraetWeg('+k+')')+'>&#x2715;</button></div>');
+      '</div>');
   });
-  h+='<button class="btn" style="padding:11px 14px" '+tsAttr('basGeraetPlus(\'\')')+'>+ Geraet hinzufuegen</button>'+
-    '<div style="font-size:11px;color:var(--m);margin-top:8px">Keine Geraete im Einsatz? Einfach weiter.</div>'+
+  h+='<button class="btn" '+tsAttr('basGeraetPlus(\'\')')+'>+ Geraet hinzufuegen</button>'+
+    '<div class="bas-hinweis" style="margin-top:8px">Keine Geraete im Einsatz? Einfach weiter.</div>'+
     basFuss('Weiter zum Bericht');
   return h;
 }
@@ -8278,32 +8365,32 @@ function basRenderBericht(i){
   var h=basKopf('Was wurde gemacht?',basProjektTitel(i));
   p.schritte.forEach(function(s,k){
     h+=basKarte('<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'+
-      '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);letter-spacing:1px">ARBEITSSCHRITT '+(k+1)+'</div>'+
+      '<div class="bas-lbl">ARBEITSSCHRITT '+(k+1)+'</div>'+
       (p.schritte.length>1?'<button class="delbtn" style="color:var(--r)" '+tsAttr('basSchrittWeg('+i+','+k+')')+'>&#x2715;</button>':'')+'</div>'+
       '<textarea style="min-height:64px;width:100%" placeholder="Taetigkeit beschreiben..." onchange="basSetzeS('+i+','+k+',\'txt\',this.value)">'+_dfEsc(s.txt||'')+'</textarea>'+
-      (s.offen?'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">'+
-        '<div class="fg"><label>LV-Pos.</label><input type="text" value="'+_dfEsc(s.pos||'')+'" style="width:90px" onchange="basSetzeS('+i+','+k+',\'pos\',this.value)"></div>'+
-        '<div class="fg"><label>Menge</label><input type="text" value="'+_dfEsc(s.menge||'')+'" style="width:90px" onchange="basSetzeS('+i+','+k+',\'menge\',this.value)"></div>'+
-        '<div class="fg"><label>Einheit</label><input type="text" value="'+_dfEsc(s.eh||'')+'" placeholder="m2, lfm" style="width:90px" onchange="basSetzeS('+i+','+k+',\'eh\',this.value)"></div></div>':'')+
-      '<div style="margin-top:6px"><button class="btn" style="font-size:10px;padding:5px 9px" '+tsAttr('basSchrittDetails('+i+','+k+')')+'>'+(s.offen?'Position und Menge ausblenden':'+ Position und Menge')+'</button></div>');
+      (s.offen?'<div class="bas-reihe bas-drei" style="margin-top:8px">'+
+        '<div class="fg"><label>LV-Pos.</label><input type="text" value="'+_dfEsc(s.pos||'')+'" onchange="basSetzeS('+i+','+k+',\'pos\',this.value)"></div>'+
+        '<div class="fg"><label>Menge</label><input type="text" value="'+_dfEsc(s.menge||'')+'" onchange="basSetzeS('+i+','+k+',\'menge\',this.value)"></div>'+
+        '<div class="fg"><label>Einheit</label><input type="text" value="'+_dfEsc(s.eh||'')+'" placeholder="m2, lfm" onchange="basSetzeS('+i+','+k+',\'eh\',this.value)"></div></div>':'')+
+      '<div style="margin-top:6px"><button class="btn bas-klein" '+tsAttr('basSchrittDetails('+i+','+k+')')+'>'+(s.offen?'Position und Menge ausblenden':'+ Position und Menge')+'</button></div>');
   });
-  h+='<button class="btn" style="padding:11px 14px" '+tsAttr('basSchrittPlus('+i+')')+'>+ weiterer Arbeitsschritt</button>';
-  h+='<div style="margin-top:12px"><button class="btn" style="font-size:11px;padding:8px 12px" '+tsAttr('basMehr('+i+')')+'>'+(p.mehr?'Weitere Angaben ausblenden':'+ Weitere Angaben (freiwillig)')+'</button></div>';
+  h+='<button class="btn" '+tsAttr('basSchrittPlus('+i+')')+'>+ weiterer Arbeitsschritt</button>';
+  h+='<div style="margin-top:12px"><button class="btn" '+tsAttr('basMehr('+i+')')+'>'+(p.mehr?'Weitere Angaben ausblenden':'+ Weitere Angaben (freiwillig)')+'</button></div>';
   if(p.mehr){
-    var z='<div style="display:flex;gap:6px;flex-wrap:wrap">'+
-      '<div class="fg" style="flex:1;min-width:150px"><label>Bereich / Detail</label><input type="text" value="'+_dfEsc(p.bereich||'')+'" placeholder="z.B. Bereich Nord" onchange="basSetzeP('+i+',\'bereich\',this.value)"></div>'+
-      '<div class="fg" style="flex:1;min-width:150px"><label>Bauherr / AG</label><input type="text" value="'+_dfEsc(p.bauherr||'')+'" onchange="basSetzeP('+i+',\'bauherr\',this.value)"></div></div>';
+    var z='<div class="bas-reihe">'+
+      '<div class="fg bas-breit"><label>Bereich / Detail</label><input type="text" value="'+_dfEsc(p.bereich||'')+'" placeholder="z.B. Bereich Nord" onchange="basSetzeP('+i+',\'bereich\',this.value)"></div>'+
+      '<div class="fg bas-breit"><label>Bauherr / AG</label><input type="text" value="'+_dfEsc(p.bauherr||'')+'" onchange="basSetzeP('+i+',\'bauherr\',this.value)"></div></div>';
     if(i===0){
-      z+='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);letter-spacing:1px;margin:10px 0 6px">WETTER</div>'+
+      z+='<div class="bas-lbl" style="margin:12px 0 6px">WETTER</div>'+
         '<div style="display:flex;gap:6px;flex-wrap:wrap">'+BAS_WETTER.map(function(w){
-          return '<button class="btn'+(_bas.wetter===w?' btn-p':'')+'" style="font-size:11px;padding:8px 10px" '+tsAttr('basWetter(\''+w+'\')')+'>'+w+'</button>';}).join('')+'</div>'+
-        '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">'+
-        '<div class="fg"><label>Temperatur (C)</label><input type="number" value="'+_dfEsc(_bas.temp||'')+'" style="width:90px" onchange="basSetze(\'temp\',this.value)"></div></div>'+
+          return '<button class="btn bas-klein'+(_bas.wetter===w?' btn-p':'')+'" '+tsAttr('basWetter(\''+w+'\')')+'>'+w+'</button>';}).join('')+'</div>'+
+        '<div class="bas-reihe" style="margin-top:10px">'+
+        '<div class="fg"><label>Temperatur (C)</label><input type="number" value="'+_dfEsc(_bas.temp||'')+'" onchange="basSetze(\'temp\',this.value)"></div></div>'+
         '<div class="fg" style="margin-top:8px"><label>Bemerkungen</label><textarea style="min-height:50px;width:100%" onchange="basSetze(\'bemerkungen\',this.value)">'+_dfEsc(_bas.bemerkungen||'')+'</textarea></div>';
     }
     h+=basKarte(z);
   }
-  h+='<div style="font-size:11px;color:var(--m);margin-top:10px;line-height:1.5">Nichts hier ist Pflicht. Maengel, Fotos und LV-Positionen kannst du am Ende ueber &quot;Noch etwas ergaenzen&quot; eintragen.</div>'+
+  h+='<div class="bas-hinweis" style="margin-top:10px">Nichts hier ist Pflicht. Maengel, Fotos und LV-Positionen kannst du am Ende ueber &quot;Noch etwas ergaenzen&quot; eintragen.</div>'+
     basFuss(i<_bas.projekte.length-1?'Weiter zu Bericht '+(i+2):'Weiter zum Material');
   return h;
 }
@@ -8311,49 +8398,51 @@ function basRenderMaterial(){
   var h=basKopf('Kam heute Material auf die Baustelle?');
   if(_bas.material!=='ja'){
     h+='<div style="display:flex;gap:10px;flex-wrap:wrap">'+
-      '<button class="btn" style="flex:1;min-width:140px;padding:22px 12px;font-size:15px" '+tsAttr('basMaterial(\'nein\')')+'>Nein</button>'+
-      '<button class="btn btn-p" style="flex:1;min-width:140px;padding:22px 12px;font-size:15px" '+tsAttr('basMaterial(\'ja\')')+'>Ja, eintragen</button></div>'+
-      '<div style="display:flex;gap:8px;margin-top:16px"><button class="btn" style="flex:1;padding:14px" '+tsAttr('basZurueck()')+'>Zurueck</button></div>';
+      '<button class="btn bas-gross" style="flex:1;min-width:140px" '+tsAttr('basMaterial(\'nein\')')+'>Nein</button>'+
+      '<button class="btn btn-p bas-gross" style="flex:1;min-width:140px" '+tsAttr('basMaterial(\'ja\')')+'>Ja, eintragen</button></div>'+
+      '<div class="bas-fuss"><button class="btn" style="flex:1" '+tsAttr('basZurueck()')+'>Zurueck</button></div>';
     return h;
   }
   _bas.lief.forEach(function(l,k){
     h+=basKarte('<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'+
-      '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);letter-spacing:1px">LIEFERUNG '+(k+1)+'</div>'+
+      '<div class="bas-lbl">LIEFERUNG '+(k+1)+'</div>'+
       '<button class="delbtn" style="color:var(--r)" '+tsAttr('basLiefWeg('+k+')')+'>&#x2715;</button></div>'+
-      '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
-      '<div class="fg" style="flex:1;min-width:150px"><label>Material</label><input type="text" value="'+_dfEsc(l.mat||'')+'" placeholder="Rollrasen..." onchange="basSetzeL('+k+',\'mat\',this.value)"></div>'+
-      '<div class="fg"><label>Menge</label><input type="number" value="'+_dfEsc(l.menge||'')+'" style="width:86px" onchange="basSetzeL('+k+',\'menge\',this.value)"></div>'+
-      '<div class="fg"><label>Einheit</label><select style="width:76px" onchange="basSetzeL('+k+',\'eh\',this.value)">'+BAS_EINHEITEN.map(function(e){return '<option'+(l.eh===e?' selected':'')+'>'+e+'</option>';}).join('')+'</select></div>'+
-      '<div class="fg" style="flex:1;min-width:150px"><label>Lieferant</label><input type="text" value="'+_dfEsc(l.firma||'')+'" onchange="basSetzeL('+k+',\'firma\',this.value)"></div>'+
-      '<div class="fg"><label>Lieferschein-Nr.</label><input type="text" value="'+_dfEsc(l.ls||'')+'" style="width:110px" onchange="basSetzeL('+k+',\'ls\',this.value)"></div></div>');
+      '<div class="bas-reihe">'+
+      '<div class="fg bas-breit"><label>Material</label><input type="text" value="'+_dfEsc(l.mat||'')+'" placeholder="Rollrasen..." onchange="basSetzeL('+k+',\'mat\',this.value)"></div>'+
+      '<div class="fg"><label>Menge</label><input type="number" inputmode="decimal" value="'+_dfEsc(l.menge||'')+'" onchange="basSetzeL('+k+',\'menge\',this.value)"></div>'+
+      '<div class="fg"><label>Einheit</label><select onchange="basSetzeL('+k+',\'eh\',this.value)">'+BAS_EINHEITEN.map(function(e){return '<option'+(l.eh===e?' selected':'')+'>'+e+'</option>';}).join('')+'</select></div>'+
+      '<div class="fg bas-breit"><label>Lieferant</label><input type="text" value="'+_dfEsc(l.firma||'')+'" onchange="basSetzeL('+k+',\'firma\',this.value)"></div>'+
+      '<div class="fg"><label>Lieferschein-Nr.</label><input type="text" value="'+_dfEsc(l.ls||'')+'" onchange="basSetzeL('+k+',\'ls\',this.value)"></div></div>');
   });
-  h+='<button class="btn" style="padding:11px 14px" '+tsAttr('basLiefPlus()')+'>+ weitere Lieferung</button>'+
-    '<div style="font-size:11px;color:var(--m);margin-top:8px">Material wird wie bisher im Bericht des Hauptprojekts gefuehrt.</div>'+basFuss('Weiter');
+  h+='<button class="btn" '+tsAttr('basLiefPlus()')+'>+ weitere Lieferung</button>'+
+    '<div class="bas-hinweis" style="margin-top:8px">Material wird wie bisher im Bericht des Hauptprojekts gefuehrt.</div>'+basFuss('Weiter');
   return h;
 }
-function basRenderFertig(){
+function basUebersichtKarten(){
   var zr=[],st=[],mr=[];
   try{zr=getZeitRows();st=getSteps();mr=getMachRows();}
   catch(e){console.error('Berichts-Assistent: Uebersicht konnte das Formular nicht lesen',e);toast('Uebersicht nicht lesbar: '+e.message,'err');}
-  var haupt=_bas.projekte[0].projektId,n=_bas.projekte.length;
-  var h=basKopf(n>1?n+' Berichte sind fertig':'Der Bericht ist fertig');
+  var haupt=_bas.projekte[0].projektId,h='';
   _bas.projekte.forEach(function(p,i){
     var rows=zr.filter(function(z){return (z.projektId||haupt)===p.projektId;});
-    var std=rows.reduce(function(s,w){return s+(parseFloat(String(w.gesamt||'0').replace(',','.'))||0);},0);
-    var anzS=st.filter(function(s){return (s.projektId||haupt)===p.projektId;}).length;
+    var std=rows.reduce(function(s2,w){return s2+(parseFloat(String(w.gesamt||'0').replace(',','.'))||0);},0);
+    var anzS=st.filter(function(x){return (x.projektId||haupt)===p.projektId;}).length;
     var anzG=mr.filter(function(m){return (m.projektId||haupt)===p.projektId;}).length;
-    h+=basKarte('<div style="font-size:13px;font-weight:700;color:var(--c)">'+basProjektTitel(i)+'</div>'+
-      '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:var(--m);margin-top:4px;line-height:1.7">'+
-      rows.length+' Person'+(rows.length===1?'':'en')+' &middot; '+std.toFixed(2).replace('.',',')+' h<br>'+
+    h+=basKarte('<div class="bas-name">'+basProjektTitel(i)+'</div>'+
+      '<div class="bas-summe">'+rows.length+' Person'+(rows.length===1?'':'en')+' &middot; '+std.toFixed(2).replace('.',',')+' h<br>'+
       anzS+' Arbeitsschritt'+(anzS===1?'':'e')+' &middot; '+anzG+' Geraet'+(anzG===1?'':'e')+
       (i===0&&_bas.material==='ja'?' &middot; '+_bas.lief.filter(function(l){return l.mat||l.firma;}).length+' Lieferung(en)':'')+'</div>',i===0);
   });
-  h+='<div style="font-size:11px;color:var(--m);line-height:1.5;margin-bottom:4px">Alles steht jetzt im Formular. '+(n>1?'Beim Senden entsteht je Projekt ein eigener Bericht mit eigenem PDF.':'')+'</div>'+
-    '<div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">'+
-    '<button class="btn btn-p" style="padding:16px;font-size:15px" '+tsAttr('basSenden()')+'>'+(n>1?n+' Berichte jetzt senden':'Bericht jetzt senden')+'</button>'+
-    '<button class="btn" style="padding:13px" '+tsAttr('basErgaenzen()')+'>Noch etwas ergaenzen (Fotos, Maengel, LV-Positionen)</button>'+
-    '<button class="btn" style="padding:13px" '+tsAttr('basZurueck()')+'>Zurueck in den Assistenten</button></div>';
   return h;
+}
+function basRenderFertig(){
+  var n=_bas.projekte.length;
+  return basKopf(n>1?n+' Berichte sind fertig':'Der Bericht ist fertig')+basUebersichtKarten()+
+    '<div class="bas-hinweis" style="margin-bottom:4px">'+(n>1?'Beim Senden entsteht je Projekt ein eigener Bericht mit eigenem PDF.':'Beim Senden entsteht das PDF und geht per Mail raus.')+'</div>'+
+    '<div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">'+
+    '<button class="btn btn-p bas-gross" '+tsAttr('basSenden()')+'>'+(n>1?n+' Berichte jetzt senden':'Bericht jetzt senden')+'</button>'+
+    '<button class="btn" '+tsAttr('basErgaenzen()')+'>Erst noch Fotos, Maengel oder LV-Positionen ergaenzen</button>'+
+    '<button class="btn" '+tsAttr('basZurueck()')+'>Zurueck</button></div>';
 }
 
 // ---- Uebernahme ins Formular ----
@@ -8411,17 +8500,91 @@ function basAnwenden(){
   setTimeout(refreshStepMAs,100);
   return true;
 }
+// ---- Senden direkt aus dem Assistenten ----
+// _vaOhneNachfrage: die Fertig-Seite IST die Bestaetigung - saveAndSendVA fragt dann nicht noch einmal
+// und oeffnet auch nicht den Aufteilungs-Dialog. _vaSendErgebnis: was der Versand gemeldet hat.
+var _vaOhneNachfrage=false,_vaSendErgebnis=null,_basStatusBeob=null;
+function basStatusSpiegeln(){
+  var q=document.getElementById('va-send-status'),z=document.getElementById('bas-status');
+  if(q&&z&&q.textContent)z.textContent=q.textContent;
+}
 function basSenden(){
-  basSchliessen();
-  showTab('bericht'); // dort steht die Statuszeile des Versands
-  saveAndSendVA();
+  if(isSending){toast('Bitte warten - wird noch verarbeitet','info');return;}
+  if(!_bas){toast('Kein Bericht im Assistenten','err');return;}
+  basLeisteWeg();
+  var mo=document.getElementById('mo-bas'),el=document.getElementById('bas-inhalt');
+  if(!mo||!el){console.error('Berichts-Assistent: Dialog fehlt');toast('Assistent: Dialog fehlt in der Seite','err');return;}
+  var n=_bas.projekte.length;
+  el.innerHTML='<div class="bas-mitte"><div class="bas-titel">'+(n>1?n+' Berichte werden gesendet':'Bericht wird gesendet')+' ...</div>'+
+    '<div id="bas-status" class="bas-hinweis" style="margin-top:10px;font-size:15px">Speichern ...</div>'+
+    '<div class="bas-hinweis" style="margin-top:18px">Bitte die Seite offen lassen, bis die Bestaetigung kommt.</div></div>';
+  mo.style.display='flex';
+  if(typeof MutationObserver!=='undefined'){
+    var q=document.getElementById('va-send-status');
+    if(_basStatusBeob)_basStatusBeob.disconnect();
+    if(q){_basStatusBeob=new MutationObserver(basStatusSpiegeln);_basStatusBeob.observe(q,{attributes:true,childList:true,characterData:true,subtree:true});}
+  }
+  _vaOhneNachfrage=true;_vaSendErgebnis=null;
+  saveAndSendVA().then(basNachSenden).catch(function(e){
+    console.error('Berichts-Assistent: Senden fehlgeschlagen',e);
+    _vaSendErgebnis={ok:false,text:'Fehler beim Senden: '+(e&&e.message?e.message:e)};
+    basNachSenden();
+  });
+}
+function basNachSenden(){
+  if(_basStatusBeob){_basStatusBeob.disconnect();_basStatusBeob=null;}
+  var el=document.getElementById('bas-inhalt');if(!el)return;
+  var erg=_vaSendErgebnis,mf=document.getElementById('mo-fahrer');
+  if(!erg){
+    // Nichts gesendet: eine Pruefung des Formulars hat abgebrochen (Meldung steht im Hinweis)
+    // oder die Fahrer-Rueckfrage ist offen. Zurueck zur Fertig-Seite.
+    if(!(mf&&mf.style.display==='flex'))_vaOhneNachfrage=false;
+    if(_bas)basRender();
+    return;
+  }
+  _vaOhneNachfrage=false;
+  if(erg.ok){
+    _bas=null;
+    el.innerHTML='<div class="bas-mitte"><div class="bas-haken">&#x2713;</div><div class="bas-titel">'+_dfEsc(erg.text||'Gesendet')+'</div>'+
+      '<div class="bas-hinweis" style="margin-top:8px">Die Berichte stehen unter &quot;Meine Berichte&quot;.</div>'+
+      '<div style="display:flex;flex-direction:column;gap:10px;margin-top:22px">'+
+      '<button class="btn btn-p bas-gross" '+tsAttr('basSchliessen()')+'>Fertig</button>'+
+      '<button class="btn" '+tsAttr('basOeffnen()')+'>Noch einen Bericht anlegen</button></div></div>';
+    return;
+  }
+  el.innerHTML='<div class="bas-mitte"><div class="bas-titel" style="color:var(--r)">Nicht alles ist rausgegangen</div>'+
+    '<div class="bas-hinweis" style="margin-top:10px;font-size:15px;color:var(--t)">'+_dfEsc(erg.text||'Der Versand ist fehlgeschlagen.')+'</div>'+
+    '<div class="bas-hinweis" style="margin-top:12px">'+(erg.mehrere?'Bitte nicht einfach noch einmal senden: schon gespeicherte Berichte wuerden doppelt entstehen. Sieh unter &quot;Meine Berichte&quot; nach, was angekommen ist.':'Der Bericht ist gespeichert. Du kannst den Versand wiederholen.')+'</div>'+
+    '<div style="display:flex;flex-direction:column;gap:10px;margin-top:22px">'+
+    (erg.mehrere?'':'<button class="btn btn-p bas-gross" '+tsAttr('basSenden()')+'>Noch einmal senden</button>')+
+    '<button class="btn" '+tsAttr('basSchliessen()')+'>Zum Formular</button></div></div>';
+}
+// ---- Uebergang ins Formular: feste Leiste unten mit dem Weg zurueck und dem Senden ----
+function basLeisteWeg(){
+  document.body.classList.remove('bas-nach');
+  var l=document.getElementById('bas-leiste');if(l)l.style.display='none';
 }
 function basErgaenzen(){
   basSchliessen();
+  var l=document.getElementById('bas-leiste');
+  if(l){
+    var n=_bas?_bas.projekte.length:1;
+    l.innerHTML='<div class="bas-leiste-t">Aus dem Assistenten: alles ist eingetragen. Ergaenze, was fehlt.</div>'+
+      '<div class="bas-leiste-k"><button class="btn" '+tsAttr('basWiederOeffnen()')+'>Zurueck zum Assistenten</button>'+
+      '<button class="btn btn-p" '+tsAttr('basSenden()')+'>'+(n>1?n+' Berichte senden':'Bericht senden')+'</button></div>';
+    l.style.display='flex';
+    document.body.classList.add('bas-nach');
+  }
   showTab('bericht');
-  toast('Alles ist eingetragen. Ergaenze, was fehlt, und sende dann ueber "Speichern und PDF senden".','info');
 }
-
+// Zurueck auf die Fertig-Seite, OHNE das Formular neu zu fuellen (Ergaenzungen bleiben erhalten)
+function basWiederOeffnen(){
+  if(!_bas){toast('Kein Bericht im Assistenten','info');basLeisteWeg();return;}
+  basLeisteWeg();
+  _bas.schritt=basSchritte().length-1;
+  basRender();
+  var mo=document.getElementById('mo-bas');if(mo)mo.style.display='flex';
+}
 // ══════ PDF ══════
 async function generatePDF(report){
   const{jsPDF}=window.jspdf;
@@ -10280,6 +10443,7 @@ async function testmodusSetze(an){
 // Dauerhaft sichtbarer Hinweis, solange der Testmodus laeuft (blockiert keine Bedienung).
 function testmodusBanner(){
   let el=document.getElementById('testmodus-banner');
+  document.body.classList.toggle('tm-an',!!TESTMODUS);
   if(!TESTMODUS){if(el)el.style.display='none';return;}
   if(!el){
     el=document.createElement('div');el.id='testmodus-banner';
@@ -10481,12 +10645,13 @@ function fahrerBegruendungDialog(fw){
   document.getElementById('fahrer-begr').value=_fahrerBegruendungAlt||'';
   document.getElementById('mo-fahrer').style.display='flex';
 }
-function fahrerBegruendungAbbrechen(){document.getElementById('mo-fahrer').style.display='none';showTab('zeit');}
+function fahrerBegruendungAbbrechen(){_vaOhneNachfrage=false;document.getElementById('mo-fahrer').style.display='none';showTab('zeit');}
 function fahrerBegruendungSenden(){
   const t=document.getElementById('fahrer-begr').value.trim();
   if(t.length<5){toast('Bitte eine kurze Begruendung eingeben','err');return;}
   _fahrerBegruendung=t;
   document.getElementById('mo-fahrer').style.display='none';
+  if(_vaOhneNachfrage){basSenden();return;}
   saveAndSendVA();
 }
 
