@@ -1036,9 +1036,9 @@ body:not(.theme-light) .fab-wrap .send-status{background:var(--s1);}
   </div>
 </div>
 
-<div id="mo-bas" style="position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:670;display:none;align-items:center;justify-content:center;padding:10px;">
-  <div id="bas-box" style="background:var(--s1);border:2px solid var(--gd);border-radius:8px;padding:18px;width:min(640px,97vw);max-height:94vh;overflow-y:auto">
-    <div id="bas-inhalt"></div>
+<div id="mo-bas" style="position:fixed;inset:0;background:var(--bg);z-index:670;display:none;align-items:stretch;justify-content:center;padding:0;">
+  <div id="bas-box" style="background:var(--bg);width:100%;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 16px 40px;box-sizing:border-box">
+    <div id="bas-inhalt" style="max-width:820px;margin:0 auto"></div>
   </div>
 </div>
 <div id="mo-split" style="position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:690;display:none;align-items:center;justify-content:center;padding:16px;">
@@ -7949,6 +7949,15 @@ function basMaMap(){
   return m;
 }
 function basNamen(){var m={};basMaListe().forEach(function(x){m[x.id]=x.name;});return m;}
+// Entfernt Personen aus dem Stand, die nicht (mehr) in der Auswahlliste stehen. Sonst zaehlt jemand
+// als Person oder Fahrer mit, der in der Liste gar nicht sichtbar ist und im Bericht nie erscheint.
+function basBereinigen(){
+  if(!_bas)return;
+  var ma=basMaMap();
+  _bas.projekte.forEach(function(p){
+    Object.keys(p.personen).forEach(function(id){if(!ma[id])delete p.personen[id];});
+  });
+}
 function basSchritte(){return basSchrittListe(_bas.projekte.length);}
 function basAktuell(){var l=basSchritte();if(_bas.schritt>=l.length)_bas.schritt=l.length-1;return l[_bas.schritt];}
 function basFormLeer(){
@@ -8103,7 +8112,11 @@ function basWeiter(){
   if(_bas.schritt>=l.length-1)return;
   _bas.schritt++;
   var n=l[_bas.schritt];
-  if(n.typ==='zeiten')basZeitenVorbelegen(_bas.projekte,n.i,currentUser?currentUser.id:'');
+  if(n.typ==='zeiten'){
+    // sich selbst nur vorauswaehlen, wenn man in der Auswahlliste steht (Vollzugriff/Admin steht dort nicht)
+    var ich=(currentUser&&basMaMap()[currentUser.id])?currentUser.id:'';
+    basZeitenVorbelegen(_bas.projekte,n.i,ich);
+  }
   if(n.typ==='fertig'){
     if(!basAnwenden()){_bas.schritt--;return;}
   }
@@ -8152,6 +8165,7 @@ function basInfoProjekte(){
 }
 function basRender(){
   var el=document.getElementById('bas-inhalt');if(!el||!_bas)return;
+  basBereinigen();
   var s=basAktuell(),h='';
   if(s.typ==='projekte')h=basRenderProjekte();
   else if(s.typ==='zeiten')h=basRenderZeiten(s.i);
