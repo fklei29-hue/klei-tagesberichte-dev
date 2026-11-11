@@ -817,7 +817,7 @@ body.bas-nach .content{padding-bottom:180px;}
     <div class="login-card-sub">Mitarbeiternummer und Passwort eingeben</div>
     <div class="login-field"><label>Mitarbeiternummer</label><input type="text" id="login-nr" placeholder="z.B. 0042" inputmode="numeric" autocomplete="username"></div>
     <div class="login-field"><label>Passwort</label><input type="password" id="login-pw" placeholder="••••••••" autocomplete="current-password"></div>
-    <button class="login-btn" ontouchstart="doLogin()" onclick="doLogin()">Anmelden</button>
+    <button class="login-btn" ontouchstart="tsTap(event,this,function(){doLogin()})" onclick="tsKlick(function(){doLogin()})">Anmelden</button>
     <div class="login-err" id="login-err"></div>
   </div>
 </div>
@@ -829,11 +829,11 @@ body.bas-nach .content{padding-bottom:180px;}
     <span class="ts-bereich" id="admin-bereich-name">Tagesberichte</span>
     <span class="admin-badge badge-admin">Admin</span>
     <span id="admin-user-name" class="ts-user"></span>
-    <button class="hbtn ib-btn" id="inbox-btn-admin" ontouchstart="inboxOeffnen()" onclick="inboxOeffnen()" title="Posteingang">&#9993;<span class="ib-txt"> Posteingang</span><span class="ib-badge" id="inbox-badge-admin"></span></button>
-    <button class="theme-btn" style="margin-left:auto" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
-    <button class="hbtn" ontouchstart="openProfil()" onclick="openProfil()">Profil</button>
-    <button class="hbtn menu-hbtn" style="display:none" ontouchstart="zumMenue()" onclick="zumMenue()">Menue</button>
-    <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
+    <button class="hbtn ib-btn" id="inbox-btn-admin" ontouchstart="tsTap(event,this,function(){inboxOeffnen()})" onclick="tsKlick(function(){inboxOeffnen()})" title="Posteingang">&#9993;<span class="ib-txt"> Posteingang</span><span class="ib-badge" id="inbox-badge-admin"></span></button>
+    <button class="theme-btn" style="margin-left:auto" ontouchstart="tsTap(event,this,function(){toggleTheme()})" onclick="tsKlick(function(){toggleTheme()})" title="Hell/Dunkel">&#9790;</button>
+    <button class="hbtn" ontouchstart="tsTap(event,this,function(){openProfil()})" onclick="tsKlick(function(){openProfil()})">Profil</button>
+    <button class="hbtn menu-hbtn" style="display:none" ontouchstart="tsTap(event,this,function(){zumMenue()})" onclick="tsKlick(function(){zumMenue()})">Menue</button>
+    <button class="hbtn" ontouchstart="tsTap(event,this,function(){doLogout()})" onclick="tsKlick(function(){doLogout()})">Abmelden</button>
   </div>
   <div class="ab-seg" id="admin-bereiche"></div>
   <div class="admin-tabs">
@@ -883,17 +883,17 @@ body.bas-nach .content{padding-bottom:180px;}
     <span class="ts-bereich">Tagesberichte</span>
     <span class="admin-badge badge-pl">Projektleiter</span>
     <span id="pl-user-name" class="ts-user"></span>
-    <button class="hbtn ib-btn" id="inbox-btn-pl" ontouchstart="inboxOeffnen()" onclick="inboxOeffnen()" title="Posteingang">&#9993;<span class="ib-txt"> Posteingang</span><span class="ib-badge" id="inbox-badge-pl"></span></button>
-    <button class="theme-btn" style="margin-left:auto" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
-    <button class="hbtn" ontouchstart="openProfil()" onclick="openProfil()">Profil</button>
-    <button class="hbtn menu-hbtn" style="display:none" ontouchstart="zumMenue()" onclick="zumMenue()">Menue</button>
-    <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
+    <button class="hbtn ib-btn" id="inbox-btn-pl" ontouchstart="tsTap(event,this,function(){inboxOeffnen()})" onclick="tsKlick(function(){inboxOeffnen()})" title="Posteingang">&#9993;<span class="ib-txt"> Posteingang</span><span class="ib-badge" id="inbox-badge-pl"></span></button>
+    <button class="theme-btn" style="margin-left:auto" ontouchstart="tsTap(event,this,function(){toggleTheme()})" onclick="tsKlick(function(){toggleTheme()})" title="Hell/Dunkel">&#9790;</button>
+    <button class="hbtn" ontouchstart="tsTap(event,this,function(){openProfil()})" onclick="tsKlick(function(){openProfil()})">Profil</button>
+    <button class="hbtn menu-hbtn" style="display:none" ontouchstart="tsTap(event,this,function(){zumMenue()})" onclick="tsKlick(function(){zumMenue()})">Menue</button>
+    <button class="hbtn" ontouchstart="tsTap(event,this,function(){doLogout()})" onclick="tsKlick(function(){doLogout()})">Abmelden</button>
   </div>
   <div class="admin-tabs">
-    <div class="admin-tab pl-tab act" id="pltab-ber" ontouchstart="showPLTab('ber')" onclick="showPLTab('ber')">Berichte</div>
-    <div class="admin-tab pl-tab" id="pltab-proj" ontouchstart="showPLTab('proj')" onclick="showPLTab('proj')">Nach Projekt</div>
-    <div class="admin-tab pl-tab" id="pltab-offen" ontouchstart="showPLTab('offen')" onclick="showPLTab('offen')">Offen</div>
-    <div class="admin-tab pl-tab" id="pltab-kalk" ontouchstart="showPLTab('kalk')" onclick="showPLTab('kalk')">Kalkulation</div>
+    <div class="admin-tab pl-tab act" id="pltab-ber" ontouchstart="tsTap(event,this,function(){showPLTab('ber')})" onclick="tsKlick(function(){showPLTab('ber')})">Berichte</div>
+    <div class="admin-tab pl-tab" id="pltab-proj" ontouchstart="tsTap(event,this,function(){showPLTab('proj')})" onclick="tsKlick(function(){showPLTab('proj')})">Nach Projekt</div>
+    <div class="admin-tab pl-tab" id="pltab-offen" ontouchstart="tsTap(event,this,function(){showPLTab('offen')})" onclick="tsKlick(function(){showPLTab('offen')})">Offen</div>
+    <div class="admin-tab pl-tab" id="pltab-kalk" ontouchstart="tsTap(event,this,function(){showPLTab('kalk')})" onclick="tsKlick(function(){showPLTab('kalk')})">Kalkulation</div>
   </div>
   <div class="admin-content">
     <div class="admin-panel act" id="appanel-ber"></div>
@@ -908,8 +908,8 @@ body.bas-nach .content{padding-bottom:180px;}
     <img src="https://www.klei-sportplatzbau.de/images/logos/KLEI_LOGO_FARBIG_RGB_72DPI.png" class="ts-logo" alt="KLEI" onerror="this.style.display='none'">
     <span class="ts-word">KLEI</span>
     <span id="menu-user-name" class="ts-user"></span>
-    <button class="theme-btn" style="margin-left:auto" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
-    <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
+    <button class="theme-btn" style="margin-left:auto" ontouchstart="tsTap(event,this,function(){toggleTheme()})" onclick="tsKlick(function(){toggleTheme()})" title="Hell/Dunkel">&#9790;</button>
+    <button class="hbtn" ontouchstart="tsTap(event,this,function(){doLogout()})" onclick="tsKlick(function(){doLogout()})">Abmelden</button>
   </div>
   <div class="menu-wrap">
     <div class="mk-wrap">
@@ -928,16 +928,16 @@ body.bas-nach .content{padding-bottom:180px;}
     <span class="ts-bereich">Ausbildung</span>
     <span class="admin-badge badge-azubi" id="ausb-badge">Azubi</span>
     <span id="ausb-user-name" class="ts-user"></span>
-    <button class="theme-btn" style="margin-left:auto" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
-    <button class="hbtn menu-hbtn" style="display:none" ontouchstart="zumMenue()" onclick="zumMenue()">Menue</button>
-    <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
+    <button class="theme-btn" style="margin-left:auto" ontouchstart="tsTap(event,this,function(){toggleTheme()})" onclick="tsKlick(function(){toggleTheme()})" title="Hell/Dunkel">&#9790;</button>
+    <button class="hbtn menu-hbtn" style="display:none" ontouchstart="tsTap(event,this,function(){zumMenue()})" onclick="tsKlick(function(){zumMenue()})">Menue</button>
+    <button class="hbtn" ontouchstart="tsTap(event,this,function(){doLogout()})" onclick="tsKlick(function(){doLogout()})">Abmelden</button>
   </div>
   <div class="admin-tabs">
-    <div class="admin-tab act" id="aztab-lernen" ontouchstart="azShowTab('lernen')" onclick="azShowTab('lernen')">Lernen</div>
-    <div class="admin-tab" id="aztab-tests" ontouchstart="azShowTab('tests')" onclick="azShowTab('tests')">Tests</div>
-    <div class="admin-tab" id="aztab-erg" ontouchstart="azShowTab('erg')" onclick="azShowTab('erg')">Ergebnisse</div>
-    <div class="admin-tab" id="aztab-bh" ontouchstart="azShowTab('bh')" onclick="azShowTab('bh')">Berichtsheft</div>
-    <div class="admin-tab" id="aztab-verw" style="display:none" ontouchstart="azShowTab('verw')" onclick="azShowTab('verw')">Verwaltung</div>
+    <div class="admin-tab act" id="aztab-lernen" ontouchstart="tsTap(event,this,function(){azShowTab('lernen')})" onclick="tsKlick(function(){azShowTab('lernen')})">Lernen</div>
+    <div class="admin-tab" id="aztab-tests" ontouchstart="tsTap(event,this,function(){azShowTab('tests')})" onclick="tsKlick(function(){azShowTab('tests')})">Tests</div>
+    <div class="admin-tab" id="aztab-erg" ontouchstart="tsTap(event,this,function(){azShowTab('erg')})" onclick="tsKlick(function(){azShowTab('erg')})">Ergebnisse</div>
+    <div class="admin-tab" id="aztab-bh" ontouchstart="tsTap(event,this,function(){azShowTab('bh')})" onclick="tsKlick(function(){azShowTab('bh')})">Berichtsheft</div>
+    <div class="admin-tab" id="aztab-verw" style="display:none" ontouchstart="tsTap(event,this,function(){azShowTab('verw')})" onclick="tsKlick(function(){azShowTab('verw')})">Verwaltung</div>
   </div>
   <div class="admin-content">
     <div class="admin-panel act" id="azpanel-lernen"></div>
@@ -954,9 +954,9 @@ body.bas-nach .content{padding-bottom:180px;}
     <span class="ts-word">KLEI</span>
     <span class="ts-bereich">Baurechner</span>
     <span id="br-user-name" class="ts-user"></span>
-    <button class="theme-btn" style="margin-left:auto" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
-    <button class="hbtn menu-hbtn" style="display:none" ontouchstart="zumMenue()" onclick="zumMenue()">Menue</button>
-    <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
+    <button class="theme-btn" style="margin-left:auto" ontouchstart="tsTap(event,this,function(){toggleTheme()})" onclick="tsKlick(function(){toggleTheme()})" title="Hell/Dunkel">&#9790;</button>
+    <button class="hbtn menu-hbtn" style="display:none" ontouchstart="tsTap(event,this,function(){zumMenue()})" onclick="tsKlick(function(){zumMenue()})">Menue</button>
+    <button class="hbtn" ontouchstart="tsTap(event,this,function(){doLogout()})" onclick="tsKlick(function(){doLogout()})">Abmelden</button>
   </div>
   <div class="admin-content">
     <div class="admin-panel act" id="brpanel-kalk"></div>
@@ -973,12 +973,12 @@ body.bas-nach .content{padding-bottom:180px;}
   <span class="h-user" id="h-user-name"></span>
   <div class="h-right">
     <span class="wsd-only wsd-hdate" id="wsd-hdate"></span>
-    <button class="hbtn ib-btn" id="inbox-btn-app" ontouchstart="inboxOeffnen()" onclick="inboxOeffnen()" title="Posteingang">&#9993;<span class="ib-badge" id="inbox-badge-app"></span></button>
-    <button class="theme-btn" id="theme-btn" ontouchstart="toggleTheme()" onclick="toggleTheme()" title="Hell/Dunkel">&#9790;</button>
-    <button class="hbtn" id="profil-btn" ontouchstart="openProfil()" onclick="openProfil()">Profil</button>
-    <button class="hbtn menu-hbtn" style="display:none" ontouchstart="zumMenue()" onclick="zumMenue()">Menue</button>
-    <button class="hbtn va-only" ontouchstart="openMo('mo-df')" onclick="openMo('mo-df')">Dataflor</button>
-    <button class="hbtn" ontouchstart="doLogout()" onclick="doLogout()">Abmelden</button>
+    <button class="hbtn ib-btn" id="inbox-btn-app" ontouchstart="tsTap(event,this,function(){inboxOeffnen()})" onclick="tsKlick(function(){inboxOeffnen()})" title="Posteingang">&#9993;<span class="ib-badge" id="inbox-badge-app"></span></button>
+    <button class="theme-btn" id="theme-btn" ontouchstart="tsTap(event,this,function(){toggleTheme()})" onclick="tsKlick(function(){toggleTheme()})" title="Hell/Dunkel">&#9790;</button>
+    <button class="hbtn" id="profil-btn" ontouchstart="tsTap(event,this,function(){openProfil()})" onclick="tsKlick(function(){openProfil()})">Profil</button>
+    <button class="hbtn menu-hbtn" style="display:none" ontouchstart="tsTap(event,this,function(){zumMenue()})" onclick="tsKlick(function(){zumMenue()})">Menue</button>
+    <button class="hbtn va-only" ontouchstart="tsTap(event,this,function(){openMo('mo-df')})" onclick="tsKlick(function(){openMo('mo-df')})">Dataflor</button>
+    <button class="hbtn" ontouchstart="tsTap(event,this,function(){doLogout()})" onclick="tsKlick(function(){doLogout()})">Abmelden</button>
     <div class="wsd-only wsd-avatar" id="wsd-avatar"></div>
   </div>
 </header>
@@ -986,7 +986,7 @@ body.bas-nach .content{padding-bottom:180px;}
   <aside>
     <div class="sb-head">
       <div class="sb-date" id="sb-date"></div>
-      <button class="btn-new" id="btn-new-bericht" ontouchstart="newReport()" onclick="newReport()">+ Neuer Bericht</button>
+      <button class="btn-new" id="btn-new-bericht" ontouchstart="tsTap(event,this,function(){newReport()})" onclick="tsKlick(function(){newReport()})">+ Neuer Bericht</button>
       <input type="text" class="wsd-only" id="wsd-sb-such" placeholder="Berichte durchsuchen..." autocomplete="off" oninput="wsdFilterSB()">
     </div>
     <div class="sb-list" id="sb-list"></div>
@@ -1028,7 +1028,7 @@ body.bas-nach .content{padding-bottom:180px;}
       <input type="checkbox" id="dsg-cb" style="width:20px;height:20px;flex-shrink:0;accent-color:var(--g)">
       <label for="dsg-cb" style="font-size:12px;color:var(--t);cursor:pointer;letter-spacing:0;text-transform:none;font-family:'IBM Plex Sans',sans-serif">Ich habe die Informationen zur Datenverarbeitung gelesen und nehme an der Testphase teil.</label>
     </div>
-    <button class="btn btn-p" style="width:100%;padding:14px;font-size:14px" ontouchstart="bestaetigeDatenschutz()" onclick="bestaetigeDatenschutz()">Bestaetigen und fortfahren</button>
+    <button class="btn btn-p" style="width:100%;padding:14px;font-size:14px" ontouchstart="tsTap(event,this,function(){bestaetigeDatenschutz()})" onclick="tsKlick(function(){bestaetigeDatenschutz()})">Bestaetigen und fortfahren</button>
   </div>
 </div>
 
@@ -1037,8 +1037,8 @@ body.bas-nach .content{padding-bottom:180px;}
     <button onclick="closeMo('mo-df')" style="float:right;background:none;border:none;color:var(--m);font-size:18px;cursor:pointer">&#x2715;</button>
     <div style="font-weight:700;font-size:14px;color:var(--c);margin-bottom:12px">Dataflor Export</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap">
-      <button class="btn btn-e" ontouchstart="expDFCSV()" onclick="expDFCSV()">CSV Export</button>
-      <button class="btn btn-e" ontouchstart="expDFXML()" onclick="expDFXML()">XML Export</button>
+      <button class="btn btn-e" ontouchstart="tsTap(event,this,function(){expDFCSV()})" onclick="tsKlick(function(){expDFCSV()})">CSV Export</button>
+      <button class="btn btn-e" ontouchstart="tsTap(event,this,function(){expDFXML()})" onclick="tsKlick(function(){expDFXML()})">XML Export</button>
     </div>
   </div>
 </div>
@@ -1048,8 +1048,8 @@ body.bas-nach .content{padding-bottom:180px;}
     <div style="font-weight:700;font-size:16px;color:var(--c);margin-bottom:6px">Entwurf gefunden</div>
     <div id="draft-restore-text" style="font-size:13px;line-height:1.6;color:var(--t);margin-bottom:18px"></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-p" style="flex:1;min-width:140px;padding:13px" ontouchstart="restoreVADraft()" onclick="restoreVADraft()">Weitermachen</button>
-      <button class="btn btn-r" style="flex:1;min-width:120px;padding:13px" ontouchstart="discardVADraft()" onclick="discardVADraft()">Verwerfen</button>
+      <button class="btn btn-p" style="flex:1;min-width:140px;padding:13px" ontouchstart="tsTap(event,this,function(){restoreVADraft()})" onclick="tsKlick(function(){restoreVADraft()})">Weitermachen</button>
+      <button class="btn btn-r" style="flex:1;min-width:120px;padding:13px" ontouchstart="tsTap(event,this,function(){discardVADraft()})" onclick="tsKlick(function(){discardVADraft()})">Verwerfen</button>
     </div>
   </div>
 </div>
@@ -1062,8 +1062,8 @@ body.bas-nach .content{padding-bottom:180px;}
     <div class="fg" style="margin-top:8px"><label>Text an den Mitarbeiter</label><textarea id="rf-text" rows="4" placeholder="z.B. Fahrzeit fuer Max fehlt, bitte ergaenzen"></textarea></div>
     <div style="font-size:11px;color:var(--m);line-height:1.5;margin:8px 0 14px">Der Mitarbeiter sieht das in seinem Posteingang. Bei "zur Korrektur" ist der Bericht bis zur Korrektur fuer die Freigabe gesperrt.</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-p" style="flex:1;min-width:140px;padding:13px" ontouchstart="rueckfrageSenden()" onclick="rueckfrageSenden()">Absenden</button>
-      <button class="btn" style="flex:1;min-width:120px;padding:13px" ontouchstart="rueckfrageSchliessen()" onclick="rueckfrageSchliessen()">Abbrechen</button>
+      <button class="btn btn-p" style="flex:1;min-width:140px;padding:13px" ontouchstart="tsTap(event,this,function(){rueckfrageSenden()})" onclick="tsKlick(function(){rueckfrageSenden()})">Absenden</button>
+      <button class="btn" style="flex:1;min-width:120px;padding:13px" ontouchstart="tsTap(event,this,function(){rueckfrageSchliessen()})" onclick="tsKlick(function(){rueckfrageSchliessen()})">Abbrechen</button>
     </div>
   </div>
 </div>
@@ -1072,7 +1072,7 @@ body.bas-nach .content{padding-bottom:180px;}
   <div style="background:var(--s1);border:2px solid var(--gd);border-radius:8px;padding:22px;width:min(560px,95vw);max-height:88vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
       <div style="font-weight:700;font-size:16px;color:var(--c)">Posteingang</div>
-      <button class="btn" style="font-size:11px;padding:6px 10px" ontouchstart="inboxSchliessen()" onclick="inboxSchliessen()">Schliessen</button>
+      <button class="btn" style="font-size:11px;padding:6px 10px" ontouchstart="tsTap(event,this,function(){inboxSchliessen()})" onclick="tsKlick(function(){inboxSchliessen()})">Schliessen</button>
     </div>
     <div id="inbox-list"></div>
   </div>
@@ -1085,8 +1085,8 @@ body.bas-nach .content{padding-bottom:180px;}
     <div style="font-size:12px;line-height:1.5;color:var(--m);margin-bottom:10px">Fahrer bekommen die volle Fahrzeit, Beifahrer die halbe. Entweder korrigierst du die Zeiten oder das Fahrzeug, oder du begruendest kurz, warum das so richtig ist. Die Begruendung steht im Bericht und bei der Freigabe.</div>
     <div class="fg"><label>Begruendung (Pflicht)</label><textarea id="fahrer-begr" rows="3" placeholder="z.B. zweiter PKW privat, nicht als Geraet erfasst"></textarea></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
-      <button class="btn" style="flex:1;min-width:120px;padding:13px" ontouchstart="fahrerBegruendungAbbrechen()" onclick="fahrerBegruendungAbbrechen()">Korrigieren</button>
-      <button class="btn btn-p" style="flex:1;min-width:160px;padding:13px" ontouchstart="fahrerBegruendungSenden()" onclick="fahrerBegruendungSenden()">Mit Begruendung senden</button>
+      <button class="btn" style="flex:1;min-width:120px;padding:13px" ontouchstart="tsTap(event,this,function(){fahrerBegruendungAbbrechen()})" onclick="tsKlick(function(){fahrerBegruendungAbbrechen()})">Korrigieren</button>
+      <button class="btn btn-p" style="flex:1;min-width:160px;padding:13px" ontouchstart="tsTap(event,this,function(){fahrerBegruendungSenden()})" onclick="tsKlick(function(){fahrerBegruendungSenden()})">Mit Begruendung senden</button>
     </div>
   </div>
 </div>
@@ -1102,8 +1102,8 @@ body.bas-nach .content{padding-bottom:180px;}
     <div style="font-weight:700;font-size:16px;color:var(--c);margin-bottom:6px">Mehrere Baustellen erkannt</div>
     <div id="split-confirm-text" style="font-size:13px;line-height:1.6;color:var(--t);margin-bottom:18px"></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-p" style="flex:1;min-width:170px;padding:13px" id="split-confirm-btn" ontouchstart="confirmSplit()" onclick="confirmSplit()">Ja, Berichte senden</button>
-      <button class="btn" style="flex:1;min-width:120px;padding:13px" ontouchstart="cancelSplit()" onclick="cancelSplit()">Zurueck</button>
+      <button class="btn btn-p" style="flex:1;min-width:170px;padding:13px" id="split-confirm-btn" ontouchstart="tsTap(event,this,function(){confirmSplit()})" onclick="tsKlick(function(){confirmSplit()})">Ja, Berichte senden</button>
+      <button class="btn" style="flex:1;min-width:120px;padding:13px" ontouchstart="tsTap(event,this,function(){cancelSplit()})" onclick="tsKlick(function(){cancelSplit()})">Zurueck</button>
     </div>
   </div>
 </div>
@@ -1473,21 +1473,21 @@ function openProfil(){
     '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Meine Unterschrift</div>'+
     (unterschriftData?
       '<div style="margin-bottom:10px"><img src="'+unterschriftData+'" style="max-width:100%;border-radius:4px;border:1px solid var(--b);background:white;padding:4px"></div>'+
-      '<div style="display:flex;gap:6px"><button class="btn btn-r" style="font-size:11px" ontouchstart="clearSig()" onclick="clearSig()">Loeschen</button>'+
-      '<button class="btn" style="font-size:11px" ontouchstart="showSigPad()" onclick="showSigPad()">Neu zeichnen</button></div>':
+      '<div style="display:flex;gap:6px"><button class="btn btn-r" style="font-size:11px" ontouchstart="tsTap(event,this,function(){clearSig()})" onclick="tsKlick(function(){clearSig()})">Loeschen</button>'+
+      '<button class="btn" style="font-size:11px" ontouchstart="tsTap(event,this,function(){showSigPad()})" onclick="tsKlick(function(){showSigPad()})">Neu zeichnen</button></div>':
       '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:var(--m);margin-bottom:10px">Noch keine Unterschrift</div>'+
-      '<button class="btn btn-p" ontouchstart="showSigPad()" onclick="showSigPad()">Unterschrift zeichnen</button>'
+      '<button class="btn btn-p" ontouchstart="tsTap(event,this,function(){showSigPad()})" onclick="tsKlick(function(){showSigPad()})">Unterschrift zeichnen</button>'
     )+
     '<div id="sig-pad-wrap" style="display:none;margin-top:14px">'+
     '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-bottom:8px">Hier unterschreiben:</div>'+
     '<div class="sig-wrap"><canvas id="sig-canvas" width="320" height="120"></canvas></div>'+
     '<div style="display:flex;gap:6px;margin-top:8px">'+
-    '<button class="btn btn-p" style="font-size:11px" ontouchstart="saveSig()" onclick="saveSig()">Speichern</button>'+
-    '<button class="btn" style="font-size:11px" ontouchstart="clearSigPad()" onclick="clearSigPad()">Loeschen</button>'+
+    '<button class="btn btn-p" style="font-size:11px" ontouchstart="tsTap(event,this,function(){saveSig()})" onclick="tsKlick(function(){saveSig()})">Speichern</button>'+
+    '<button class="btn" style="font-size:11px" ontouchstart="tsTap(event,this,function(){clearSigPad()})" onclick="tsKlick(function(){clearSigPad()})">Loeschen</button>'+
     '</div></div>'+
     '<div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--b)">'+
     '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Datenschutz &amp; Information</div>'+
-    '<button class="btn" style="width:100%;font-size:12px;justify-content:center" ontouchstart="closeMo(\'mo-profil\');setTimeout(openDatenschutz,200)" onclick="closeMo(\'mo-profil\');setTimeout(openDatenschutz,200)">Datenschutz-Informationen anzeigen</button>'+
+    '<button class="btn" style="width:100%;font-size:12px;justify-content:center" ontouchstart="tsTap(event,this,function(){closeMo(\'mo-profil\');setTimeout(openDatenschutz,200)})" onclick="tsKlick(function(){closeMo(\'mo-profil\');setTimeout(openDatenschutz,200)})">Datenschutz-Informationen anzeigen</button>'+
     '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-top:8px;line-height:1.6">Bei Fragen: '+DSG_KONTAKT_NAME+' - <a href="mailto:'+DSG_KONTAKT_MAIL+'" style="color:var(--gl);text-decoration:none">'+DSG_KONTAKT_MAIL+'</a></div>'+
     '</div>';
   openMo('mo-profil');
@@ -1617,11 +1617,11 @@ function renderAdminFreigabe(){
   const projOpts='<option value="">Alle Projekte</option>'+PROJEKTE.slice().sort((a,b)=>(a.nr||'').localeCompare(b.nr||'','de')).map(p=>'<option value="'+p.id+'">'+(p.nr?p.nr+' - ':'')+p.name+'</option>').join('');
   el.innerHTML='<div class="a-sec"><div class="a-sec-title">Berichte freigeben (Buchhaltung)</div>'+
     '<div style="font-size:11px;color:var(--m);line-height:1.5;margin-bottom:10px">Final freigeben = bereit fuer DATAflor. Bauleiter-Abnahme ist optional und wird separat angezeigt.</div>'+
-    (unterschriftData?'<div style="font-size:10px;color:var(--g);margin-bottom:10px">Freigabe-Unterschrift hinterlegt &#x2713; <button class="btn" style="font-size:10px;padding:3px 8px;margin-left:6px" ontouchstart="openProfil()" onclick="openProfil()">aendern</button></div>':'<div style="font-size:11px;color:var(--r);margin-bottom:10px">Noch keine Unterschrift hinterlegt. <button class="btn btn-p" style="font-size:10px;padding:3px 8px" ontouchstart="openProfil()" onclick="openProfil()">Jetzt zeichnen</button></div>')+
+    (unterschriftData?'<div style="font-size:10px;color:var(--g);margin-bottom:10px">Freigabe-Unterschrift hinterlegt &#x2713; <button class="btn" style="font-size:10px;padding:3px 8px;margin-left:6px" ontouchstart="tsTap(event,this,function(){openProfil()})" onclick="tsKlick(function(){openProfil()})">aendern</button></div>':'<div style="font-size:11px;color:var(--r);margin-bottom:10px">Noch keine Unterschrift hinterlegt. <button class="btn btn-p" style="font-size:10px;padding:3px 8px" ontouchstart="tsTap(event,this,function(){openProfil()})" onclick="tsKlick(function(){openProfil()})">Jetzt zeichnen</button></div>')+
     // Ansicht-Umschalter
     '<div style="display:flex;gap:6px;margin-bottom:10px">'+
-    '<button class="btn '+(freiAnsicht==='liste'?'btn-sky':'')+'" style="font-size:11px;flex:1;justify-content:center" ontouchstart="setFreiAnsicht(\'liste\')" onclick="setFreiAnsicht(\'liste\')">Neueste Berichte</button>'+
-    '<button class="btn '+(freiAnsicht==='projekt'?'btn-sky':'')+'" style="font-size:11px;flex:1;justify-content:center" ontouchstart="setFreiAnsicht(\'projekt\')" onclick="setFreiAnsicht(\'projekt\')">Nach Projekt</button>'+
+    '<button class="btn '+(freiAnsicht==='liste'?'btn-sky':'')+'" style="font-size:11px;flex:1;justify-content:center" ontouchstart="tsTap(event,this,function(){setFreiAnsicht(\'liste\')})" onclick="tsKlick(function(){setFreiAnsicht(\'liste\')})">Neueste Berichte</button>'+
+    '<button class="btn '+(freiAnsicht==='projekt'?'btn-sky':'')+'" style="font-size:11px;flex:1;justify-content:center" ontouchstart="tsTap(event,this,function(){setFreiAnsicht(\'projekt\')})" onclick="tsKlick(function(){setFreiAnsicht(\'projekt\')})">Nach Projekt</button>'+
     '</div>'+
     // Filterzeile
     '<div class="row"><div class="fg w50"><label>Mitarbeiter suchen</label><input id="frei-ma" placeholder="Name..." oninput="ladeFreigabe()"></div>'+
@@ -1652,7 +1652,7 @@ async function ladeFreigabe(){
   // Listenansicht: neueste zuerst, "mehr laden"-Button
   el.innerHTML='<div class="a-sec"><div class="a-sec-title">'+data.length+' Bericht(e) (neueste zuerst)</div>'+
     data.map(b=>freiBerichtCard(b)).join('')+
-    (data.length>=freiLimit?'<button class="btn" style="width:100%;justify-content:center;font-size:11px;margin-top:6px" ontouchstart="freiMehr()" onclick="freiMehr()">Mehr laden</button>':'')+
+    (data.length>=freiLimit?'<button class="btn" style="width:100%;justify-content:center;font-size:11px;margin-top:6px" ontouchstart="tsTap(event,this,function(){freiMehr()})" onclick="tsKlick(function(){freiMehr()})">Mehr laden</button>':'')+
     '</div>';
 }
 function freiMehr(){freiLimit+=10;ladeFreigabe();}
@@ -1667,7 +1667,7 @@ function renderFreiProjekt(data){
     const offen=items.filter(b=>!b.bh_freigegeben).length;
     const label=getProjektLabel(k);
     return '<div class="a-sec" style="margin-bottom:8px">'+
-      '<div class="a-sec-title" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center" ontouchstart="toggleFreiGroup('+idx+')" onclick="toggleFreiGroup('+idx+')">'+
+      '<div class="a-sec-title" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center" ontouchstart="tsTap(event,this,function(){toggleFreiGroup('+idx+')})" onclick="tsKlick(function(){toggleFreiGroup('+idx+')})">'+
       '<span>'+label+'</span>'+
       '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:'+(offen?'var(--r)':'var(--g)')+'">'+items.length+' Ber. · '+(offen?offen+' offen':'alle frei ✓')+' ▾</span>'+
       '</div>'+
@@ -1695,11 +1695,11 @@ function freiBerichtCard(b){
     (b.rueckfrage_offen?'<span style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;padding:2px 7px;border-radius:8px;background:rgba(212,120,42,.15);color:var(--o)">Rueckfrage offen</span>':'')+
     '</div></div>'+
     '<div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end">'+
-    '<button class="btn" style="font-size:10px;padding:5px 9px" ontouchstart="freigabeAnsehen(\''+b.id+'\')" onclick="freigabeAnsehen(\''+b.id+'\')">Ansehen (PDF)</button>'+
-    '<button class="btn" style="font-size:10px;padding:5px 9px" ontouchstart="rueckfrageOeffnen(\''+b.id+'\')" onclick="rueckfrageOeffnen(\''+b.id+'\')">Rueckfrage</button>'+
+    '<button class="btn" style="font-size:10px;padding:5px 9px" ontouchstart="tsTap(event,this,function(){freigabeAnsehen(\''+b.id+'\')})" onclick="tsKlick(function(){freigabeAnsehen(\''+b.id+'\')})">Ansehen (PDF)</button>'+
+    '<button class="btn" style="font-size:10px;padding:5px 9px" ontouchstart="tsTap(event,this,function(){rueckfrageOeffnen(\''+b.id+'\')})" onclick="tsKlick(function(){rueckfrageOeffnen(\''+b.id+'\')})">Rueckfrage</button>'+
     (bh?
-      '<button class="btn btn-r" style="font-size:10px;padding:5px 9px" ontouchstart="freigabeZurueck(\''+b.id+'\')" onclick="freigabeZurueck(\''+b.id+'\')">Freigabe zurueck</button>':
-      '<button class="btn btn-p" style="font-size:10px;padding:5px 9px" ontouchstart="freigabeErteilen(\''+b.id+'\')" onclick="freigabeErteilen(\''+b.id+'\')">Freigeben &#x2713;</button>'
+      '<button class="btn btn-r" style="font-size:10px;padding:5px 9px" ontouchstart="tsTap(event,this,function(){freigabeZurueck(\''+b.id+'\')})" onclick="tsKlick(function(){freigabeZurueck(\''+b.id+'\')})">Freigabe zurueck</button>':
+      '<button class="btn btn-p" style="font-size:10px;padding:5px 9px" ontouchstart="tsTap(event,this,function(){freigabeErteilen(\''+b.id+'\')})" onclick="tsKlick(function(){freigabeErteilen(\''+b.id+'\')})">Freigeben &#x2713;</button>'
     )+
     '</div></div></div>';
 }
@@ -1780,7 +1780,7 @@ async function renderAdminMA(){
     '<div class="fg w50"><label>Rolle</label><select id="new-ma-rolle"><option value="arbeiter">Arbeiter</option><option value="vorarbeiter">Vorarbeiter</option><option value="werkstatt">Werkstatt</option><option value="azubi">Azubi</option><option value="projektleiter">Projektleiter</option><option value="admin">Admin</option></select></div></div>'+
     '<div class="row"><div class="fg w100"><label>Modul-Freigaben</label><div style="display:flex;gap:14px;flex-wrap:wrap;padding:6px 0">'+modCheckboxHTML('new-ma-mod',['tagesberichte'])+'</div></div></div>'+
     '<div class="row"><div class="fg w50"><label>Passwort</label><input id="new-ma-pw" placeholder="Initiales Passwort" type="text"></div></div>'+
-    '<button class="btn btn-sky" ontouchstart="adminAddMA()" onclick="adminAddMA()">+ Mitarbeiter anlegen</button></div>'+
+    '<button class="btn btn-sky" ontouchstart="tsTap(event,this,function(){adminAddMA()})" onclick="tsKlick(function(){adminAddMA()})">+ Mitarbeiter anlegen</button></div>'+
     '<div class="a-sec"><div class="a-sec-title">Alle Mitarbeiter (<span id="ma-count">...</span>)</div><div id="ma-list"><div class="empty"><div class="spin"></div></div></div></div>';
   const{data}=await sb.from('mitarbeiter').select('*').order('mitarbeiter_nr');
   document.getElementById('ma-count').textContent=data?.length||0;
@@ -1791,8 +1791,8 @@ async function renderAdminMA(){
     '<div class="ma-info"><div class="ma-name-el">'+ma.name+'</div>'+
     '<div class="ma-meta">'+(ma.qualifikation||'--')+(ma.unterschrift_data?' · <span style="color:var(--g)">✓ Sig</span>':'')+'</div></div>'+
     '<span class="ma-rolle '+ma.rolle+'">'+ma.rolle+'</span>'+
-    '<button class="btn" style="font-size:10px;padding:5px 8px" ontouchstart="editMA(\''+ma.id+'\')" onclick="editMA(\''+ma.id+'\')">Bearb.</button>'+
-    '<button class="btn '+(ma.aktiv?'btn-r':'btn-sky')+'" style="font-size:10px;padding:5px 8px" ontouchstart="toggleMAaktiv(\''+ma.id+'\','+ma.aktiv+')" onclick="toggleMAaktiv(\''+ma.id+'\','+ma.aktiv+')">'+
+    '<button class="btn" style="font-size:10px;padding:5px 8px" ontouchstart="tsTap(event,this,function(){editMA(\''+ma.id+'\')})" onclick="tsKlick(function(){editMA(\''+ma.id+'\')})">Bearb.</button>'+
+    '<button class="btn '+(ma.aktiv?'btn-r':'btn-sky')+'" style="font-size:10px;padding:5px 8px" ontouchstart="tsTap(event,this,function(){toggleMAaktiv(\''+ma.id+'\','+ma.aktiv+')})" onclick="tsKlick(function(){toggleMAaktiv(\''+ma.id+'\','+ma.aktiv+')})">'+
     (ma.aktiv?'Deakt.':'Aktiv.')+'</button></div>'
   ).join('');
 }
@@ -1822,8 +1822,8 @@ async function editMA(id){
     ['arbeiter','vorarbeiter','werkstatt','azubi','projektleiter','admin'].map(r=>'<option value="'+r+'" '+(data.rolle===r?'selected':'')+'>'+r+'</option>').join('')+'</select></div>'+
     '<div class="fg w33"><label>Neues Passwort</label><input id="edit-pw-'+id+'" placeholder="Leer = unveraendert" type="text"></div></div>'+
     '<div class="row"><div class="fg w100"><label>Modul-Freigaben</label><div style="display:flex;gap:14px;flex-wrap:wrap;padding:6px 0">'+modCheckboxHTML('edit-mod-'+id,userModule(data))+'</div></div></div>'+
-    '<div style="display:flex;gap:6px"><button class="btn btn-sky" ontouchstart="saveEditMA(\''+id+'\')" onclick="saveEditMA(\''+id+'\')">Speichern</button>'+
-    '<button class="btn" ontouchstart="renderAdminMA()" onclick="renderAdminMA()">Abbrechen</button></div></div>';
+    '<div style="display:flex;gap:6px"><button class="btn btn-sky" ontouchstart="tsTap(event,this,function(){saveEditMA(\''+id+'\')})" onclick="tsKlick(function(){saveEditMA(\''+id+'\')})">Speichern</button>'+
+    '<button class="btn" ontouchstart="tsTap(event,this,function(){renderAdminMA()})" onclick="tsKlick(function(){renderAdminMA()})">Abbrechen</button></div></div>';
 }
 
 async function saveEditMA(id){
@@ -1845,7 +1845,7 @@ async function renderAdminProj(){
     '<div class="row"><div class="fg w33"><label>Kategorie</label><select id="new-proj-kat" onchange="toggleLeistFeld()"><option value="bau">Bau / Sportplatzbau</option><option value="pflege">Pflege</option></select></div></div>'+
     '<div id="new-proj-leist-wrap" style="display:none"><div class="fg w100"><label>Leistungen (eine pro Zeile)</label><textarea id="new-proj-leist" placeholder="Rasen mähen (6x)&#10;Hecken schneiden (2x)&#10;Bäume wässern (10x)" style="min-height:90px"></textarea></div>'+
     '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-bottom:8px">Diese Leistungen erscheinen bei der Baustelle im Arbeitsschritt-Dropdown.</div></div>'+
-    '<button class="btn btn-sky" ontouchstart="adminAddProj()" onclick="adminAddProj()">+ Projekt anlegen</button></div>'+
+    '<button class="btn btn-sky" ontouchstart="tsTap(event,this,function(){adminAddProj()})" onclick="tsKlick(function(){adminAddProj()})">+ Projekt anlegen</button></div>'+
     '<div class="a-sec"><div class="a-sec-title">Alle Projekte</div>'+
     '<div class="row" style="margin-bottom:10px"><div class="fg w50"><input id="proj-filter" placeholder="Suchen (Name/Nr.)..." oninput="filterProjListe()"></div>'+
     '<div class="fg w50"><select id="proj-kat-filter" onchange="filterProjListe()"><option value="">Alle Kategorien</option><option value="bau">Nur Bau</option><option value="pflege">Nur Pflege</option></select></div></div>'+
@@ -1877,7 +1877,7 @@ function filterProjListe(){
     '<div style="flex:1;min-width:120px;font-size:12px;font-weight:600;color:var(--c)">'+p.name+(istPflege&&anzLeist?' <span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m)">('+anzLeist+' Leist.)</span>':'')+'</div>'+
     '<select style="width:74px;font-size:10px;background:var(--s2);border:1px solid var(--b);border-radius:3px;color:var(--earth)" onchange="adminUpdateFahrzeit(\''+p.id+'\',this.value)">'+
     [0,5,10,15,20,25,30,35,40,45,50,55,60,70,80,90,100,110,120].map(m=>'<option value="'+m+'" '+(parseInt(p.fahrzeit_min||0)===m?'selected':'')+'>'+m+'min</option>').join('')+'</select>'+
-    '<button class="btn" style="font-size:10px;padding:5px 8px" ontouchstart="editProj(\''+p.id+'\')" onclick="editProj(\''+p.id+'\')">Bearb.</button>'+
+    '<button class="btn" style="font-size:10px;padding:5px 8px" ontouchstart="tsTap(event,this,function(){editProj(\''+p.id+'\')})" onclick="tsKlick(function(){editProj(\''+p.id+'\')})">Bearb.</button>'+
     '<button class="btn btn-r" style="font-size:10px;padding:5px 8px" ontouchstart="adminDelProj(\''+p.id+'\',\''+(p.name||'').replace(/'/g,"")+'\')" onclick="adminDelProj(\''+p.id+'\',\''+(p.name||'').replace(/'/g,"")+'\')">&#x2715;</button></div>';
   }).join('');
 }
@@ -1911,8 +1911,8 @@ async function editProj(id){
     '<div class="fg w50"><label>Planung Ende</label><input type="date" id="ep-pende-'+id+'" value="'+String(data.plan_ende||'').substring(0,10)+'"></div></div>'+
     '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-bottom:8px">Leitmenge = die eine kennzeichnende Menge der Baustelle (Platzflaeche, Pflasterflaeche, Erdmasse). Start und Ende steuern die Auslastungsvorschau.</div>'+
     '<div id="ep-leist-wrap-'+id+'" style="display:'+(istPflege?'block':'none')+'"><div class="fg w100"><label>Leistungen (eine pro Zeile)</label><textarea id="ep-leist-'+id+'" style="min-height:90px">'+leistText+'</textarea></div></div>'+
-    '<div style="display:flex;gap:6px"><button class="btn btn-sky" ontouchstart="saveEditProj(\''+id+'\')" onclick="saveEditProj(\''+id+'\')">Speichern</button>'+
-    '<button class="btn" ontouchstart="renderAdminProj()" onclick="renderAdminProj()">Abbrechen</button></div></div>';
+    '<div style="display:flex;gap:6px"><button class="btn btn-sky" ontouchstart="tsTap(event,this,function(){saveEditProj(\''+id+'\')})" onclick="tsKlick(function(){saveEditProj(\''+id+'\')})">Speichern</button>'+
+    '<button class="btn" ontouchstart="tsTap(event,this,function(){renderAdminProj()})" onclick="tsKlick(function(){renderAdminProj()})">Abbrechen</button></div></div>';
 }
 function toggleEpLeist(id){const kat=document.getElementById('ep-kat-'+id)?.value;const wrap=document.getElementById('ep-leist-wrap-'+id);if(wrap)wrap.style.display=kat==='pflege'?'block':'none';}
 async function saveEditProj(id){
@@ -1938,7 +1938,7 @@ async function adminDelProj(id,name){if(!confirm('Projekt "'+name+'" loeschen?')
 // ══════ FAHRZEUGVERWALTUNG ══════
 async function renderAdminFZ(){
   await loadFahrzeuge();const el=document.getElementById('apanel-fz');
-  el.innerHTML='<div class="a-sec"><div class="a-sec-title ws">Fahrzeug anlegen</div>'+buildFZFormHTML('new-fz')+'<button class="btn btn-ws" ontouchstart="adminAddFZ()" onclick="adminAddFZ()">+ Fahrzeug anlegen</button></div>'+
+  el.innerHTML='<div class="a-sec"><div class="a-sec-title ws">Fahrzeug anlegen</div>'+buildFZFormHTML('new-fz')+'<button class="btn btn-ws" ontouchstart="tsTap(event,this,function(){adminAddFZ()})" onclick="tsKlick(function(){adminAddFZ()})">+ Fahrzeug anlegen</button></div>'+
     '<div class="a-sec"><div class="a-sec-title ws">Alle Fahrzeuge ('+FAHRZEUGE.length+')</div>'+
     '<div id="fz-list">'+(FAHRZEUGE.length?FAHRZEUGE.map(fz=>renderFZItem(fz)).join(''):'<div style="color:var(--m);font-size:10px;padding:8px">Keine Fahrzeuge</div>')+'</div></div>';
 }
@@ -1984,8 +1984,8 @@ function renderFZItem(fz){
     '<div><div class="fz-kz">'+fz.kennzeichen+'</div>'+
     '<div class="fz-info">'+(fz.typ||'--')+' · '+(fz.hersteller||'')+(fz.baujahr?' Bj. '+fz.baujahr:'')+'</div></div>'+
     '<div style="display:flex;gap:5px">'+
-    '<button class="btn" style="font-size:10px;padding:4px 8px" ontouchstart="editFZ(\''+fz.id+'\')" onclick="editFZ(\''+fz.id+'\')">Bearb.</button>'+
-    '<button class="btn btn-r" style="font-size:10px;padding:4px 8px" ontouchstart="delFZ(\''+fz.id+'\')" onclick="delFZ(\''+fz.id+'\')">&#x2715;</button></div></div>'+
+    '<button class="btn" style="font-size:10px;padding:4px 8px" ontouchstart="tsTap(event,this,function(){editFZ(\''+fz.id+'\')})" onclick="tsKlick(function(){editFZ(\''+fz.id+'\')})">Bearb.</button>'+
+    '<button class="btn btn-r" style="font-size:10px;padding:4px 8px" ontouchstart="tsTap(event,this,function(){delFZ(\''+fz.id+'\')})" onclick="tsKlick(function(){delFZ(\''+fz.id+'\')})">&#x2715;</button></div></div>'+
     '<div class="fz-status">'+
     '<span class="fz-badge" style="background:rgba(61,143,168,.1);color:var(--sky)">'+(fz.kilometerstand||0).toLocaleString()+'km</span>'+
     '<span class="fz-badge" style="background:rgba(61,143,168,.1);color:var(--sky)">'+(fz.betriebsstunden||0)+'h</span>'+
@@ -2007,8 +2007,8 @@ async function editFZ(id){
   const fz=FAHRZEUGE.find(f=>f.id===id);if(!fz)return;
   const el=document.getElementById('fz-item-'+id);
   el.innerHTML=buildFZFormHTML('efz-'+id).replace('placeholder="KS-AB 123"','value="'+fz.kennzeichen+'"').replace('placeholder="Bagger Kette 5to"','value="'+(fz.typ||'')+'"')+
-    '<div style="display:flex;gap:6px"><button class="btn btn-ws" ontouchstart="saveEditFZ(\''+id+'\')" onclick="saveEditFZ(\''+id+'\')">Speichern</button>'+
-    '<button class="btn" ontouchstart="renderAdminFZ()" onclick="renderAdminFZ()">Abbrechen</button></div>';
+    '<div style="display:flex;gap:6px"><button class="btn btn-ws" ontouchstart="tsTap(event,this,function(){saveEditFZ(\''+id+'\')})" onclick="tsKlick(function(){saveEditFZ(\''+id+'\')})">Speichern</button>'+
+    '<button class="btn" ontouchstart="tsTap(event,this,function(){renderAdminFZ()})" onclick="tsKlick(function(){renderAdminFZ()})">Abbrechen</button></div>';
   setTimeout(()=>{
     const p='efz-'+id;
     if(document.getElementById(p+'-hs'))document.getElementById(p+'-hs').value=fz.hersteller||'';
@@ -2052,7 +2052,7 @@ async function renderAdminEmail(){
     '<div id="email-list">'+
     (fresh||[]).map(em=>
       '<div class="email-item">'+
-      '<div class="email-toggle '+(em.aktiv?'on':'')+'" ontouchstart="toggleEmail(\''+em.id+'\','+em.aktiv+')" onclick="toggleEmail(\''+em.id+'\','+em.aktiv+')"></div>'+
+      '<div class="email-toggle '+(em.aktiv?'on':'')+'" ontouchstart="tsTap(event,this,function(){toggleEmail(\''+em.id+'\','+em.aktiv+')})" onclick="tsKlick(function(){toggleEmail(\''+em.id+'\','+em.aktiv+')})"></div>'+
       '<div style="flex:1">'+
       '<div style="font-size:12px;font-weight:600;color:var(--c)">'+em.name+'</div>'+
       '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m)">'+em.email+'</div>'+
@@ -2063,14 +2063,14 @@ async function renderAdminEmail(){
       '<option value="to" '+(em.typ!=='cc'?'selected':'')+'>TO</option>'+
       '<option value="cc" '+(em.typ==='cc'?'selected':'')+'>CC</option>'+
       '</select></div>'+
-      '<button class="delbtn" style="color:var(--r)" ontouchstart="delEmail(\''+em.id+'\')" onclick="delEmail(\''+em.id+'\')">&#x2715;</button>'+
+      '<button class="delbtn" style="color:var(--r)" ontouchstart="tsTap(event,this,function(){delEmail(\''+em.id+'\')})" onclick="tsKlick(function(){delEmail(\''+em.id+'\')})">&#x2715;</button>'+
       '</div>'
     ).join('')+'</div></div>'+
     '<div class="a-sec"><div class="a-sec-title">Weitere Adresse hinzufuegen</div>'+
     '<div class="row"><div class="fg w33"><label>Name</label><input id="new-em-name" placeholder="Buchhaltung"></div>'+
     '<div class="fg w50"><label>E-Mail</label><input id="new-em-email" placeholder="info@firma.de" type="email"></div>'+
     '<div class="fg w25"><label>Gruppe</label><select id="new-em-gruppe"><option value="produktion">Produktion</option><option value="buchhaltung">Buchhaltung</option><option value="gf">Geschaeftsfuehrung</option><option value="it">IT Test</option></select></div></div>'+
-    '<button class="btn btn-sky" ontouchstart="adminAddEmail()" onclick="adminAddEmail()">+ Hinzufuegen</button></div>';
+    '<button class="btn btn-sky" ontouchstart="tsTap(event,this,function(){adminAddEmail()})" onclick="tsKlick(function(){adminAddEmail()})">+ Hinzufuegen</button></div>';
 }
 
 async function toggleEmail(id,aktiv){await sb.from('email_empfaenger').update({aktiv:!aktiv}).eq('id',id);renderAdminEmail();}
@@ -2089,7 +2089,7 @@ async function renderAdminBer(){
     '<div class="row"><div class="fg w33"><label>Von</label><input type="date" id="ber-von"></div>'+
     '<div class="fg w33"><label>Bis</label><input type="date" id="ber-bis"></div>'+
     '<div class="fg w33"><label>Mitarbeiter</label><input id="ber-ma" placeholder="Name..."></div></div>'+
-    '<button class="btn btn-sky" ontouchstart="filterBer()" onclick="filterBer()">Suchen</button></div>'+
+    '<button class="btn btn-sky" ontouchstart="tsTap(event,this,function(){filterBer()})" onclick="tsKlick(function(){filterBer()})">Suchen</button></div>'+
     '<div class="a-sec"><div class="a-sec-title">Berichte</div><div id="ber-list"><div style="color:var(--m);font-size:10px;padding:8px">Filter anwenden</div></div></div>';
 }
 
@@ -2101,7 +2101,7 @@ async function filterBer(){
   const el=document.getElementById('ber-list');
   if(!data?.length){el.innerHTML='<div style="color:var(--m);font-size:10px;padding:8px">Keine Berichte gefunden</div>';return;}
   el.innerHTML=data.map(b=>
-    '<div style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--s3);border:1px solid var(--b);border-radius:var(--rad);margin-bottom:4px;cursor:pointer;flex-wrap:wrap" ontouchstart="adminOpenBericht(\''+b.id+'\')" onclick="adminOpenBericht(\''+b.id+'\')">'+
+    '<div style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--s3);border:1px solid var(--b);border-radius:var(--rad);margin-bottom:4px;cursor:pointer;flex-wrap:wrap" ontouchstart="tsTap(event,this,function(){adminOpenBericht(\''+b.id+'\')})" onclick="tsKlick(function(){adminOpenBericht(\''+b.id+'\')})">'+
     '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--g);width:72px">'+fmtD(b.datum)+'</div>'+
     '<div style="flex:1;min-width:100px"><div style="font-size:12px;font-weight:600;color:var(--c)">'+b.mitarbeiter_name+' <span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m)">#'+(b.mitarbeiter_nr||'--')+'</span></div>'+
     '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m)">'+b.projekt_nr+' · '+(b.netto_gesamt_h||b.netto_arbeit_h||'--')+'h</div></div>'+
@@ -2175,10 +2175,10 @@ function renderAdminAbgabe(){
   if(!_abgMonat)_abgMonat=todayStr().slice(0,7);
   el.innerHTML='<div class="a-sec"><div class="a-sec-title">Abgabe-Uebersicht + Zeitabgleich</div>'+
     '<div class="abg-nav">'+
-    '<button class="btn" ontouchstart="abgChangeMonat(-1)" onclick="abgChangeMonat(-1)">&#x2039; Zurueck</button>'+
+    '<button class="btn" ontouchstart="tsTap(event,this,function(){abgChangeMonat(-1)})" onclick="tsKlick(function(){abgChangeMonat(-1)})">&#x2039; Zurueck</button>'+
     '<div class="abg-monat" id="abg-monat-lbl"></div>'+
-    '<button class="btn" ontouchstart="abgChangeMonat(1)" onclick="abgChangeMonat(1)">Vor &#x203A;</button>'+
-    '<button class="btn" ontouchstart="abgHeute()" onclick="abgHeute()">Aktueller Monat</button>'+
+    '<button class="btn" ontouchstart="tsTap(event,this,function(){abgChangeMonat(1)})" onclick="tsKlick(function(){abgChangeMonat(1)})">Vor &#x203A;</button>'+
+    '<button class="btn" ontouchstart="tsTap(event,this,function(){abgHeute()})" onclick="tsKlick(function(){abgHeute()})">Aktueller Monat</button>'+
     '</div>'+
     '<div style="font-size:10px;color:var(--m);margin-bottom:12px;line-height:2.2">'+
     '<span class="abg-cell-eigen" style="background:var(--g)">V</span> eigener Vorarbeiter-Bericht &nbsp; '+
@@ -2449,7 +2449,7 @@ function abgRender(cont,daten,j,mi,tage){
             orig:tg.kons.sumOrig,gew:tg.kons.sumGew,txt:'gleichrangige Ueberschneidung - nicht automatisch loesbar'});
         }
         inner='<span class="abg-cw">'+sym+dot+'</span>';
-        click=' class="abg-click'+(we?' abg-we':'')+'" ontouchstart="abgZeigeTag(\''+_dfEsc(p.id)+'\','+t+')" onclick="abgZeigeTag(\''+_dfEsc(p.id)+'\','+t+')"';
+        click=' class="abg-click'+(we?' abg-we':'')+'" ontouchstart="tsTap(event,this,function(){abgZeigeTag(\''+_dfEsc(p.id)+'\','+t+')})" onclick="tsKlick(function(){abgZeigeTag(\''+_dfEsc(p.id)+'\','+t+')})"';
       }else{
         click=we?' class="abg-we"':'';
       }
@@ -2461,7 +2461,7 @@ function abgRender(cont,daten,j,mi,tage){
     let freiZelle;
     if(!vf.gesamt)freiZelle='<span style="color:var(--m);font-size:9px">keine eigenen</span>';
     else if(!vf.offen)freiZelle='<span style="color:var(--g);font-size:9px">'+vf.gesamt+' frei &#x2713;</span>';
-    else if(abgDarfFreigeben())freiZelle='<button class="btn btn-p" style="font-size:9px;padding:3px 7px;white-space:nowrap" ontouchstart="abgSammelFreigabe(\''+_dfEsc(p.id)+'\')" onclick="abgSammelFreigabe(\''+_dfEsc(p.id)+'\')">'+vf.offen+' freigeben</button>';
+    else if(abgDarfFreigeben())freiZelle='<button class="btn btn-p" style="font-size:9px;padding:3px 7px;white-space:nowrap" ontouchstart="tsTap(event,this,function(){abgSammelFreigabe(\''+_dfEsc(p.id)+'\')})" onclick="tsKlick(function(){abgSammelFreigabe(\''+_dfEsc(p.id)+'\')})">'+vf.offen+' freigeben</button>';
     else freiZelle='<span style="color:var(--o);font-size:9px">'+vf.offen+' offen</span>';
     return '<tr><td class="abg-name" title="'+_dfEsc(p.name)+'">'+_dfEsc(p.name)+inaktiv+'</td>'+tds+
       '<td class="abg-sum">'+sum+'</td>'+
@@ -2486,7 +2486,7 @@ function abgRender(cont,daten,j,mi,tage){
       (nKonf?' <span style="color:var(--r)">'+nKonf+' Konflikt'+(nKonf===1?'':'e')+' offen.</span>':'')+'</div>'+
       pruefListe.map(function(k){
         const farbe=k.art==='konflikt'?'var(--r)':'var(--o)';
-        return '<div class="abg-konf-row" style="display:block" ontouchstart="abgZeigeTag(\''+_dfEsc(k.pid)+'\','+k.tag+')" onclick="abgZeigeTag(\''+_dfEsc(k.pid)+'\','+k.tag+')">'+
+        return '<div class="abg-konf-row" style="display:block" ontouchstart="tsTap(event,this,function(){abgZeigeTag(\''+_dfEsc(k.pid)+'\','+k.tag+')})" onclick="tsKlick(function(){abgZeigeTag(\''+_dfEsc(k.pid)+'\','+k.tag+')})">'+
           '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">'+
           '<span style="font-size:12px;color:var(--c);font-weight:600">'+_dfEsc(k.name)+'</span>'+
           '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:'+farbe+'">'+
@@ -2551,7 +2551,7 @@ function abgZeigeTag(pid,tag){
     '<div style="display:flex;gap:16px;margin-top:10px;font-family:\'IBM Plex Mono\',monospace;font-size:11px">'+
     '<span style="color:var(--m)">erfasst gesamt: '+_auswFmtH(kons.sumOrig)+'h</span>'+
     '<span style="color:var(--gl);font-weight:700">gewertet: '+_auswFmtH(kons.sumGew)+'h</span></div>'+
-    '<button class="btn" style="margin-top:10px" ontouchstart="document.getElementById(\'abg-detail\').innerHTML=\'\'" onclick="document.getElementById(\'abg-detail\').innerHTML=\'\'">Schliessen</button></div>';
+    '<button class="btn" style="margin-top:10px" ontouchstart="tsTap(event,this,function(){document.getElementById(\'abg-detail\').innerHTML=\'\'})" onclick="tsKlick(function(){document.getElementById(\'abg-detail\').innerHTML=\'\'})">Schliessen</button></div>';
   box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
@@ -2926,9 +2926,9 @@ async function renderAdminExp(){
     '<div class="fg w50"><label>Mitarbeiter</label><select id="exp-f-ma" onchange="expAufstellungRender()"><option value="">Alle Mitarbeiter</option></select></div></div>'+
     '<label style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--c);margin-bottom:10px;cursor:pointer"><input type="checkbox" id="exp-nur-frei" checked style="width:16px;height:16px" onchange="expZeitraumGeaendert()"> Nur von der Buchhaltung freigegebene Berichte exportieren</label>'+
     '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
-    '<button class="btn btn-sky" ontouchstart="expBuchhaltungCSV()" onclick="expBuchhaltungCSV()">CSV Buchhaltung</button>'+
-    '<button class="btn btn-e" ontouchstart="expDFCSVAdmin()" onclick="expDFCSVAdmin()">Dataflor CSV</button>'+
-    '<button class="btn btn-sky" ontouchstart="expNKImport()" onclick="expNKImport()">DATAflor NK-Import (XML)</button></div>'+
+    '<button class="btn btn-sky" ontouchstart="tsTap(event,this,function(){expBuchhaltungCSV()})" onclick="tsKlick(function(){expBuchhaltungCSV()})">CSV Buchhaltung</button>'+
+    '<button class="btn btn-e" ontouchstart="tsTap(event,this,function(){expDFCSVAdmin()})" onclick="tsKlick(function(){expDFCSVAdmin()})">Dataflor CSV</button>'+
+    '<button class="btn btn-sky" ontouchstart="tsTap(event,this,function(){expNKImport()})" onclick="tsKlick(function(){expNKImport()})">DATAflor NK-Import (XML)</button></div>'+
     '<div style="font-size:10px;color:var(--m);line-height:1.5;margin-top:6px">CSV Buchhaltung: eine Zeile je Mitarbeiter, Tag und Projekt (aus den Zeiten der Vorarbeiter-Berichte plus eigene Berichte), mit Fahrzeit. Die Filter Projekt und Mitarbeiter gelten fuer die Aufstellung unten und fuer alle drei Dateien.</div>'+
     '<div class="row" style="margin-top:8px"><div class="fg w50"><label>Fallback-Lohnart (DATAflor)</label><input id="exp-lohnart" inputmode="numeric" value="'+LOHNART_ARBEIT+'" placeholder="z.B. '+LOHNART_ARBEIT+'"></div>'+
     '<div class="fg w50" style="display:flex;align-items:flex-end"><label style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--c);margin:0;cursor:pointer"><input type="checkbox" id="exp-nk-zeiten" checked style="width:16px;height:16px"> Von/Bis-Zeiten ausgeben</label></div></div>'+
@@ -4865,13 +4865,13 @@ function renderAdminAusw(){
     '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px">'+
       '<div class="fg" style="flex:0 0 135px"><label>Von</label><input type="date" id="ausw-von" value="'+vonDef+'"></div>'+
       '<div class="fg" style="flex:0 0 135px"><label>Bis</label><input type="date" id="ausw-bis" value="'+bisDef+'"></div>'+
-      '<button class="btn btn-p" style="padding:10px 16px" ontouchstart="ladeAuswertung()" onclick="ladeAuswertung()">Auswertung laden</button>'+
+      '<button class="btn btn-p" style="padding:10px 16px" ontouchstart="tsTap(event,this,function(){ladeAuswertung()})" onclick="tsKlick(function(){ladeAuswertung()})">Auswertung laden</button>'+
     '</div>'+
     '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">'+
-      '<button class="btn" style="font-size:10px;padding:5px 10px" ontouchstart="auswPreset(\'monat\')" onclick="auswPreset(\'monat\')">Dieser Monat</button>'+
-      '<button class="btn" style="font-size:10px;padding:5px 10px" ontouchstart="auswPreset(\'lmonat\')" onclick="auswPreset(\'lmonat\')">Letzter Monat</button>'+
-      '<button class="btn" style="font-size:10px;padding:5px 10px" ontouchstart="auswPreset(\'jahr\')" onclick="auswPreset(\'jahr\')">Dieses Jahr</button>'+
-      '<button class="btn" style="font-size:10px;padding:5px 10px" ontouchstart="auswPreset(\'alles\')" onclick="auswPreset(\'alles\')">Alles</button>'+
+      '<button class="btn" style="font-size:10px;padding:5px 10px" ontouchstart="tsTap(event,this,function(){auswPreset(\'monat\')})" onclick="tsKlick(function(){auswPreset(\'monat\')})">Dieser Monat</button>'+
+      '<button class="btn" style="font-size:10px;padding:5px 10px" ontouchstart="tsTap(event,this,function(){auswPreset(\'lmonat\')})" onclick="tsKlick(function(){auswPreset(\'lmonat\')})">Letzter Monat</button>'+
+      '<button class="btn" style="font-size:10px;padding:5px 10px" ontouchstart="tsTap(event,this,function(){auswPreset(\'jahr\')})" onclick="tsKlick(function(){auswPreset(\'jahr\')})">Dieses Jahr</button>'+
+      '<button class="btn" style="font-size:10px;padding:5px 10px" ontouchstart="tsTap(event,this,function(){auswPreset(\'alles\')})" onclick="tsKlick(function(){auswPreset(\'alles\')})">Alles</button>'+
     '</div>'+
     '<div id="ausw-status" style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:var(--m);margin-bottom:10px"></div>'+
     '<div id="ausw-result"></div></div>';
@@ -5034,7 +5034,7 @@ function renderAuswResult(){
 
 function _auswViewBtn(v,lbl){
   const act=(auswView===v);
-  return '<button class="btn'+(act?' btn-p':'')+'" style="font-size:11px;padding:7px 14px" ontouchstart="setAuswView(\''+v+'\')" onclick="setAuswView(\''+v+'\')">'+lbl+'</button>';
+  return '<button class="btn'+(act?' btn-p':'')+'" style="font-size:11px;padding:7px 14px" ontouchstart="tsTap(event,this,function(){setAuswView(\''+v+'\')})" onclick="tsKlick(function(){setAuswView(\''+v+'\')})">'+lbl+'</button>';
 }
 function setAuswView(v){auswView=v;renderAuswResult();}
 
@@ -5140,8 +5140,8 @@ function renderAdminPflege(){
       '<div class="fg"><label>Suche Baustelle</label><input id="pfl-suche" placeholder="Name oder Nr." oninput="renderPflegeListe()"></div>'+
       '</div>'+
       '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
-      '<button class="btn btn-e" style="font-size:11px" ontouchstart="exportPflegeCSV()" onclick="exportPflegeCSV()">CSV exportieren</button>'+
-      '<button class="btn" style="font-size:11px" ontouchstart="ctrlLadeDaten(true)" onclick="ctrlLadeDaten(true)">Aktualisieren</button>'+
+      '<button class="btn btn-e" style="font-size:11px" ontouchstart="tsTap(event,this,function(){exportPflegeCSV()})" onclick="tsKlick(function(){exportPflegeCSV()})">CSV exportieren</button>'+
+      '<button class="btn" style="font-size:11px" ontouchstart="tsTap(event,this,function(){ctrlLadeDaten(true)})" onclick="tsKlick(function(){ctrlLadeDaten(true)})">Aktualisieren</button>'+
       '</div>'+
       '<div id="pfl-stand" style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-top:8px"></div>'+
       '</div>'+
@@ -5164,8 +5164,8 @@ function renderAdminCockpit(){
       '<div class="fg"><label>Suche Baustelle</label><input id="cock-suche" placeholder="Name oder Nr." oninput="renderCockpitListe()"></div>'+
       '</div>'+
       '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
-      '<button class="btn btn-e" style="font-size:11px" ontouchstart="exportCockpitCSV()" onclick="exportCockpitCSV()">CSV exportieren</button>'+
-      '<button class="btn" style="font-size:11px" ontouchstart="ctrlLadeDaten(true)" onclick="ctrlLadeDaten(true)">Aktualisieren</button>'+
+      '<button class="btn btn-e" style="font-size:11px" ontouchstart="tsTap(event,this,function(){exportCockpitCSV()})" onclick="tsKlick(function(){exportCockpitCSV()})">CSV exportieren</button>'+
+      '<button class="btn" style="font-size:11px" ontouchstart="tsTap(event,this,function(){ctrlLadeDaten(true)})" onclick="tsKlick(function(){ctrlLadeDaten(true)})">Aktualisieren</button>'+
       '</div>'+
       '<div id="cock-stand" style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-top:8px"></div>'+
       '</div>'+
@@ -5587,7 +5587,7 @@ function renderCockpitListe(){
         '<div class="sc"><div class="sv" style="color:var(--g)">'+_auswFmtH(it.gesamt)+'</div><div class="sl">Gesamt-Std.</div></div>';
       body.innerHTML='<div class="cp-det">'+
         '<div class="cp-det-head">'+
-        '<button class="btn" ontouchstart="cpZurueck()" onclick="cpZurueck()">&#8592; Alle Baustellen</button>'+
+        '<button class="btn" ontouchstart="tsTap(event,this,function(){cpZurueck()})" onclick="tsKlick(function(){cpZurueck()})">&#8592; Alle Baustellen</button>'+
         '<div class="cp-det-title"><span class="ct-pnr">'+_dfEsc(it.nr||'--')+'</span>'+_dfEsc(it.name)+' '+badge+'</div>'+
         '</div>'+
         '<div class="cp-det-plan">'+
@@ -6881,7 +6881,7 @@ function renderEintVorschau(){
         '</select></td></tr>';
     });
     h+='</tbody></table></div>'+
-      '<div style="margin-top:8px"><button class="btn btn-sky" ontouchstart="eintProjekteAnlegen()" onclick="eintProjekteAnlegen()">+ Markierte Projekte anlegen</button></div>'+
+      '<div style="margin-top:8px"><button class="btn btn-sky" ontouchstart="tsTap(event,this,function(){eintProjekteAnlegen()})" onclick="tsKlick(function(){eintProjekteAnlegen()})">+ Markierte Projekte anlegen</button></div>'+
       '<div style="font-size:10px;color:var(--m);margin-top:6px">Pflege-Leistungen (die Zeilen mit "(6x)") traegst du danach im Projekt-Tab nach.</div>'+
       '</div>';
   }
@@ -6924,8 +6924,8 @@ function renderEintVorschau(){
   });
   h+='</tbody></table></div>';
 
-  h+='<div class="arow" style="margin-top:10px"><button class="btn btn-p" ontouchstart="eintSpeichern()" onclick="eintSpeichern()">Einteilung speichern</button>'+
-    '<button class="btn" ontouchstart="eintVorschauVerwerfen()" onclick="eintVorschauVerwerfen()">Verwerfen</button></div>';
+  h+='<div class="arow" style="margin-top:10px"><button class="btn btn-p" ontouchstart="tsTap(event,this,function(){eintSpeichern()})" onclick="tsKlick(function(){eintSpeichern()})">Einteilung speichern</button>'+
+    '<button class="btn" ontouchstart="tsTap(event,this,function(){eintVorschauVerwerfen()})" onclick="tsKlick(function(){eintVorschauVerwerfen()})">Verwerfen</button></div>';
 
   el.innerHTML=h;
 }
@@ -7188,7 +7188,7 @@ async function eintZeigeTag(){
   });
   h+='</tbody></table></div>'+
     '<div style="font-size:10px;color:var(--m);margin-top:6px">'+r.daten.length+' Zeilen. Gruende (Krank, Urlaub) sind nur in dieser Adminansicht im Klartext sichtbar.</div>'+
-    '<div class="arow" style="margin-top:8px"><button class="btn btn-r" ontouchstart="eintTagLoeschen()" onclick="eintTagLoeschen()">Diesen Tag loeschen</button></div>';
+    '<div class="arow" style="margin-top:8px"><button class="btn btn-r" ontouchstart="tsTap(event,this,function(){eintTagLoeschen()})" onclick="tsKlick(function(){eintTagLoeschen()})">Diesen Tag loeschen</button></div>';
   el.innerHTML=h;
 }
 
@@ -7390,7 +7390,7 @@ async function renderPLBer(){
     '<div class="fg w33"><label>Mitarbeiter</label><input id="pl-ma" placeholder="Name..."></div></div>'+
     '<div class="row"><div class="fg w50"><label>Projekt</label><select id="pl-proj"><option value="">Alle Projekte</option>'+PROJEKTE.map(p=>'<option value="'+p.id+'">'+p.nr+' - '+p.name+'</option>').join('')+'</select></div>'+
     '<div class="fg w50"><label>Status</label><select id="pl-status"><option value="">Alle</option><option value="offen">Nicht abgenommen</option><option value="abgenommen">Abgenommen</option></select></div></div>'+
-    '<button class="btn btn-e" ontouchstart="filterPLBer()" onclick="filterPLBer()">Suchen</button></div>'+
+    '<button class="btn btn-e" ontouchstart="tsTap(event,this,function(){filterPLBer()})" onclick="tsKlick(function(){filterPLBer()})">Suchen</button></div>'+
     '<div id="pl-ber-list"><div style="color:var(--m);font-size:10px;padding:8px">Filter anwenden</div></div>';
 }
 
@@ -7405,7 +7405,7 @@ async function filterPLBer(){
   const el=document.getElementById('pl-ber-list');
   if(!data?.length){el.innerHTML='<div style="color:var(--m);font-size:10px;padding:12px">Keine Berichte</div>';return;}
   el.innerHTML=data.map(b=>
-    '<div class="pl-bericht '+(b.abgenommen?'abgenommen':'')+'" ontouchstart="plOpenBericht(\''+b.id+'\')" onclick="plOpenBericht(\''+b.id+'\')">'+
+    '<div class="pl-bericht '+(b.abgenommen?'abgenommen':'')+'" ontouchstart="tsTap(event,this,function(){plOpenBericht(\''+b.id+'\')})" onclick="tsKlick(function(){plOpenBericht(\''+b.id+'\')})">'+
     '<div class="pl-bericht-header">'+
     '<div><div style="font-size:12px;font-weight:600;color:var(--c)">'+b.mitarbeiter_name+'</div>'+
     '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--g)">'+fmtD(b.datum)+' · '+b.projekt_nr+'</div>'+
@@ -7470,7 +7470,7 @@ async function plOpenBericht(id){
 async function renderPLProj(){
   const el=document.getElementById('appanel-proj');
   el.innerHTML='<div class="a-sec"><div class="a-sec-title earth">Berichte nach Projekt</div>'+
-    PROJEKTE.map(p=>'<div style="background:var(--s3);border:1px solid var(--b);border-radius:var(--rad);padding:12px;margin-bottom:8px;cursor:pointer" ontouchstart="loadProjektBerichte(\''+p.id+'\')" onclick="loadProjektBerichte(\''+p.id+'\')">'+
+    PROJEKTE.map(p=>'<div style="background:var(--s3);border:1px solid var(--b);border-radius:var(--rad);padding:12px;margin-bottom:8px;cursor:pointer" ontouchstart="tsTap(event,this,function(){loadProjektBerichte(\''+p.id+'\')})" onclick="tsKlick(function(){loadProjektBerichte(\''+p.id+'\')})">'+
       '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:var(--earth)">'+p.nr+'</div>'+
       '<div style="font-size:13px;font-weight:600;color:var(--c)">'+p.name+'</div>'+
       '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-top:2px">&#x276F; Berichte anzeigen</div></div>'
@@ -7484,7 +7484,7 @@ async function loadProjektBerichte(projektId){
   if(!data?.length){el.innerHTML='<div style="color:var(--m);font-size:10px;padding:8px">Keine Berichte</div>';return;}
   const totalH=data.reduce((s,b)=>s+(parseFloat(b.netto_gesamt_h||b.netto_arbeit_h||0)),0);
   el.innerHTML='<div class="a-sec"><div class="a-sec-title earth">'+(proj?.name||'Projekt')+' — '+data.length+' Berichte — '+totalH.toFixed(1)+'h</div>'+
-    data.map(b=>'<div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--s3);border:1px solid var(--b);border-radius:var(--rad);margin-bottom:4px;cursor:pointer;flex-wrap:wrap" ontouchstart="plOpenBericht(\''+b.id+'\')" onclick="plOpenBericht(\''+b.id+'\')">'+
+    data.map(b=>'<div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--s3);border:1px solid var(--b);border-radius:var(--rad);margin-bottom:4px;cursor:pointer;flex-wrap:wrap" ontouchstart="tsTap(event,this,function(){plOpenBericht(\''+b.id+'\')})" onclick="tsKlick(function(){plOpenBericht(\''+b.id+'\')})">'+
       '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--g);width:70px">'+fmtD(b.datum)+'</div>'+
       '<div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--c)">'+b.mitarbeiter_name+'</div>'+
       '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m)">'+(b.netto_gesamt_h||b.netto_arbeit_h||'--')+'h · '+(b.rolle==='va'?'VA':'AR')+'</div></div>'+
@@ -7500,7 +7500,7 @@ async function renderPLOffen(){
   const{data}=await sb.from(tblBerichte()).select('*').eq('abgenommen',false).order('datum',{ascending:false}).limit(100);
   if(!data?.length){el.innerHTML='<div class="a-sec"><div class="a-sec-title earth">Offene Berichte</div><div style="color:var(--gl);font-size:12px;padding:8px">Alle abgenommen ✓</div></div>';return;}
   el.innerHTML='<div class="a-sec"><div class="a-sec-title earth">Offene Berichte ('+data.length+')</div>'+
-    data.map(b=>'<div class="pl-bericht" ontouchstart="plOpenBericht(\''+b.id+'\')" onclick="plOpenBericht(\''+b.id+'\')">'+
+    data.map(b=>'<div class="pl-bericht" ontouchstart="tsTap(event,this,function(){plOpenBericht(\''+b.id+'\')})" onclick="tsKlick(function(){plOpenBericht(\''+b.id+'\')})">'+
       '<div class="pl-bericht-header"><div>'+
       '<div style="font-size:12px;font-weight:600;color:var(--c)">'+b.mitarbeiter_name+'</div>'+
       '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--g)">'+fmtD(b.datum)+' · '+b.projekt_nr+'</div></div>'+
@@ -8001,6 +8001,16 @@ function basFahrerStand(projekte,geraete,fzNummern){
   return {fahrer:n,fahrerIds:Object.keys(fahrer),fahrzeuge:fz,fehlen:Math.max(0,n-fz)};
 }
 
+// Reine Funktion: Stundenvorschlag fuer ein Fahrzeug = Fahrzeit des Projekts (Hin und Rueck, in Minuten).
+// Setzt g.netto nur, wenn das Feld leer ist oder der Wert selbst ein Vorschlag war (g.auto).
+// Kein Fahrzeug oder keine Fahrzeit: ein frueherer Vorschlag wird wieder entfernt.
+function basFahrzeitVorschlag(g,fzNummern,fahrzeitMin){
+  var istFz=fzNummern.indexOf(String(g.geraetNr||''))>=0,min=parseInt(fahrzeitMin)||0;
+  if(!istFz||!min){if(g.auto){g.netto='';g.auto=false;}return g;}
+  if(g.netto===''||g.netto===undefined||g.netto===null||g.auto){g.netto=String(Math.round(min/60*100)/100);g.auto=true;}
+  return g;
+}
+
 // ---- Zugriff auf Stammdaten ----
 function basMaListe(){return maAuswahlListe().slice().sort(maCmp);}
 function basMaMap(){
@@ -8134,16 +8144,23 @@ function basSetzePerson(i,id,feld,v){
   e[feld]=v;basSichern();basListeRender(i);
 }
 function basFilter(i,v){_bas.filter=v||'';basListeRender(i);}
+function basGeraetVorschlag(g){
+  var p=_bas.projekte[g.pIdx]||_bas.projekte[0];
+  basFahrzeitVorschlag(g,FAHRZEUG_GERAETE,p?getProjektFahrzeit(p.projektId):0);
+}
 function basGeraetPlus(nr){
-  _bas.geraete.push({geraetNr:nr||'',fahrzeugnr:'',netto:'',pIdx:0});
+  var g={geraetNr:nr||'',fahrzeugnr:'',netto:'',pIdx:0,auto:false};
+  basGeraetVorschlag(g);
+  _bas.geraete.push(g);
   basRender();
 }
 function basGeraetWeg(k){_bas.geraete.splice(k,1);basRender();}
 function basSetzeG(k,feld,v){
   var g=_bas.geraete[k];if(!g)return;
   g[feld]=(feld==='pIdx')?(parseInt(v)||0):v;
+  if(feld==='netto'){g.auto=false;basSichern();return;} // selbst eingetragen: nie mehr ueberschreiben
+  if(feld==='geraetNr'||feld==='pIdx'){basGeraetVorschlag(g);basRender();return;}
   basSichern();
-  if(feld==='geraetNr')basFahrerHinweisRender();
 }
 function basSchrittPlus(i){_bas.projekte[i].schritte.push({txt:'',pos:'',menge:'',eh:'',offen:false});basRender();}
 function basSchrittWeg(i,k){
@@ -8238,6 +8255,7 @@ function basRender(){
   else if(s.typ==='material')h=basRenderMaterial();
   else h=basRenderFertig();
   el.innerHTML=h;
+  if(s.typ==='fertig')basSendeSperre();
   if(s.typ==='projekte')basInfoProjekte();
   if(s.typ==='zeiten')basListeRender(s.i);
   if(s.typ==='geraete')basFahrerHinweisRender();
@@ -8350,10 +8368,11 @@ function basRenderGeraete(){
       '<div class="fg bas-breit"><label>Geraet / Fahrzeug</label><select onchange="basSetzeG('+k+',\'geraetNr\',this.value)"><option value="">- waehlen -</option>'+
       GERAETE.map(function(x){return '<option value="'+x.nr+'"'+(g.geraetNr===x.nr?' selected':'')+'>'+x.nr+' - '+_dfEsc(x.bez)+'</option>';}).join('')+'</select></div>'+
       '<div class="fg"><label>Kfz/Nr.</label><input type="text" value="'+_dfEsc(g.fahrzeugnr||'')+'" onchange="basSetzeG('+k+',\'fahrzeugnr\',this.value)"></div>'+
-      '<div class="fg"><label>Stunden</label><input type="number" inputmode="decimal" min="0" step="0.5" value="'+_dfEsc(g.netto||'')+'" onchange="basSetzeG('+k+',\'netto\',this.value)"></div>'+
+      '<div class="fg"><label>Stunden</label><input type="number" inputmode="decimal" min="0" step="any" value="'+_dfEsc(g.netto||'')+'" onchange="basSetzeG('+k+',\'netto\',this.value)"></div>'+
       (mehrere?'<div class="fg bas-breit"><label>Projekt</label><select onchange="basSetzeG('+k+',\'pIdx\',this.value)">'+
         _bas.projekte.map(function(p,i){return '<option value="'+i+'"'+(g.pIdx===i?' selected':'')+'>'+_dfEsc(getProjektLabel(p.projektId))+'</option>';}).join('')+'</select></div>':'')+
-      '</div>');
+      '</div>'+
+      (g.auto?'<div class="bas-hinweis" style="margin-top:6px">Stunden vorgeschlagen aus der Fahrzeit zum Projekt (Hin und Rueck). War das Fahrzeug laenger im Einsatz, bitte aendern.</div>':''));
   });
   h+='<button class="btn" '+tsAttr('basGeraetPlus(\'\')')+'>+ Geraet hinzufuegen</button>'+
     '<div class="bas-hinweis" style="margin-top:8px">Keine Geraete im Einsatz? Einfach weiter.</div>'+
@@ -8440,7 +8459,7 @@ function basRenderFertig(){
   return basKopf(n>1?n+' Berichte sind fertig':'Der Bericht ist fertig')+basUebersichtKarten()+
     '<div class="bas-hinweis" style="margin-bottom:4px">'+(n>1?'Beim Senden entsteht je Projekt ein eigener Bericht mit eigenem PDF.':'Beim Senden entsteht das PDF und geht per Mail raus.')+'</div>'+
     '<div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">'+
-    '<button class="btn btn-p bas-gross" '+tsAttr('basSenden()')+'>'+(n>1?n+' Berichte jetzt senden':'Bericht jetzt senden')+'</button>'+
+    '<button class="btn btn-p bas-gross" '+tsAttr('basSendenFragen()')+'>'+(n>1?n+' Berichte jetzt senden':'Bericht jetzt senden')+'</button>'+
     '<button class="btn" '+tsAttr('basErgaenzen()')+'>Erst noch Fotos, Maengel oder LV-Positionen ergaenzen</button>'+
     '<button class="btn" '+tsAttr('basZurueck()')+'>Zurueck</button></div>';
 }
@@ -8503,12 +8522,41 @@ function basAnwenden(){
 // ---- Senden direkt aus dem Assistenten ----
 // _vaOhneNachfrage: die Fertig-Seite IST die Bestaetigung - saveAndSendVA fragt dann nicht noch einmal
 // und oeffnet auch nicht den Aufteilungs-Dialog. _vaSendErgebnis: was der Versand gemeldet hat.
-var _vaOhneNachfrage=false,_vaSendErgebnis=null,_basStatusBeob=null;
+var _vaOhneNachfrage=false,_vaSendErgebnis=null,_basStatusBeob=null,_basSendbarAb=0;
+// Senden erst 0,8 s nach dem Erscheinen des Sende-Knopfs: ein Tipp, der noch zum vorigen Bildschirm
+// gehoerte (Weiter, Nein, Ergaenzen), darf nicht auf dem neuen Bildschirm als Senden ankommen.
+function basSendeSperre(){_basSendbarAb=Date.now()+800;}
 function basStatusSpiegeln(){
   var q=document.getElementById('va-send-status'),z=document.getElementById('bas-status');
   if(q&&z&&q.textContent)z.textContent=q.textContent;
 }
+// Sicherheitsfrage vor dem Senden: eigene Seite im Assistenten mit grossen Knoepfen.
+function basSendenFragen(){
+  if(Date.now()<_basSendbarAb)return;
+  if(isSending){toast('Bitte warten - wird noch verarbeitet','info');return;}
+  if(!_bas){toast('Kein Bericht im Assistenten','err');return;}
+  basLeisteWeg();
+  var mo=document.getElementById('mo-bas'),el=document.getElementById('bas-inhalt');
+  if(!mo||!el){console.error('Berichts-Assistent: Dialog fehlt');toast('Assistent: Dialog fehlt in der Seite','err');return;}
+  var n=_bas.projekte.length;
+  el.innerHTML='<div class="bas-mitte" style="padding-top:6vh">'+
+    '<div class="bas-titel">'+(n>1?'Sind Sie sicher, dass Sie diese '+n+' Berichte senden wollen?':'Sind Sie sicher, dass Sie diesen Bericht senden wollen?')+'</div>'+
+    '<div class="bas-hinweis" style="margin:12px 0 16px;font-size:14px">Nach dem Senden gehen die PDFs per Mail raus. Aendern geht danach nur noch ueber eine Korrektur.</div></div>'+
+    basUebersichtKarten()+
+    '<div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">'+
+    '<button class="btn btn-p bas-gross" '+tsAttr('basSenden()')+'>Ja, '+(n>1?'alle '+n+' Berichte':'Bericht')+' jetzt senden</button>'+
+    '<button class="btn bas-gross" '+tsAttr('basNichtSenden()')+'>Nein, zurueck</button></div>';
+  mo.style.display='flex';
+  var box=document.getElementById('bas-box');if(box)box.scrollTop=0;
+  basSendeSperre();
+}
+function basNichtSenden(){
+  if(!_bas){basSchliessen();return;}
+  _bas.schritt=basSchritte().length-1;
+  basRender();
+}
 function basSenden(){
+  if(Date.now()<_basSendbarAb)return;
   if(isSending){toast('Bitte warten - wird noch verarbeitet','info');return;}
   if(!_bas){toast('Kein Bericht im Assistenten','err');return;}
   basLeisteWeg();
@@ -8571,8 +8619,9 @@ function basErgaenzen(){
     var n=_bas?_bas.projekte.length:1;
     l.innerHTML='<div class="bas-leiste-t">Aus dem Assistenten: alles ist eingetragen. Ergaenze, was fehlt.</div>'+
       '<div class="bas-leiste-k"><button class="btn" '+tsAttr('basWiederOeffnen()')+'>Zurueck zum Assistenten</button>'+
-      '<button class="btn btn-p" '+tsAttr('basSenden()')+'>'+(n>1?n+' Berichte senden':'Bericht senden')+'</button></div>';
+      '<button class="btn btn-p" '+tsAttr('basSendenFragen()')+'>'+(n>1?n+' Berichte senden':'Bericht senden')+'</button></div>';
     l.style.display='flex';
+    basSendeSperre();
     document.body.classList.add('bas-nach');
   }
   showTab('bericht');
@@ -9046,7 +9095,7 @@ function renderARDetail(r){
     (r.taetigkeit_text?'<div class="ib"><div class="ib-t">Details</div><div class="ib-c">'+r.taetigkeit_text+'</div></div>':'')+
     (r.besonder?'<div class="ib" style="border-color:rgba(196,72,40,.25)"><div class="ib-t" style="color:var(--r)">Besonderheiten</div><div class="ib-c">'+r.besonder+'</div></div>':'')+
     (r.pdf_url?'<div class="ib"><div class="ib-t">Drive</div><a href="'+r.pdf_url+'" target="_blank" style="color:var(--sky);font-size:12px">PDF in Drive oeffnen &#x279A;</a></div>':'')+
-    '<div class="arow"><button class="btn btn-r" style="font-size:11px" ontouchstart="delReport(\''+r.id+'\')" onclick="delReport(\''+r.id+'\')">Loeschen</button></div>';
+    '<div class="arow"><button class="btn btn-r" style="font-size:11px" ontouchstart="tsTap(event,this,function(){delReport(\''+r.id+'\')})" onclick="tsKlick(function(){delReport(\''+r.id+'\')})">Loeschen</button></div>';
 }
 
 function renderVADetail(r){
@@ -9059,8 +9108,8 @@ function renderVADetail(r){
     (zp.length?'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--earth);margin-top:3px">+'+zp.map(z=>z.projektNr).join(', ')+'</div>':'')+
     '<div class="card-meta"><span class="g">'+fmtD(r.datum)+'</span><span>'+(r.bauleiter||'--')+'</span></div></div>'+
     '<div style="display:flex;gap:5px">'+
-    '<button class="btn" style="font-size:11px;padding:5px 9px" ontouchstart="loadVAForm(reports.find(x=>x.id===\''+r.id+'\'));showTab(\'bericht\')" onclick="loadVAForm(reports.find(x=>x.id===\''+r.id+'\'));showTab(\'bericht\')">Bearb.</button>'+
-    '<button class="btn btn-r" style="font-size:11px;padding:5px 9px" ontouchstart="delReport(\''+r.id+'\')" onclick="delReport(\''+r.id+'\')">&#x2715;</button>'+
+    '<button class="btn" style="font-size:11px;padding:5px 9px" ontouchstart="tsTap(event,this,function(){loadVAForm(reports.find(x=>x.id===\''+r.id+'\'));showTab(\'bericht\')})" onclick="tsKlick(function(){loadVAForm(reports.find(x=>x.id===\''+r.id+'\'));showTab(\'bericht\')})">Bearb.</button>'+
+    '<button class="btn btn-r" style="font-size:11px;padding:5px 9px" ontouchstart="tsTap(event,this,function(){delReport(\''+r.id+'\')})" onclick="tsKlick(function(){delReport(\''+r.id+'\')})">&#x2715;</button>'+
     '</div></div></div>'+
     '<div class="srow">'+
     '<div class="sc"><div class="sv">'+hours.toFixed(1)+'h</div><div class="sl">Stunden</div></div>'+
@@ -9068,7 +9117,7 @@ function renderVADetail(r){
     '<div class="sc"><div class="sv">'+((r.steps||[]).length)+'</div><div class="sl">Schritte</div></div>'+
     '</div>'+
     (r.pdf_url?'<div class="ib"><div class="ib-t">Drive</div><a href="'+r.pdf_url+'" target="_blank" style="color:var(--sky);font-size:12px">PDF in Drive oeffnen &#x279A;</a></div>':'')+
-    '<div class="arow"><button class="btn btn-p" style="font-size:11px" ontouchstart="resendVA(\''+r.id+'\')" onclick="resendVA(\''+r.id+'\')">PDF senden</button></div>';
+    '<div class="arow"><button class="btn btn-p" style="font-size:11px" ontouchstart="tsTap(event,this,function(){resendVA(\''+r.id+'\')})" onclick="tsKlick(function(){resendVA(\''+r.id+'\')})">PDF senden</button></div>';
 }
 
 async function resendVA(id){
@@ -9090,7 +9139,7 @@ function renderSB(){
     const tagCls=r.rolle==='va'?'tag-e':r.rolle==='ws'?'tag-ws':'tag-g';
     const tagLbl=r.rolle==='va'?'VA':r.rolle==='ws'?'WS':'AR';
     if(wsd){
-      return'<div class="ri'+(r.id===currentId?' act':'')+'" data-id="'+r.id+'" ontouchstart="loadReport(\''+r.id+'\')" onclick="loadReport(\''+r.id+'\')">'+
+      return'<div class="ri'+(r.id===currentId?' act':'')+'" data-id="'+r.id+'" ontouchstart="tsTap(event,this,function(){loadReport(\''+r.id+'\')})" onclick="tsKlick(function(){loadReport(\''+r.id+'\')})">'+
         '<div class="wsd-ri-top"><span class="ri-n">'+label+'</span><span class="ri-d">'+fmtD(r.datum)+'</span></div>'+
         '<div class="ri-tags"><span class="tag-s '+tagCls+'">'+tagLbl+'</span>'+
         '<span class="wsd-ri-h">'+h.toFixed(1).replace('.',',')+' h</span><span class="wsd-fsp"></span>'+
@@ -9098,7 +9147,7 @@ function renderSB(){
         (r.gesendet?'<span class="wsd-ri-ok" title="PDF gesendet">&#x2713;</span>':'')+
         '</div></div>';
     }
-    return'<div class="ri'+(r.id===currentId?' act':'')+'" data-id="'+r.id+'" ontouchstart="loadReport(\''+r.id+'\')" onclick="loadReport(\''+r.id+'\')">'+
+    return'<div class="ri'+(r.id===currentId?' act':'')+'" data-id="'+r.id+'" ontouchstart="tsTap(event,this,function(){loadReport(\''+r.id+'\')})" onclick="tsKlick(function(){loadReport(\''+r.id+'\')})">'+
       '<div class="ri-d">'+fmtD(r.datum)+'</div>'+
       '<div class="ri-n">'+label+'</div>'+
       '<div class="ri-s">'+tagLbl+' - '+h.toFixed(1)+'h</div>'+
@@ -9507,7 +9556,7 @@ function handleFotos(input){
         if(w>mx){h=Math.round(h*mx/w);w=mx;}if(h>mx){w=Math.round(w*mx/h);h=mx;}
         canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(img,0,0,w,h);
         const dataUrl=canvas.toDataURL('image/jpeg',0.75);fotoDataUrls[idx]=dataUrl;loaded++;
-        if(preview){const div=document.createElement('div');div.className='foto-item';div.id='foto-prev-'+idx;div.innerHTML='<img src="'+dataUrl+'"><button class="foto-del" ontouchstart="removeFoto('+idx+')" onclick="removeFoto('+idx+')">x</button>';preview.appendChild(div);}
+        if(preview){const div=document.createElement('div');div.className='foto-item';div.id='foto-prev-'+idx;div.innerHTML='<img src="'+dataUrl+'"><button class="foto-del" ontouchstart="tsTap(event,this,function(){removeFoto('+idx+')})" onclick="tsKlick(function(){removeFoto('+idx+')})">x</button>';preview.appendChild(div);}
         if(count)count.textContent=loaded+' Foto'+(loaded===1?'':'s')+' gewaehlt';
       };img.src=e.target.result;
     };reader.readAsDataURL(file);
@@ -9559,10 +9608,10 @@ function buildUI(){
   wsdApply(currentRole==='werkstatt',tabs);
   if(currentRole==='werkstatt'){
     tabs.innerHTML=
-      '<div class="tab act ws-tab" id="tab-quick" ontouchstart="showTab(\'quick\')" onclick="showTab(\'quick\')">Werkstatt</div>'+
-      '<div class="tab ws-tab" id="tab-fzliste" ontouchstart="showTab(\'fzliste\')" onclick="showTab(\'fzliste\')">Fahrzeuge</div>'+
-      '<div class="tab ws-tab" id="tab-kalender" ontouchstart="showTab(\'kalender\')" onclick="showTab(\'kalender\')">Kalender</div>'+
-      '<div class="tab ws-tab" id="tab-details" ontouchstart="showTab(\'details\')" onclick="showTab(\'details\')">Details</div>';
+      '<div class="tab act ws-tab" id="tab-quick" ontouchstart="tsTap(event,this,function(){showTab(\'quick\')})" onclick="tsKlick(function(){showTab(\'quick\')})">Werkstatt</div>'+
+      '<div class="tab ws-tab" id="tab-fzliste" ontouchstart="tsTap(event,this,function(){showTab(\'fzliste\')})" onclick="tsKlick(function(){showTab(\'fzliste\')})">Fahrzeuge</div>'+
+      '<div class="tab ws-tab" id="tab-kalender" ontouchstart="tsTap(event,this,function(){showTab(\'kalender\')})" onclick="tsKlick(function(){showTab(\'kalender\')})">Kalender</div>'+
+      '<div class="tab ws-tab" id="tab-details" ontouchstart="tsTap(event,this,function(){showTab(\'details\')})" onclick="tsKlick(function(){showTab(\'details\')})">Details</div>';
     content.innerHTML=
       '<div class="panel act" id="panel-quick">'+buildWS()+'</div>'+
       '<div class="panel" id="panel-fzliste"><div id="fzliste-content"></div></div>'+
@@ -9571,9 +9620,9 @@ function buildUI(){
     setTimeout(()=>initWSForm(),100);
   }else if(currentRole==='arbeiter'){
     tabs.innerHTML=
-      '<div class="tab act" id="tab-quick" ontouchstart="showTab(\'quick\')" onclick="showTab(\'quick\')">Zeiterfassung</div>'+
-      '<div class="tab" id="tab-kalender" ontouchstart="showTab(\'kalender\')" onclick="showTab(\'kalender\')">Kalender</div>'+
-      '<div class="tab" id="tab-details" ontouchstart="showTab(\'details\')" onclick="showTab(\'details\')">Meine Berichte</div>';
+      '<div class="tab act" id="tab-quick" ontouchstart="tsTap(event,this,function(){showTab(\'quick\')})" onclick="tsKlick(function(){showTab(\'quick\')})">Zeiterfassung</div>'+
+      '<div class="tab" id="tab-kalender" ontouchstart="tsTap(event,this,function(){showTab(\'kalender\')})" onclick="tsKlick(function(){showTab(\'kalender\')})">Kalender</div>'+
+      '<div class="tab" id="tab-details" ontouchstart="tsTap(event,this,function(){showTab(\'details\')})" onclick="tsKlick(function(){showTab(\'details\')})">Meine Berichte</div>';
     content.innerHTML=
       '<div class="panel act" id="panel-quick">'+buildAR()+'</div>'+
       '<div class="panel" id="panel-kalender"><div id="kalender-content"></div></div>'+
@@ -9581,11 +9630,11 @@ function buildUI(){
   }else{
     // Vorarbeiter: Zeiten zuerst (haeufigster Einstieg)
     tabs.innerHTML=
-      '<div class="tab act" id="tab-zeit" ontouchstart="showTab(\'zeit\')" onclick="showTab(\'zeit\')">Zeiten</div>'+
-      '<div class="tab" id="tab-bericht" ontouchstart="showTab(\'bericht\')" onclick="showTab(\'bericht\')">Bericht</div>'+
-      '<div class="tab" id="tab-material" ontouchstart="showTab(\'material\')" onclick="showTab(\'material\')">Material</div>'+
-      '<div class="tab" id="tab-kalender" ontouchstart="showTab(\'kalender\')" onclick="showTab(\'kalender\')">Kalender</div>'+
-      '<div class="tab" id="tab-details" ontouchstart="showTab(\'details\')" onclick="showTab(\'details\')">Meine Berichte</div>';
+      '<div class="tab act" id="tab-zeit" ontouchstart="tsTap(event,this,function(){showTab(\'zeit\')})" onclick="tsKlick(function(){showTab(\'zeit\')})">Zeiten</div>'+
+      '<div class="tab" id="tab-bericht" ontouchstart="tsTap(event,this,function(){showTab(\'bericht\')})" onclick="tsKlick(function(){showTab(\'bericht\')})">Bericht</div>'+
+      '<div class="tab" id="tab-material" ontouchstart="tsTap(event,this,function(){showTab(\'material\')})" onclick="tsKlick(function(){showTab(\'material\')})">Material</div>'+
+      '<div class="tab" id="tab-kalender" ontouchstart="tsTap(event,this,function(){showTab(\'kalender\')})" onclick="tsKlick(function(){showTab(\'kalender\')})">Kalender</div>'+
+      '<div class="tab" id="tab-details" ontouchstart="tsTap(event,this,function(){showTab(\'details\')})" onclick="tsKlick(function(){showTab(\'details\')})">Meine Berichte</div>';
     content.innerHTML=
       '<div class="panel act" id="panel-zeit">'+buildVAZeit()+'</div>'+
       '<div class="panel" id="panel-bericht">'+buildVABericht()+'</div>'+
@@ -9618,7 +9667,7 @@ function buildWS(){
     '<div class="fg wsd-nettocol"><label>Netto gesamt</label><div class="wsd-nettobox"><input type="text" id="ws-netto" readonly><span>h</span></div></div>'+
     '</div>'+
     '<div id="ws-ma-rows"></div>'+
-    '<div class="wsd-gap"><button class="btn" ontouchstart="addWSMaRowBtn()" onclick="addWSMaRowBtn()">+ Mitarbeiter hinzufuegen</button></div>'+
+    '<div class="wsd-gap"><button class="btn" ontouchstart="tsTap(event,this,function(){addWSMaRowBtn()})" onclick="tsKlick(function(){addWSMaRowBtn()})">+ Mitarbeiter hinzufuegen</button></div>'+
     '<div class="wsd-mahint" id="ws-ma-hint" style="display:none">Die Zeiten oben gelten fuer dich selbst. Weitere Mitarbeiter in der Werkstatt hier mit ihren eigenen Zeiten eintragen.</div>'+
     '</div>'+
     '<div class="qsec"><div class="wsd-trow"><div class="qsec-t">Taetigkeiten</div><span class="wsd-hint">Mehrfachauswahl</span></div>'+
@@ -9630,8 +9679,8 @@ function buildWS(){
     '<input type="text" id="ws-maengel" placeholder="Optional"></div>'+
     '</div>'+
     '<div class="wsd-footer"><div class="send-status" id="ws-send-status"></div><span class="wsd-fsp"></span>'+
-    '<button class="btn" ontouchstart="clearWSForm()" onclick="clearWSForm()">Neu</button>'+
-    '<button class="btn btn-p" ontouchstart="saveAndSendWS()" onclick="saveAndSendWS()">Speichern und PDF senden</button></div>'+
+    '<button class="btn" ontouchstart="tsTap(event,this,function(){clearWSForm()})" onclick="tsKlick(function(){clearWSForm()})">Neu</button>'+
+    '<button class="btn btn-p" ontouchstart="tsTap(event,this,function(){saveAndSendWS()})" onclick="tsKlick(function(){saveAndSendWS()})">Speichern und PDF senden</button></div>'+
     '</div>';
 }
 // ── Werkstatt: weitere Mitarbeiter (optional) ──
@@ -9668,7 +9717,7 @@ function addWSMaRow(data){
     '<div class="fg"><label>Ende</label><input type="time" class="wsm-bis" value="'+_dfEsc(bis)+'" oninput="calcWSMaRow(this)"></div>'+
     '<div class="fg"><label>Pause</label><select class="wsm-pause" onchange="calcWSMaRow(this)">'+PAUSEN.map(function(p){return '<option value="'+p+'" '+(p===pause?'selected':'')+'>'+p+' min</option>';}).join('')+'</select></div>'+
     '<div class="fg"><label>Netto (h)</label><input type="text" class="wsm-netto" readonly></div>'+
-    '<button class="btn" ontouchstart="removeWSMaRow(this)" onclick="removeWSMaRow(this)">Entfernen</button>';
+    '<button class="btn" ontouchstart="tsTap(event,this,function(){removeWSMaRow(this)}.bind(this))" onclick="tsKlick(function(){removeWSMaRow(this)}.bind(this))">Entfernen</button>';
   box.appendChild(div);
   calcWSMaRow(div.querySelector('.wsm-von'));
   const hint=document.getElementById('ws-ma-hint');if(hint)hint.style.display='block';
@@ -9730,7 +9779,7 @@ function buildFZListe(){
   const el=document.getElementById('fzliste-content');if(!el)return;
   el.innerHTML='<div class="a-sec"><div class="a-sec-title ws">Fahrzeug anlegen</div>'+
     buildFZFormHTML('ws-fz')+
-    '<button class="btn btn-ws" ontouchstart="wsAddFZ()" onclick="wsAddFZ()">+ Fahrzeug anlegen</button></div>'+
+    '<button class="btn btn-ws" ontouchstart="tsTap(event,this,function(){wsAddFZ()})" onclick="tsKlick(function(){wsAddFZ()})">+ Fahrzeug anlegen</button></div>'+
     '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--ws);letter-spacing:1.5px;text-transform:uppercase;margin:10px 0 8px">Fahrzeugliste</div>'+
     (FAHRZEUGE.length?FAHRZEUGE.map(fz=>renderFZItem(fz)).join(''):'<div class="empty"><div class="ei">&#128663;</div><div class="et">Keine Fahrzeuge</div></div>');
 }
@@ -9767,9 +9816,9 @@ function buildAR(){
     '</div><div class="row">'+
     '<div class="fg w50"><label>Fahrzeit (aus Projekt)</label><input type="text" id="a-fahrzeit-anzeige" readonly style="color:var(--earth);font-family:\'IBM Plex Mono\',monospace;font-size:11px"></div>'+
     '<div class="fg w50 fg-fahrt"><label>Fahrt-Status</label><div style="display:flex;gap:5px;margin-top:4px">'+
-    '<button type="button" class="fahrt-btn fahrt-active" data-val="fahrer" ontouchstart="setFahrt(this)" onclick="setFahrt(this)">Fahrer<br><span style="font-size:9px;opacity:.7">100%</span></button>'+
-    '<button type="button" class="fahrt-btn" data-val="beifahrer" ontouchstart="setFahrt(this)" onclick="setFahrt(this)">Beifahrer<br><span style="font-size:9px;opacity:.7">50%</span></button>'+
-    '<button type="button" class="fahrt-btn" data-val="privat" ontouchstart="setFahrt(this)" onclick="setFahrt(this)">Privat<br><span style="font-size:9px;opacity:.7">0%</span></button>'+
+    '<button type="button" class="fahrt-btn fahrt-active" data-val="fahrer" ontouchstart="tsTap(event,this,function(){setFahrt(this)}.bind(this))" onclick="tsKlick(function(){setFahrt(this)}.bind(this))">Fahrer<br><span style="font-size:9px;opacity:.7">100%</span></button>'+
+    '<button type="button" class="fahrt-btn" data-val="beifahrer" ontouchstart="tsTap(event,this,function(){setFahrt(this)}.bind(this))" onclick="tsKlick(function(){setFahrt(this)}.bind(this))">Beifahrer<br><span style="font-size:9px;opacity:.7">50%</span></button>'+
+    '<button type="button" class="fahrt-btn" data-val="privat" ontouchstart="tsTap(event,this,function(){setFahrt(this)}.bind(this))" onclick="tsKlick(function(){setFahrt(this)}.bind(this))">Privat<br><span style="font-size:9px;opacity:.7">0%</span></button>'+
     '</div></div></div>'+
     '<div class="fg" style="margin-top:4px"><label>Netto gesamt</label><input type="text" id="a-netto" readonly style="color:var(--gl);font-weight:700;font-family:\'IBM Plex Mono\',monospace;font-size:18px"></div>'+
     '<div id="fahrzeit-info" style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-top:3px;min-height:14px"></div>'+
@@ -9782,8 +9831,8 @@ function buildAR(){
     '<textarea id="a-taetigkeit" placeholder="Weitere Details..." style="min-height:60px"></textarea>'+
     '<div style="margin-top:8px"><input type="text" id="a-besonder" placeholder="Besonderheiten...">'+'</div></div>'+
     '<div class="send-status" id="ar-send-status"></div>'+
-    '<div class="arow arow-fab"><button class="btn btn-p" ontouchstart="saveAndSendAR()" onclick="saveAndSendAR()"><span class="lbl-l">Speichern und PDF senden</span><span class="lbl-s">Senden</span></button>'+
-    '<button class="btn" ontouchstart="clearARForm()" onclick="clearARForm()">Neu</button></div>';
+    '<div class="arow arow-fab"><button class="btn btn-p" ontouchstart="tsTap(event,this,function(){saveAndSendAR()})" onclick="tsKlick(function(){saveAndSendAR()})"><span class="lbl-l">Speichern und PDF senden</span><span class="lbl-s">Senden</span></button>'+
+    '<button class="btn" ontouchstart="tsTap(event,this,function(){clearARForm()})" onclick="tsKlick(function(){clearARForm()})">Neu</button></div>';
 }
 
 function initARForm(){
@@ -9843,21 +9892,21 @@ function buildVABericht(){
     '</div>'+
     // ZWEITES PROJEKT BLOCK
     '<div id="zusatz-proj-wrap"></div>'+
-    '<button class="btn btn-e" style="margin-top:8px;font-size:11px" ontouchstart="addZusatzProjekt()" onclick="addZusatzProjekt()">+ Weitere Baustelle</button>'+
+    '<button class="btn btn-e" style="margin-top:8px;font-size:11px" ontouchstart="tsTap(event,this,function(){addZusatzProjekt()})" onclick="tsKlick(function(){addZusatzProjekt()})">+ Weitere Baustelle</button>'+
     '</div>'+
     '<div class="sec"><div class="sh">Taetigkeiten</div><div class="tags" id="va-taetigkeiten-tags">'+taetigkeitenTags([])+'</div></div>'+
     '<div class="sec"><div class="sh">Fotos (max. 5)</div>'+
     '<input type="file" id="v-fotos-input" accept="image/*" multiple style="display:none" onchange="handleFotos(this)">'+
     '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'+
-    '<button class="btn btn-e" ontouchstart="document.getElementById(\'v-fotos-input\').click()" onclick="document.getElementById(\'v-fotos-input\').click()">Fotos hinzufuegen</button>'+
+    '<button class="btn btn-e" ontouchstart="tsTap(event,this,function(){document.getElementById(\'v-fotos-input\').click()})" onclick="tsKlick(function(){document.getElementById(\'v-fotos-input\').click()})">Fotos hinzufuegen</button>'+
     '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m)" id="v-fotos-count">Keine Fotos</span>'+
     '</div><div class="foto-prev-wrap" id="v-fotos-preview"></div></div>'+
     '<div class="sec"><div class="sh">Arbeitsschritte</div>'+
     '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-bottom:8px">Mitarbeiter aus Zeiten-Tab werden angezeigt</div>'+
-    '<div id="steps-con"></div><button class="btn" ontouchstart="addStep()" onclick="addStep()">+ Schritt</button></div>'+
+    '<div id="steps-con"></div><button class="btn" ontouchstart="tsTap(event,this,function(){addStep()})" onclick="tsKlick(function(){addStep()})">+ Schritt</button></div>'+
     '<div class="sec"><div class="sh">Maengel</div>'+
     '<div id="mangel-con"></div>'+
-    '<button class="btn btn-r" style="font-size:11px" ontouchstart="addMangel()" onclick="addMangel()">+ Mangel</button>'+
+    '<button class="btn btn-r" style="font-size:11px" ontouchstart="tsTap(event,this,function(){addMangel()})" onclick="tsKlick(function(){addMangel()})">+ Mangel</button>'+
     '<div class="fg" style="margin-top:10px"><label>Naechste Schritte</label>'+
     '<textarea id="v-naechstes" placeholder="Geplante Folgearbeiten..."></textarea>'+'</div>'+
     '<div class="fg" style="margin-top:8px"><label>Bemerkungen</label>'+
@@ -9865,9 +9914,9 @@ function buildVABericht(){
     '<div style="display:flex;align-items:center;gap:8px;margin:4px 2px"><span id="draft-indicator" style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);opacity:0.5;transition:opacity .3s">Entwurf wird automatisch gesichert</span></div>'+
     '<div class="send-status" id="va-send-status"></div>'+
     '<div class="arow arow-fab">'+
-    '<button class="btn btn-p" ontouchstart="saveAndSendVA()" onclick="saveAndSendVA()"><span class="lbl-l">Speichern und PDF senden</span><span class="lbl-s">Senden</span></button>'+
-    '<button class="btn btn-e" ontouchstart="manualSaveDraft()" onclick="manualSaveDraft()"><span class="lbl-l">Entwurf speichern</span><span class="lbl-s">Entwurf</span></button>'+
-    '<button class="btn" ontouchstart="newReport()" onclick="newReport()">Neu</button></div>';
+    '<button class="btn btn-p" ontouchstart="tsTap(event,this,function(){saveAndSendVA()})" onclick="tsKlick(function(){saveAndSendVA()})"><span class="lbl-l">Speichern und PDF senden</span><span class="lbl-s">Senden</span></button>'+
+    '<button class="btn btn-e" ontouchstart="tsTap(event,this,function(){manualSaveDraft()})" onclick="tsKlick(function(){manualSaveDraft()})"><span class="lbl-l">Entwurf speichern</span><span class="lbl-s">Entwurf</span></button>'+
+    '<button class="btn" ontouchstart="tsTap(event,this,function(){newReport()})" onclick="tsKlick(function(){newReport()})">Neu</button></div>';
 }
 
 // FIX: Projekt-Übernahme in alle Zeitzeilen
@@ -9903,7 +9952,7 @@ function addZusatzProjekt(){
   div.innerHTML=
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'+
     '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--earth);letter-spacing:1px">WEITERE BAUSTELLE '+i+'</div>'+
-    '<button class="delbtn" style="color:var(--r)" ontouchstart="document.getElementById(\'zusatz-'+i+'\').remove()" onclick="document.getElementById(\'zusatz-'+i+'\').remove()">&#x2715;</button></div>'+
+    '<button class="delbtn" style="color:var(--r)" ontouchstart="tsTap(event,this,function(){document.getElementById(\'zusatz-'+i+'\').remove()})" onclick="tsKlick(function(){document.getElementById(\'zusatz-'+i+'\').remove()})">&#x2715;</button></div>'+
     '<div class="row">'+
     '<div class="fg w100"><label>Projekt</label><select id="zusatz-proj-'+i+'" onchange="onZusatzProjektChange('+i+')">'+projektOpts('')+'</select></div>'+
     '<div class="fg w50"><label>Bereich</label><input type="text" id="zusatz-baustelle-'+i+'" placeholder="z.B. Bereich Sued..."></div>'+
@@ -9946,22 +9995,22 @@ function buildVAZeit(){
     '<div class="tbl-wrap"><table class="tbl"><thead><tr>'+
     '<th>Name</th><th>Qual.</th><th>Von</th><th>Bis</th><th>Pause</th><th>Arbeit</th><th>Fahrt</th><th>Fahrzeit</th><th>Anteil</th><th>GESAMT</th><th style="color:var(--earth)">&#9733; Projekt</th><th>Taetigkeit</th><th></th>'+
     '</tr></thead><tbody id="zeit-body"></tbody></table></div>'+
-    '<button class="btn" ontouchstart="addZeitRow()" onclick="addZeitRow()">+ Person</button></div>'+
+    '<button class="btn" ontouchstart="tsTap(event,this,function(){addZeitRow()})" onclick="tsKlick(function(){addZeitRow()})">+ Person</button></div>'+
     '<div class="sec"><div class="sh">Geraeteeinsatz</div>'+
     '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Geraet</th><th>Fahrzeugnr.</th><th>Stunden</th><th>Projekt</th><th></th></tr></thead><tbody id="mach-body"></tbody></table></div>'+
-    '<button class="btn" ontouchstart="addMachRow()" onclick="addMachRow()">+ Geraet</button></div>'+
-    '<div class="arow arow-fab"><button class="btn btn-p" ontouchstart="saveAndSendVA()" onclick="saveAndSendVA()"><span class="lbl-l">Speichern und PDF senden</span><span class="lbl-s">Senden</span></button>'+
-    '<button class="btn" ontouchstart="newReport()" onclick="newReport()">Neu</button></div>';
+    '<button class="btn" ontouchstart="tsTap(event,this,function(){addMachRow()})" onclick="tsKlick(function(){addMachRow()})">+ Geraet</button></div>'+
+    '<div class="arow arow-fab"><button class="btn btn-p" ontouchstart="tsTap(event,this,function(){saveAndSendVA()})" onclick="tsKlick(function(){saveAndSendVA()})"><span class="lbl-l">Speichern und PDF senden</span><span class="lbl-s">Senden</span></button>'+
+    '<button class="btn" ontouchstart="tsTap(event,this,function(){newReport()})" onclick="tsKlick(function(){newReport()})">Neu</button></div>';
 }
 
 function buildVAMaterial(){
-  return'<div class="sec"><div class="sh">Materiallieferungen</div><div id="lief-con"></div><button class="btn btn-e" ontouchstart="addLief()" onclick="addLief()">+ Lieferung</button></div>'+
-    '<div class="sec" style="margin-top:12px"><div class="sh">Mengennachweise</div><div id="mengen-con"></div><button class="btn" ontouchstart="addMenge()" onclick="addMenge()">+ Menge</button></div>'+
+  return'<div class="sec"><div class="sh">Materiallieferungen</div><div id="lief-con"></div><button class="btn btn-e" ontouchstart="tsTap(event,this,function(){addLief()})" onclick="tsKlick(function(){addLief()})">+ Lieferung</button></div>'+
+    '<div class="sec" style="margin-top:12px"><div class="sh">Mengennachweise</div><div id="mengen-con"></div><button class="btn" ontouchstart="tsTap(event,this,function(){addMenge()})" onclick="tsKlick(function(){addMenge()})">+ Menge</button></div>'+
     '<div class="sec" style="margin-top:12px"><div class="sh">LV-Positionen</div>'+
     '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Pos.-Nr.</th><th>Bezeichnung</th><th>Einheit</th><th>Soll</th><th>Ist</th><th>Projekt</th><th></th></tr></thead><tbody id="lv-body"></tbody></table></div>'+
-    '<button class="btn" ontouchstart="addLVRow()" onclick="addLVRow()">+ Position</button></div>'+
-    '<div class="arow arow-fab"><button class="btn btn-p" ontouchstart="saveAndSendVA()" onclick="saveAndSendVA()"><span class="lbl-l">Speichern und PDF senden</span><span class="lbl-s">Senden</span></button>'+
-    '<button class="btn" ontouchstart="newReport()" onclick="newReport()">Neu</button></div>';
+    '<button class="btn" ontouchstart="tsTap(event,this,function(){addLVRow()})" onclick="tsKlick(function(){addLVRow()})">+ Position</button></div>'+
+    '<div class="arow arow-fab"><button class="btn btn-p" ontouchstart="tsTap(event,this,function(){saveAndSendVA()})" onclick="tsKlick(function(){saveAndSendVA()})"><span class="lbl-l">Speichern und PDF senden</span><span class="lbl-s">Senden</span></button>'+
+    '<button class="btn" ontouchstart="tsTap(event,this,function(){newReport()})" onclick="tsKlick(function(){newReport()})">Neu</button></div>';
 }
 
 function buildKI(){return'';}
@@ -9997,7 +10046,7 @@ function addZeitRow(data={}){
     '<td><input class="zeit-gesamt" type="text" readonly value="'+(data.gesamt||'')+'" style="width:56px;color:var(--gl);font-family:\'IBM Plex Mono\',monospace;font-weight:700;font-size:12px"></td>'+
     '<td><select class="row-pr" data-kat="'+rowKat+'" style="font-size:9px;min-width:90px;border:2px solid var(--gd)" onchange="onZeitProjektChange(this)">'+prOpts+'</select></td>'+
     '<td><select class="row-tae" style="font-size:9px;min-width:110px">'+taeOpts+'</select></td>'+
-    '<td><button class="delbtn" ontouchstart="this.closest(\'tr\').remove();updZeitTotal();refreshStepMAs()" onclick="this.closest(\'tr\').remove();updZeitTotal();refreshStepMAs()">&#x2715;</button></td>';
+    '<td><button class="delbtn" ontouchstart="tsTap(event,this,function(){this.closest(\'tr\').remove();updZeitTotal();refreshStepMAs()}.bind(this))" onclick="tsKlick(function(){this.closest(\'tr\').remove();updZeitTotal();refreshStepMAs()}.bind(this))">&#x2715;</button></td>';
   tbody.appendChild(tr);calcZR(tr.querySelector('.zeit-von'));setTimeout(refreshStepMAs,50);
   // Entwurf-Wiederherstellung: Name nicht in Stammdaten -> sofort sichtbar rot markieren
   if(data.name&&!zeitNameInStamm(data.name)){const zn=tr.querySelector('.zeit-name');if(zn)zn.classList.add('zn-bad');}
@@ -10023,7 +10072,7 @@ function calcZR(inp){
 }
 function updZeitTotal(){let t=0;document.querySelectorAll('.zeit-gesamt').forEach(e=>t+=parseFloat(e.value.replace(',','.'))||0);const el=document.getElementById('zeit-total');if(el)el.textContent=t.toFixed(2).replace('.',',')+'h gesamt';updateSplitInfo();updateMAOffen();}
 function getZeitRows(){return[...document.querySelectorAll('#zeit-body tr')].map(tr=>({name:tr.querySelector('.zeit-name')?.value||'',qual:tr.querySelector('.zeit-qual')?.value||'',von:tr.querySelector('.zeit-von')?.value||'',bis:tr.querySelector('.zeit-bis')?.value||'',pause:tr.querySelector('.zeit-pause')?.value||'60',nettoArbeit:tr.querySelector('.zeit-netto')?.value||'',fahrt:tr.querySelector('.fahrt-sel')?.value||'fahrer',fahrzeitMin:tr.querySelector('.zeit-fahrzeit')?.value||'0',fahrtAnteil:tr.querySelector('.zeit-anteil')?.value||'',gesamt:tr.querySelector('.zeit-gesamt')?.value||'',projektNr:PROJEKTE.find(p=>p.id===tr.querySelector('.row-pr')?.value)?.nr||'',projektId:tr.querySelector('.row-pr')?.value||'',tae:tr.querySelector('.row-tae')?.value||''})).filter(r=>r.name);}
-function addMachRow(data={}){const tbody=document.getElementById('mach-body');if(!tbody)return;const tr=document.createElement('tr');const rowKat=data.projektId?getProjektKat(data.projektId):currentVAKat();const prOpts=rowProjektOpts(rowKat,data.projektId||'');tr.innerHTML='<td><select class="geraet-sel" style="font-size:10px;min-width:200px"><option value="">- Geraet -</option>'+GERAETE.map(g=>'<option value="'+g.nr+'" '+(data.geraetNr===g.nr?'selected':'')+'>'+g.nr+' - '+g.bez+'</option>').join('')+'</select></td><td><input type="text" class="mach-fzn" value="'+(data.fahrzeugnr||'')+'" placeholder="Kfz/Nr." style="width:80px"></td><td><input type="number" class="mach-std" value="'+(data.netto||'')+'" placeholder="Std." min="0" step="0.5" style="width:70px;color:var(--gl);font-family:\'IBM Plex Mono\',monospace;font-weight:700"></td><td><select class="row-pr" data-kat="'+rowKat+'" style="font-size:9px;min-width:90px">'+prOpts+'</select></td><td><button class="delbtn" ontouchstart="this.closest(\'tr\').remove()" onclick="this.closest(\'tr\').remove()">&#x2715;</button></td>';tbody.appendChild(tr);}
+function addMachRow(data={}){const tbody=document.getElementById('mach-body');if(!tbody)return;const tr=document.createElement('tr');const rowKat=data.projektId?getProjektKat(data.projektId):currentVAKat();const prOpts=rowProjektOpts(rowKat,data.projektId||'');tr.innerHTML='<td><select class="geraet-sel" style="font-size:10px;min-width:200px"><option value="">- Geraet -</option>'+GERAETE.map(g=>'<option value="'+g.nr+'" '+(data.geraetNr===g.nr?'selected':'')+'>'+g.nr+' - '+g.bez+'</option>').join('')+'</select></td><td><input type="text" class="mach-fzn" value="'+(data.fahrzeugnr||'')+'" placeholder="Kfz/Nr." style="width:80px"></td><td><input type="number" class="mach-std" value="'+(data.netto||'')+'" placeholder="Std." min="0" step="0.5" style="width:70px;color:var(--gl);font-family:\'IBM Plex Mono\',monospace;font-weight:700"></td><td><select class="row-pr" data-kat="'+rowKat+'" style="font-size:9px;min-width:90px">'+prOpts+'</select></td><td><button class="delbtn" ontouchstart="tsTap(event,this,function(){this.closest(\'tr\').remove()}.bind(this))" onclick="tsKlick(function(){this.closest(\'tr\').remove()}.bind(this))">&#x2715;</button></td>';tbody.appendChild(tr);}
 function getMachRows(){return[...document.querySelectorAll('#mach-body tr')].map(tr=>{const geraetNr=tr.querySelector('.geraet-sel')?.value||'';const geraet=GERAETE.find(g=>g.nr===geraetNr);return{geraetNr,geraetBez:geraet?.bez||'',fahrzeugnr:tr.querySelector('.mach-fzn')?.value||'',netto:tr.querySelector('.mach-std')?.value||'',projektId:tr.querySelector('.row-pr')?.value||''};}).filter(r=>r.geraetNr);}
 function addStep(data={}){stepIdx++;const i=stepIdx;const maRows=getZeitRowsSimple();let maHtml=maRows.length>0?'<div class="ma-zuweisung"><div class="ma-zuw-title">Mitarbeiter zuweisen</div>'+maRows.map(ma=>{const checked=(data.mitarbeiter||[]).some(m=>m.name===ma.name);const std=(data.mitarbeiter||[]).find(m=>m.name===ma.name)?.stunden||'';return'<div class="ma-check-row"><input type="checkbox" class="ma-cb" data-name="'+ma.name+'" '+(checked?'checked':'')+' onchange="updateStepMA('+i+')"><span class="ma-name-lbl">'+ma.name+'</span><span class="ma-budget" data-name="'+ma.name+'"></span><input type="number" class="ma-h" data-name="'+ma.name+'" value="'+std+'" placeholder="Std." min="0" step="0.5" style="opacity:'+(checked?'1':'0.4')+'" oninput="updateStepMA('+i+')"></div>';}).join('')+'</div>':'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-top:6px" data-no-ma="1">Erst Mitarbeiter im Tab Zeiten eintragen</div>';
   const stepKat=data.projektId?getProjektKat(data.projektId):currentVAKat();
@@ -10032,7 +10081,7 @@ function addStep(data={}){stepIdx++;const i=stepIdx;const maRows=getZeitRowsSimp
     '<select id="st-kat-'+i+'" onchange="onStepKatChange('+i+')" style="flex:0 0 110px;font-size:10px;background:var(--s3);border:1px solid var(--b);border-radius:3px;padding:3px 6px;color:var(--t)"><option value="bau" '+(stepKat!=='pflege'?'selected':'')+'>Bau</option><option value="pflege" '+(stepKat==='pflege'?'selected':'')+'>Pflege</option></select>'+
     '<select style="flex:1;min-width:140px;font-size:10px;background:var(--s3);border:1px solid var(--b);border-radius:3px;padding:3px 6px;color:var(--t)" id="st-pr-'+i+'" onchange="onStepProjektChange('+i+')">'+projektOptsByKat(stepKat,data.projektId||'')+'</select>'+
     '<input type="text" id="st-pos-'+i+'" placeholder="LV-Pos." style="flex:0 0 70px;font-size:10px" value="'+(data.pos||'')+'">'+
-    '<button class="delbtn" ontouchstart="document.getElementById(\'step-'+i+'\').remove()" onclick="document.getElementById(\'step-'+i+'\').remove()">&#x2715;</button></div>'+
+    '<button class="delbtn" ontouchstart="tsTap(event,this,function(){document.getElementById(\'step-'+i+'\').remove()})" onclick="tsKlick(function(){document.getElementById(\'step-'+i+'\').remove()})">&#x2715;</button></div>'+
     '<div id="st-lv-wrap-'+i+'"></div><div id="st-leist-wrap-'+i+'"></div><textarea id="st-txt-'+i+'" style="min-height:60px;margin-bottom:4px" placeholder="Taetigkeit beschreiben...">'+(data.txt||'')+'</textarea>'+'<div style="display:flex;gap:6px;margin-top:8px"><div class="fg"><label>Menge</label><input type="text" id="st-mg-'+i+'" value="'+(data.menge||'')+'" placeholder="200 m2"></div><div class="fg"><label>Einheit</label><input type="text" id="st-eh-'+i+'" value="'+(data.eh||'')+'" placeholder="m2, lfm"></div></div>'+maHtml;
   document.getElementById('steps-con')?.appendChild(div);if(data.projektId)renderStepLeistung(i,data.leistung||'');renderStepLV(i,data.lvId||'',data.pos||'');updateMAOffen();}
 
@@ -10145,13 +10194,13 @@ function updateMAOffen(){
 function refreshStepMAs(){const blocks=document.querySelectorAll('[id^="step-"]');if(!blocks.length)return;const maRows=getZeitRowsSimple();blocks.forEach(block=>{const idx=block.id.replace('step-','');let zone=block.querySelector('.ma-zuweisung');const noMA=block.querySelector('[data-no-ma]');const checked={};block.querySelectorAll('.ma-cb').forEach(cb=>{checked[cb.dataset.name]=cb.checked;});const stunden={};block.querySelectorAll('.ma-h').forEach(h=>{stunden[h.dataset.name]=h.value;});if(maRows.length===0){if(zone)zone.remove();if(!noMA){const msg=document.createElement('div');msg.setAttribute('data-no-ma','1');msg.style.cssText='font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m);margin-top:6px';msg.textContent='Erst Mitarbeiter im Tab Zeiten eintragen';block.appendChild(msg);}return;}if(noMA)noMA.remove();if(!zone){zone=document.createElement('div');zone.className='ma-zuweisung';block.appendChild(zone);}zone.innerHTML='<div class="ma-zuw-title">Mitarbeiter zuweisen</div>'+maRows.map(ma=>{const ic=checked[ma.name]||false;const h=stunden[ma.name]||'';return'<div class="ma-check-row"><input type="checkbox" class="ma-cb" data-name="'+ma.name+'" '+(ic?'checked':'')+' onchange="updateStepMA('+idx+')"><span class="ma-name-lbl">'+ma.name+'</span><span class="ma-budget" data-name="'+ma.name+'"></span><input type="number" class="ma-h" data-name="'+ma.name+'" value="'+h+'" placeholder="Std." min="0" step="0.5" style="opacity:'+(ic?'1':'0.4')+'" oninput="updateStepMA('+idx+')"></div>';}).join('');});updateMAOffen();}
 function getStepMAs(idx){const block=document.getElementById('step-'+idx);if(!block)return[];const result=[];block.querySelectorAll('.ma-cb:checked').forEach(cb=>{const h=block.querySelector('.ma-h[data-name="'+cb.dataset.name+'"]');result.push({name:cb.dataset.name,stunden:h?.value||''});});return result;}
 function getSteps(){return[...document.querySelectorAll('[id^="step-"]')].filter(b=>b.id.match(/^step-\d+$/)).map(b=>{const i=b.id.replace('step-','');const pid=b.querySelector('#st-pr-'+i)?.value||'';return{txt:b.querySelector('#st-txt-'+i)?.value||'',projektId:pid,projektNr:PROJEKTE.find(p=>p.id===pid)?.nr||'',pos:b.querySelector('#st-pos-'+i)?.value||'',leistung:b.querySelector('#st-leist-'+i)?.value||'',menge:b.querySelector('#st-mg-'+i)?.value||'',eh:b.querySelector('#st-eh-'+i)?.value||'',lvId:b.querySelector('#st-lvid-'+i)?.value||'',mitarbeiter:getStepMAs(i)};}).filter(s=>s.txt||s.lvId);}
-function addLief(data={}){liefIdx++;const i=liefIdx;const div=document.createElement('div');div.className='lief-block';div.innerHTML='<div class="lief-head"><div class="lief-num" style="background:var(--earthg);border-color:var(--earth);color:var(--earth)">'+i+'</div><button class="delbtn" style="margin-left:auto" ontouchstart="this.closest(\'.lief-block\').remove()" onclick="this.closest(\'.lief-block\').remove()">&#x2715;</button></div><div class="row"><div class="fg w50"><label>Lieferant</label><input type="text" id="lf-firma-'+i+'" value="'+(data.firma||'')+'" placeholder="Muster GmbH..."></div><div class="fg w50"><label>Lieferschein-Nr.</label><input type="text" id="lf-ls-'+i+'" value="'+(data.ls||'')+'" placeholder="LS-001"></div><div class="fg w50"><label>Material</label><input type="text" id="lf-mat-'+i+'" placeholder="Rollrasen...">'+'</div><div class="fg w25"><label>Menge</label><input type="number" id="lf-mg-'+i+'" value="'+(data.menge||'')+'"></div><div class="fg w25"><label>Einheit</label><select id="lf-eh-'+i+'"><option>m2</option><option>m3</option><option>t</option><option>lfm</option><option>Stk</option><option>kg</option><option>l</option></select></div><div class="fg w50"><label>Status</label><select id="lf-ok-'+i+'"><option>OK</option><option>Teillieferung</option><option>Falsche Ware</option><option>Maengel</option><option>Verzug</option></select></div><div class="fg w50"><label>Bemerkung</label><input type="text" id="lf-bem-'+i+'" value="'+(data.bem||'')+'"></div></div>';document.getElementById('lief-con')?.appendChild(div);}
+function addLief(data={}){liefIdx++;const i=liefIdx;const div=document.createElement('div');div.className='lief-block';div.innerHTML='<div class="lief-head"><div class="lief-num" style="background:var(--earthg);border-color:var(--earth);color:var(--earth)">'+i+'</div><button class="delbtn" style="margin-left:auto" ontouchstart="tsTap(event,this,function(){this.closest(\'.lief-block\').remove()}.bind(this))" onclick="tsKlick(function(){this.closest(\'.lief-block\').remove()}.bind(this))">&#x2715;</button></div><div class="row"><div class="fg w50"><label>Lieferant</label><input type="text" id="lf-firma-'+i+'" value="'+(data.firma||'')+'" placeholder="Muster GmbH..."></div><div class="fg w50"><label>Lieferschein-Nr.</label><input type="text" id="lf-ls-'+i+'" value="'+(data.ls||'')+'" placeholder="LS-001"></div><div class="fg w50"><label>Material</label><input type="text" id="lf-mat-'+i+'" placeholder="Rollrasen...">'+'</div><div class="fg w25"><label>Menge</label><input type="number" id="lf-mg-'+i+'" value="'+(data.menge||'')+'"></div><div class="fg w25"><label>Einheit</label><select id="lf-eh-'+i+'"><option>m2</option><option>m3</option><option>t</option><option>lfm</option><option>Stk</option><option>kg</option><option>l</option></select></div><div class="fg w50"><label>Status</label><select id="lf-ok-'+i+'"><option>OK</option><option>Teillieferung</option><option>Falsche Ware</option><option>Maengel</option><option>Verzug</option></select></div><div class="fg w50"><label>Bemerkung</label><input type="text" id="lf-bem-'+i+'" value="'+(data.bem||'')+'"></div></div>';document.getElementById('lief-con')?.appendChild(div);}
 function getLiefData(){return[...document.querySelectorAll('#lief-con .lief-block')].map((b,i)=>{const n=i+1;return{firma:b.querySelector('#lf-firma-'+n)?.value,ls:b.querySelector('#lf-ls-'+n)?.value,mat:b.querySelector('#lf-mat-'+n)?.value,menge:b.querySelector('#lf-mg-'+n)?.value,eh:b.querySelector('#lf-eh-'+n)?.value,ok:b.querySelector('#lf-ok-'+n)?.value,bem:b.querySelector('#lf-bem-'+n)?.value};}).filter(l=>l.firma||l.mat);}
-function addMenge(data={}){const div=document.createElement('div');div.className='lief-block';div.style.padding='8px';div.innerHTML='<div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap"><input type="text" placeholder="Bezeichnung" value="'+(data.bez||'')+'" style="flex:2;min-width:100px"><input type="number" placeholder="Menge" value="'+(data.menge||'')+'" style="flex:0 0 75px"><select style="flex:0 0 65px;font-size:10px"><option>m2</option><option>m3</option><option>t</option><option>lfm</option><option>Stk</option><option>kg</option></select><input type="text" placeholder="LV-Pos." value="'+(data.pos||'')+'" style="flex:0 0 80px;font-family:\'IBM Plex Mono\',monospace;font-size:10px"><button class="delbtn" ontouchstart="this.closest(\'.lief-block\').remove()" onclick="this.closest(\'.lief-block\').remove()">&#x2715;</button></div>';document.getElementById('mengen-con')?.appendChild(div);}
+function addMenge(data={}){const div=document.createElement('div');div.className='lief-block';div.style.padding='8px';div.innerHTML='<div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap"><input type="text" placeholder="Bezeichnung" value="'+(data.bez||'')+'" style="flex:2;min-width:100px"><input type="number" placeholder="Menge" value="'+(data.menge||'')+'" style="flex:0 0 75px"><select style="flex:0 0 65px;font-size:10px"><option>m2</option><option>m3</option><option>t</option><option>lfm</option><option>Stk</option><option>kg</option></select><input type="text" placeholder="LV-Pos." value="'+(data.pos||'')+'" style="flex:0 0 80px;font-family:\'IBM Plex Mono\',monospace;font-size:10px"><button class="delbtn" ontouchstart="tsTap(event,this,function(){this.closest(\'.lief-block\').remove()}.bind(this))" onclick="tsKlick(function(){this.closest(\'.lief-block\').remove()}.bind(this))">&#x2715;</button></div>';document.getElementById('mengen-con')?.appendChild(div);}
 function getMengen(){return[...document.querySelectorAll('#mengen-con .lief-block')].map(b=>{const is=b.querySelectorAll('input'),se=b.querySelector('select');return{bez:is[0]?.value,menge:is[1]?.value,eh:se?.value,pos:is[2]?.value};}).filter(m=>m.bez);}
-function addLVRow(data={}){const tbody=document.getElementById('lv-body');if(!tbody)return;const tr=document.createElement('tr');const rowKat=data.projektId?getProjektKat(data.projektId):currentVAKat();const prOpts=rowProjektOpts(rowKat,data.projektId||'');tr.innerHTML='<td><input type="text" value="'+(data.pos||'')+'" placeholder="03.02.01" style="width:75px;font-family:\'IBM Plex Mono\',monospace;font-size:10px"></td><td><input type="text" value="'+(data.bez||'')+'" placeholder="Bezeichnung" style="min-width:110px"></td><td><select style="font-size:10px"><option>m2</option><option>m3</option><option>t</option><option>lfm</option><option>Stk</option><option>h</option></select></td><td><input type="number" value="'+(data.soll||'')+'" placeholder="0" style="width:60px"></td><td><input type="number" value="'+(data.ist||'')+'" placeholder="0" style="width:60px;color:var(--gl);font-weight:700"></td><td><select class="row-pr" data-kat="'+rowKat+'" style="font-size:9px;min-width:70px">'+prOpts+'</select></td><td><button class="delbtn" ontouchstart="this.closest(\'tr\').remove()" onclick="this.closest(\'tr\').remove()">&#x2715;</button></td>';tbody.appendChild(tr);}
+function addLVRow(data={}){const tbody=document.getElementById('lv-body');if(!tbody)return;const tr=document.createElement('tr');const rowKat=data.projektId?getProjektKat(data.projektId):currentVAKat();const prOpts=rowProjektOpts(rowKat,data.projektId||'');tr.innerHTML='<td><input type="text" value="'+(data.pos||'')+'" placeholder="03.02.01" style="width:75px;font-family:\'IBM Plex Mono\',monospace;font-size:10px"></td><td><input type="text" value="'+(data.bez||'')+'" placeholder="Bezeichnung" style="min-width:110px"></td><td><select style="font-size:10px"><option>m2</option><option>m3</option><option>t</option><option>lfm</option><option>Stk</option><option>h</option></select></td><td><input type="number" value="'+(data.soll||'')+'" placeholder="0" style="width:60px"></td><td><input type="number" value="'+(data.ist||'')+'" placeholder="0" style="width:60px;color:var(--gl);font-weight:700"></td><td><select class="row-pr" data-kat="'+rowKat+'" style="font-size:9px;min-width:70px">'+prOpts+'</select></td><td><button class="delbtn" ontouchstart="tsTap(event,this,function(){this.closest(\'tr\').remove()}.bind(this))" onclick="tsKlick(function(){this.closest(\'tr\').remove()}.bind(this))">&#x2715;</button></td>';tbody.appendChild(tr);}
 function getLVRows(){return[...document.querySelectorAll('#lv-body tr')].map(tr=>{const is=tr.querySelectorAll('input'),ss=tr.querySelectorAll('select');return{pos:is[0]?.value,bez:is[1]?.value,eh:ss[0]?.value,soll:is[2]?.value,ist:is[3]?.value,projektId:ss[1]?.value};}).filter(r=>r.pos||r.bez);}
-function addMangel(data={}){mangelIdx++;const i=mangelIdx;const div=document.createElement('div');div.className='mangel-block';div.innerHTML='<div style="display:flex;gap:8px;align-items:flex-start"><div style="flex:1"><div style="display:flex;gap:5px;margin-bottom:6px"><select style="font-size:10px;border-color:rgba(196,72,40,.3);background:var(--s1)"><option>Mangel (Material)</option><option>Mangel (Ausfuehrung)</option><option>Behinderung</option><option>Lieferverzug</option><option>Sicherheit</option></select><select style="font-size:10px;border-color:rgba(196,72,40,.3);background:var(--s1)"><option>Mittel</option><option>Hoch</option><option>Niedrig</option></select></div><textarea id="mg-'+i+'" placeholder="Mangelbeschreibung..." style="min-height:50px;border-color:rgba(196,72,40,.25)">'+(data.txt||'')+'</textarea>'+'<input type="text" placeholder="Massnahme / Verantwortlich" style="margin-top:6px;border-color:rgba(196,72,40,.2)" value="'+(data.massnahme||'')+'"></div><button class="delbtn" ontouchstart="this.closest(\'.mangel-block\').remove()" onclick="this.closest(\'.mangel-block\').remove()">&#x2715;</button></div>';document.getElementById('mangel-con')?.appendChild(div);}
+function addMangel(data={}){mangelIdx++;const i=mangelIdx;const div=document.createElement('div');div.className='mangel-block';div.innerHTML='<div style="display:flex;gap:8px;align-items:flex-start"><div style="flex:1"><div style="display:flex;gap:5px;margin-bottom:6px"><select style="font-size:10px;border-color:rgba(196,72,40,.3);background:var(--s1)"><option>Mangel (Material)</option><option>Mangel (Ausfuehrung)</option><option>Behinderung</option><option>Lieferverzug</option><option>Sicherheit</option></select><select style="font-size:10px;border-color:rgba(196,72,40,.3);background:var(--s1)"><option>Mittel</option><option>Hoch</option><option>Niedrig</option></select></div><textarea id="mg-'+i+'" placeholder="Mangelbeschreibung..." style="min-height:50px;border-color:rgba(196,72,40,.25)">'+(data.txt||'')+'</textarea>'+'<input type="text" placeholder="Massnahme / Verantwortlich" style="margin-top:6px;border-color:rgba(196,72,40,.2)" value="'+(data.massnahme||'')+'"></div><button class="delbtn" ontouchstart="tsTap(event,this,function(){this.closest(\'.mangel-block\').remove()}.bind(this))" onclick="tsKlick(function(){this.closest(\'.mangel-block\').remove()}.bind(this))">&#x2715;</button></div>';document.getElementById('mangel-con')?.appendChild(div);}
 function getMangelData(){return[...document.querySelectorAll('.mangel-block')].map(b=>{const sels=b.querySelectorAll('select'),ta=b.querySelector('textarea'),m=b.querySelector('input[type=text]');return{typ:sels[0]?.value,schwere:sels[1]?.value,txt:ta?.value,massnahme:m?.value};}).filter(m=>m.txt);}
 
 // ══════ KALENDER ══════
@@ -10202,9 +10251,9 @@ function buildKalender(){
   const tage=kalTagesDaten(Array.isArray(geladen)?geladen:reports,currentUser.id,currentUser.name,PROJEKTE,kalJahr,kalMonat);
   if(geladen===undefined)kalLadeMonat();
   let html='<div class="kalender-wrap"><div class="kal-header">'+
-    '<button class="kal-nav" ontouchstart="kalPrev()" onclick="kalPrev()">&#x276E;</button>'+
+    '<button class="kal-nav" ontouchstart="tsTap(event,this,function(){kalPrev()})" onclick="tsKlick(function(){kalPrev()})">&#x276E;</button>'+
     '<div class="kal-monat">'+MONATE[kalMonat]+' '+kalJahr+'</div>'+
-    '<button class="kal-nav" ontouchstart="kalNext()" onclick="kalNext()">&#x276F;</button>'+
+    '<button class="kal-nav" ontouchstart="tsTap(event,this,function(){kalNext()})" onclick="tsKlick(function(){kalNext()})">&#x276F;</button>'+
     '</div><div class="kal-grid">';
   ['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(wt=>html+='<div class="kal-wt">'+wt+'</div>');
   for(let i=0;i<startWd;i++)html+='<div class="kal-day leer"></div>';
@@ -10534,11 +10583,11 @@ function inboxRender(){
     const anMA=(n.typ==='frage'||n.typ==='korrektur');
     let btns='';
     if(anMA){
-      btns='<button class="btn btn-p" ontouchstart="inboxBerichtOeffnen(\''+n.bericht_id+'\')" onclick="inboxBerichtOeffnen(\''+n.bericht_id+'\')">'+(n.typ==='korrektur'?'Bericht korrigieren':'Bericht oeffnen')+'</button>'+
-        '<button class="btn btn-sky" ontouchstart="inboxAntworten(\''+n.id+'\')" onclick="inboxAntworten(\''+n.id+'\')">Antworten</button>';
+      btns='<button class="btn btn-p" ontouchstart="tsTap(event,this,function(){inboxBerichtOeffnen(\''+n.bericht_id+'\')})" onclick="tsKlick(function(){inboxBerichtOeffnen(\''+n.bericht_id+'\')})">'+(n.typ==='korrektur'?'Bericht korrigieren':'Bericht oeffnen')+'</button>'+
+        '<button class="btn btn-sky" ontouchstart="tsTap(event,this,function(){inboxAntworten(\''+n.id+'\')})" onclick="tsKlick(function(){inboxAntworten(\''+n.id+'\')})">Antworten</button>';
     }else{
-      btns='<button class="btn btn-sky" ontouchstart="inboxPdf(\''+n.bericht_id+'\')" onclick="inboxPdf(\''+n.bericht_id+'\')">PDF ansehen</button>'+
-        '<button class="btn" ontouchstart="inboxErledigt(\''+n.id+'\')" onclick="inboxErledigt(\''+n.id+'\')">Erledigt &#x2713;</button>';
+      btns='<button class="btn btn-sky" ontouchstart="tsTap(event,this,function(){inboxPdf(\''+n.bericht_id+'\')})" onclick="tsKlick(function(){inboxPdf(\''+n.bericht_id+'\')})">PDF ansehen</button>'+
+        '<button class="btn" ontouchstart="tsTap(event,this,function(){inboxErledigt(\''+n.id+'\')})" onclick="tsKlick(function(){inboxErledigt(\''+n.id+'\')})">Erledigt &#x2713;</button>';
     }
     return '<div class="ib-item '+_dfEsc(n.typ)+'">'+
       '<div class="ib-typ">'+_dfEsc(RF_TYP[n.typ]||n.typ)+'</div>'+
@@ -10979,7 +11028,7 @@ function bildEditHTML(arr,praefix,setFn,delFn){
       '<div class="az-bild-edit-felder">'+
       '<input id="'+praefix+'bz-'+i+'" value="'+escH(b.bez||'')+'" placeholder="Bezeichnung, z.B. Rotbuche - Blatt" oninput="'+setFn+'('+i+',\'bez\',this.value)">'+
       '<input id="'+praefix+'bq-'+i+'" value="'+escH(b.quelle||'')+'" placeholder="Quelle, z.B. Foto: Friedrich Klei GmbH" oninput="'+setFn+'('+i+',\'quelle\',this.value)">'+
-      '<button class="btn btn-r" style="font-size:11px;padding:4px 8px;min-height:30px" ontouchstart="'+delFn+'('+i+')" onclick="'+delFn+'('+i+')">Entfernen</button>'+
+      '<button class="btn btn-r" style="font-size:11px;padding:4px 8px;min-height:30px" ontouchstart="tsTap(event,this,function(){'+delFn+'('+i+')})" onclick="tsKlick(function(){'+delFn+'('+i+')})">Entfernen</button>'+
       '</div></div>';
   });
   return html;
@@ -11085,7 +11134,7 @@ function filterLernen(){
   if(!items.length){liste.innerHTML='<div class="az-empty">Kein Lernmaterial gefunden.</div>';return;}
   let html='';
   items.forEach(function(m){
-    html+='<div class="az-card" ontouchstart="openMaterial(\''+m.id+'\')" onclick="openMaterial(\''+m.id+'\')" style="cursor:pointer">'+
+    html+='<div class="az-card" ontouchstart="tsTap(event,this,function(){openMaterial(\''+m.id+'\')})" onclick="tsKlick(function(){openMaterial(\''+m.id+'\')})" style="cursor:pointer">'+
       '<div class="az-card-title">'+escH(m.titel)+'</div>'+
       '<div class="az-card-sub">'+escH(m.kategorie||'Allgemein')+' &middot; '+azFmtD(m.erstellt_am)+
       ((m.bilder&&m.bilder.length)?' &middot; '+m.bilder.length+' Bilder':'')+'</div>'+
@@ -11105,7 +11154,7 @@ function openMaterial(id){
   }
   el.innerHTML=
     '<div class="a-sec">'+
-    '<button class="btn" style="margin-bottom:12px" ontouchstart="renderLernen()" onclick="renderLernen()">&larr; Zurueck zur Uebersicht</button>'+
+    '<button class="btn" style="margin-bottom:12px" ontouchstart="tsTap(event,this,function(){renderLernen()})" onclick="tsKlick(function(){renderLernen()})">&larr; Zurueck zur Uebersicht</button>'+
     '<div class="a-sec-title">'+escH(m.titel)+'</div>'+
     '<div class="az-card-sub" style="margin-bottom:12px">'+escH(m.kategorie||'Allgemein')+' &middot; '+azFmtD(m.erstellt_am)+'</div>'+
     (m.beschreibung?'<div class="az-muted" style="margin-bottom:12px">'+escH(m.beschreibung)+'</div>':'')+
@@ -11136,7 +11185,7 @@ async function renderTests(){
       (eigene.length?'<span class="az-pill info">'+eigene.length+'x abgegeben</span>':'<span class="az-pill">noch nicht gemacht</span>')+
       (best!==null?'<span class="az-pill ok">Beste: '+best+' Pkt.</span>':'')+
       '</div>'+
-      '<div style="margin-top:10px"><button class="btn btn-p" ontouchstart="startTest(\''+t.id+'\')" onclick="startTest(\''+t.id+'\')">Test starten</button></div>'+
+      '<div style="margin-top:10px"><button class="btn btn-p" ontouchstart="tsTap(event,this,function(){startTest(\''+t.id+'\')})" onclick="tsKlick(function(){startTest(\''+t.id+'\')})">Test starten</button></div>'+
       '</div>';
   });
   html+='</div>';
@@ -11148,7 +11197,7 @@ function startTest(id){
   laufTest=t;
   const el=document.getElementById('azpanel-tests');
   let html='<div class="a-sec">'+
-    '<button class="btn" style="margin-bottom:12px" ontouchstart="abbruchTest()" onclick="abbruchTest()">&larr; Abbrechen</button>'+
+    '<button class="btn" style="margin-bottom:12px" ontouchstart="tsTap(event,this,function(){abbruchTest()})" onclick="tsKlick(function(){abbruchTest()})">&larr; Abbrechen</button>'+
     '<div class="a-sec-title">'+escH(t.titel)+'</div>'+
     (t.beschreibung?'<div class="az-muted" style="margin-bottom:12px">'+escH(t.beschreibung)+'</div>':'');
   (t.fragen||[]).forEach(function(f,i){
@@ -11176,7 +11225,7 @@ function startTest(id){
     }
     html+='</div>';
   });
-  html+='<button class="btn btn-p" style="width:100%;justify-content:center;font-size:14px" ontouchstart="submitTest()" onclick="submitTest()">Test abgeben</button>'+
+  html+='<button class="btn btn-p" style="width:100%;justify-content:center;font-size:14px" ontouchstart="tsTap(event,this,function(){submitTest()})" onclick="tsKlick(function(){submitTest()})">Test abgeben</button>'+
     '</div>';
   el.innerHTML=html;
   const sc=document.querySelector('#ausb-screen .admin-content');if(sc)sc.scrollTop=0;
@@ -11253,7 +11302,7 @@ async function renderErgebnisse(){
       '<span class="az-pill info">'+(a.punkte!=null?a.punkte:'-')+' / '+(a.max_punkte!=null?a.max_punkte:'-')+' Punkte</span>'+
       '</div>'+
       (a.kommentar?'<div class="az-muted" style="margin-top:8px"><b>Kommentar Ausbilder:</b> '+escH(a.kommentar)+'</div>':'')+
-      '<div style="margin-top:8px"><button class="btn" ontouchstart="toggleAbgDetail(\''+a.id+'\')" onclick="toggleAbgDetail(\''+a.id+'\')">Details</button></div>'+
+      '<div style="margin-top:8px"><button class="btn" ontouchstart="tsTap(event,this,function(){toggleAbgDetail(\''+a.id+'\')})" onclick="tsKlick(function(){toggleAbgDetail(\''+a.id+'\')})">Details</button></div>'+
       '<div id="abg-det-'+a.id+'" style="display:none;margin-top:10px"></div>'+
       '</div>';
   });
@@ -11342,7 +11391,7 @@ async function renderBerichtsheft(){
   if(vorhandenAktuell&&vorhandenAktuell.status!=='entwurf'){
     html+='<div class="az-muted">Fuer diesen Zeitraum ist bereits ein Nachweis abgegeben. Du findest ihn unten.</div>';
   }else{
-    html+='<button class="btn btn-p" ontouchstart="bhOeffnen()" onclick="bhOeffnen()">'+(vorhandenAktuell?'Entwurf fortsetzen':'Nachweis fuer diesen Zeitraum ausfuellen')+'</button>';
+    html+='<button class="btn btn-p" ontouchstart="tsTap(event,this,function(){bhOeffnen()})" onclick="tsKlick(function(){bhOeffnen()})">'+(vorhandenAktuell?'Entwurf fortsetzen':'Nachweis fuer diesen Zeitraum ausfuellen')+'</button>';
   }
   html+='</div>';
   html+='<div class="a-sec"><div class="a-sec-title">Meine Nachweise ('+AUSB_BH.length+')</div>';
@@ -11356,7 +11405,7 @@ async function renderBerichtsheft(){
       '<div style="margin-top:6px">'+bhStatusPill(b)+' <span class="az-pill">'+befuellt+' / '+gesamt+' Tagen ausgefuellt</span></div>'+
       (b.ausbilder_kommentar?'<div class="az-loesung"><b>Ausbilder:</b> '+escH(b.ausbilder_kommentar)+'</div>':'')+
       '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+
-      (b.status==='entwurf'?'<button class="btn" ontouchstart="bhBearbeiten(\''+b.id+'\')" onclick="bhBearbeiten(\''+b.id+'\')">Bearbeiten</button>':'<button class="btn" ontouchstart="bhAnsehen(\''+b.id+'\')" onclick="bhAnsehen(\''+b.id+'\')">Ansehen</button>')+
+      (b.status==='entwurf'?'<button class="btn" ontouchstart="tsTap(event,this,function(){bhBearbeiten(\''+b.id+'\')})" onclick="tsKlick(function(){bhBearbeiten(\''+b.id+'\')})">Bearbeiten</button>':'<button class="btn" ontouchstart="tsTap(event,this,function(){bhAnsehen(\''+b.id+'\')})" onclick="tsKlick(function(){bhAnsehen(\''+b.id+'\')})">Ansehen</button>')+
       '</div></div>';
   });
   html+='</div>';
@@ -11414,15 +11463,15 @@ function bhFormularHTML(b){
   h+='<div class="row" style="margin-top:12px"><div class="fg w100"><label>Berufsschule / Unterweisung: behandelte Themen (optional)</label><textarea id="bh-schule" style="min-height:60px"'+dis+' placeholder="Ausfuehrliche Themen, nicht nur Faecher">'+escH(b.schule||'')+'</textarea></div></div>';
   if(!nurLesen){
     h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">'+
-      '<button class="btn" ontouchstart="bhSpeichern(false)" onclick="bhSpeichern(false)">Entwurf speichern</button>'+
-      '<button class="btn btn-p" ontouchstart="bhSpeichern(true)" onclick="bhSpeichern(true)">Abgeben</button>'+
-      '<button class="btn" ontouchstart="bhAbbrechen()" onclick="bhAbbrechen()">Abbrechen</button>'+
+      '<button class="btn" ontouchstart="tsTap(event,this,function(){bhSpeichern(false)})" onclick="tsKlick(function(){bhSpeichern(false)})">Entwurf speichern</button>'+
+      '<button class="btn btn-p" ontouchstart="tsTap(event,this,function(){bhSpeichern(true)})" onclick="tsKlick(function(){bhSpeichern(true)})">Abgeben</button>'+
+      '<button class="btn" ontouchstart="tsTap(event,this,function(){bhAbbrechen()})" onclick="tsKlick(function(){bhAbbrechen()})">Abbrechen</button>'+
       '</div>';
     if(b.ausbilder_kommentar)h+='<div class="az-loesung" style="margin-top:8px"><b>Ausbilder:</b> '+escH(b.ausbilder_kommentar)+'</div>';
   }else{
     h+='<div style="margin-top:6px">'+bhStatusPill(b)+'</div>';
     if(b.ausbilder_kommentar)h+='<div class="az-loesung"><b>Ausbilder:</b> '+escH(b.ausbilder_kommentar)+'</div>';
-    h+='<div style="margin-top:8px"><button class="btn" ontouchstart="bhAbbrechen()" onclick="bhAbbrechen()">Zurueck</button></div>';
+    h+='<div style="margin-top:8px"><button class="btn" ontouchstart="tsTap(event,this,function(){bhAbbrechen()})" onclick="tsKlick(function(){bhAbbrechen()})">Zurueck</button></div>';
   }
   return h;
 }
@@ -11472,10 +11521,10 @@ function renderVerwaltung(){
   const el=document.getElementById('azpanel-verw');
   el.innerHTML=
     '<div class="az-subnav">'+
-    '<button class="btn '+(verwView==='mat'?'btn-sky':'')+'" ontouchstart="setVerwView(\'mat\')" onclick="setVerwView(\'mat\')">Material</button>'+
-    '<button class="btn '+(verwView==='tests'?'btn-sky':'')+'" ontouchstart="setVerwView(\'tests\')" onclick="setVerwView(\'tests\')">Tests</button>'+
-    '<button class="btn '+(verwView==='abg'?'btn-sky':'')+'" ontouchstart="setVerwView(\'abg\')" onclick="setVerwView(\'abg\')">Abgaben</button>'+
-    '<button class="btn '+(verwView==='bh'?'btn-sky':'')+'" ontouchstart="setVerwView(\'bh\')" onclick="setVerwView(\'bh\')">Berichtshefte</button>'+
+    '<button class="btn '+(verwView==='mat'?'btn-sky':'')+'" ontouchstart="tsTap(event,this,function(){setVerwView(\'mat\')})" onclick="tsKlick(function(){setVerwView(\'mat\')})">Material</button>'+
+    '<button class="btn '+(verwView==='tests'?'btn-sky':'')+'" ontouchstart="tsTap(event,this,function(){setVerwView(\'tests\')})" onclick="tsKlick(function(){setVerwView(\'tests\')})">Tests</button>'+
+    '<button class="btn '+(verwView==='abg'?'btn-sky':'')+'" ontouchstart="tsTap(event,this,function(){setVerwView(\'abg\')})" onclick="tsKlick(function(){setVerwView(\'abg\')})">Abgaben</button>'+
+    '<button class="btn '+(verwView==='bh'?'btn-sky':'')+'" ontouchstart="tsTap(event,this,function(){setVerwView(\'bh\')})" onclick="tsKlick(function(){setVerwView(\'bh\')})">Berichtshefte</button>'+
     '</div>'+
     '<div id="verw-inhalt"></div>';
   if(verwView==='mat')renderVerwMat();
@@ -11502,8 +11551,8 @@ async function renderVerwMat(){
     '<div class="az-muted" style="margin-top:6px">Wird automatisch verkleinert. Der Dateiname wird zufaellig vergeben und verraet die Pflanze nicht. Bei fremden Bildern bitte immer die Quelle eintragen.</div></div>'+
     '</div></div>'+
     '<div style="display:flex;gap:8px">'+
-    '<button class="btn btn-p" ontouchstart="saveMat()" onclick="saveMat()">'+(m?'Aenderung speichern':'Material anlegen')+'</button>'+
-    (m?'<button class="btn" ontouchstart="cancelMatEdit()" onclick="cancelMatEdit()">Abbrechen</button>':'')+
+    '<button class="btn btn-p" ontouchstart="tsTap(event,this,function(){saveMat()})" onclick="tsKlick(function(){saveMat()})">'+(m?'Aenderung speichern':'Material anlegen')+'</button>'+
+    (m?'<button class="btn" ontouchstart="tsTap(event,this,function(){cancelMatEdit()})" onclick="tsKlick(function(){cancelMatEdit()})">Abbrechen</button>':'')+
     '</div></div>';
   html+='<div class="a-sec"><div class="a-sec-title">Vorhandenes Material ('+AUSB_MAT.length+')</div>';
   if(!AUSB_MAT.length)html+='<div class="az-empty">Noch kein Material angelegt.</div>';
@@ -11512,9 +11561,9 @@ async function renderVerwMat(){
       '<div class="az-card-title">'+escH(x.titel)+(x.aktiv?'':' <span class="az-pill warn">inaktiv</span>')+'</div>'+
       '<div class="az-card-sub">'+escH(x.kategorie||'Allgemein')+' &middot; '+azFmtD(x.erstellt_am)+'</div>'+
       '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+
-      '<button class="btn" ontouchstart="editMat(\''+x.id+'\')" onclick="editMat(\''+x.id+'\')">Bearbeiten</button>'+
-      '<button class="btn" ontouchstart="toggleMatAktiv(\''+x.id+'\')" onclick="toggleMatAktiv(\''+x.id+'\')">'+(x.aktiv?'Deaktivieren':'Aktivieren')+'</button>'+
-      '<button class="btn btn-r" ontouchstart="delMat(\''+x.id+'\')" onclick="delMat(\''+x.id+'\')">Loeschen</button>'+
+      '<button class="btn" ontouchstart="tsTap(event,this,function(){editMat(\''+x.id+'\')})" onclick="tsKlick(function(){editMat(\''+x.id+'\')})">Bearbeiten</button>'+
+      '<button class="btn" ontouchstart="tsTap(event,this,function(){toggleMatAktiv(\''+x.id+'\')})" onclick="tsKlick(function(){toggleMatAktiv(\''+x.id+'\')})">'+(x.aktiv?'Deaktivieren':'Aktivieren')+'</button>'+
+      '<button class="btn btn-r" ontouchstart="tsTap(event,this,function(){delMat(\''+x.id+'\')})" onclick="tsKlick(function(){delMat(\''+x.id+'\')})">Loeschen</button>'+
       '</div></div>';
   });
   html+='</div>';
@@ -11604,7 +11653,7 @@ function bauVerwTestsHTML(){
     }else if(f.loesung){
       html+='<div class="az-muted" style="margin-bottom:2px"><b>Musterloesung:</b> '+botH(f.loesung)+'</div>';
     }
-    html+='<div style="margin-top:8px"><button class="btn btn-r" style="font-size:11px;padding:4px 8px;min-height:30px" ontouchstart="delFrage('+i+')" onclick="delFrage('+i+')">Frage entfernen</button></div>'+
+    html+='<div style="margin-top:8px"><button class="btn btn-r" style="font-size:11px;padding:4px 8px;min-height:30px" ontouchstart="tsTap(event,this,function(){delFrage('+i+')})" onclick="tsKlick(function(){delFrage('+i+')})">Frage entfernen</button></div>'+
       '</div>';
   });
   html+='<div style="border-top:1px dashed var(--b);margin:14px 0;padding-top:12px">'+
@@ -11632,11 +11681,11 @@ function bauVerwTestsHTML(){
     '<div class="row"><div class="fg w50"><label>Antwort A</label><input id="fq-o0"></div><div class="fg w50"><label>Antwort B</label><input id="fq-o1"></div></div>'+
     '<div class="row"><div class="fg w50"><label>Antwort C (optional)</label><input id="fq-o2"></div><div class="fg w50"><label>Antwort D (optional)</label><input id="fq-o3"></div></div>'+
     '</div>'+
-    '<button class="btn" ontouchstart="addFrage()" onclick="addFrage()">+ Frage hinzufuegen</button>'+
+    '<button class="btn" ontouchstart="tsTap(event,this,function(){addFrage()})" onclick="tsKlick(function(){addFrage()})">+ Frage hinzufuegen</button>'+
     '</div>';
   html+='<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+
-    '<button class="btn btn-p" ontouchstart="saveTest()" onclick="saveTest()">'+(tEdit.id?'Aenderung speichern':'Test speichern')+'</button>'+
-    '<button class="btn" ontouchstart="neuTest()" onclick="neuTest()">'+(tEdit.id?'Abbrechen / Neu':'Formular leeren')+'</button>'+
+    '<button class="btn btn-p" ontouchstart="tsTap(event,this,function(){saveTest()})" onclick="tsKlick(function(){saveTest()})">'+(tEdit.id?'Aenderung speichern':'Test speichern')+'</button>'+
+    '<button class="btn" ontouchstart="tsTap(event,this,function(){neuTest()})" onclick="tsKlick(function(){neuTest()})">'+(tEdit.id?'Abbrechen / Neu':'Formular leeren')+'</button>'+
     '</div></div>';
   html+='<div class="a-sec"><div class="a-sec-title">Vorhandene Tests ('+AUSB_TESTS.length+')</div>';
   if(!AUSB_TESTS.length)html+='<div class="az-empty">Noch keine Tests angelegt.</div>';
@@ -11645,9 +11694,9 @@ function bauVerwTestsHTML(){
       '<div class="az-card-title">'+escH(t.titel)+(t.aktiv?'':' <span class="az-pill warn">inaktiv</span>')+'</div>'+
       '<div class="az-card-sub">'+escH(t.kategorie||'Allgemein')+' &middot; '+(t.fragen||[]).length+' Fragen &middot; '+azFmtD(t.erstellt_am)+'</div>'+
       '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+
-      '<button class="btn" ontouchstart="editTest(\''+t.id+'\')" onclick="editTest(\''+t.id+'\')">Bearbeiten</button>'+
-      '<button class="btn" ontouchstart="toggleTestAktiv(\''+t.id+'\')" onclick="toggleTestAktiv(\''+t.id+'\')">'+(t.aktiv?'Deaktivieren':'Aktivieren')+'</button>'+
-      '<button class="btn btn-r" ontouchstart="delTest(\''+t.id+'\')" onclick="delTest(\''+t.id+'\')">Loeschen</button>'+
+      '<button class="btn" ontouchstart="tsTap(event,this,function(){editTest(\''+t.id+'\')})" onclick="tsKlick(function(){editTest(\''+t.id+'\')})">Bearbeiten</button>'+
+      '<button class="btn" ontouchstart="tsTap(event,this,function(){toggleTestAktiv(\''+t.id+'\')})" onclick="tsKlick(function(){toggleTestAktiv(\''+t.id+'\')})">'+(t.aktiv?'Deaktivieren':'Aktivieren')+'</button>'+
+      '<button class="btn btn-r" ontouchstart="tsTap(event,this,function(){delTest(\''+t.id+'\')})" onclick="tsKlick(function(){delTest(\''+t.id+'\')})">Loeschen</button>'+
       '</div></div>';
   });
   html+='</div>';
@@ -11812,7 +11861,7 @@ function filterVerwAbg(){
       '<span class="az-pill '+(a.bewertet?'ok':'warn')+'">'+(a.bewertet?'Bewertet':'Bewertung offen')+'</span>'+
       '<span class="az-pill info">'+(a.punkte!=null?a.punkte:'-')+' / '+(a.max_punkte!=null?a.max_punkte:'-')+' Punkte</span>'+
       '</div>'+
-      '<div style="margin-top:8px"><button class="btn" ontouchstart="toggleVerwAbg(\''+a.id+'\')" onclick="toggleVerwAbg(\''+a.id+'\')">Ansehen / Bewerten</button></div>'+
+      '<div style="margin-top:8px"><button class="btn" ontouchstart="tsTap(event,this,function(){toggleVerwAbg(\''+a.id+'\')})" onclick="tsKlick(function(){toggleVerwAbg(\''+a.id+'\')})">Ansehen / Bewerten</button></div>'+
       '<div id="vabg-det-'+a.id+'" style="display:none;margin-top:10px"></div>'+
       '</div>';
   });
@@ -11828,7 +11877,7 @@ function toggleVerwAbg(id){
     '<div class="row"><div class="fg w50"><label>Punkte</label><input id="bw-pkt-'+a.id+'" inputmode="decimal" value="'+(a.punkte!=null?a.punkte:'')+'"></div>'+
     '<div class="fg w50"><label>Max. Punkte</label><input value="'+(a.max_punkte!=null?a.max_punkte:'')+'" disabled></div></div>'+
     '<div class="row"><div class="fg w100"><label>Kommentar an den Azubi</label><textarea id="bw-kom-'+a.id+'" style="min-height:70px">'+escH(a.kommentar||'')+'</textarea></div></div>'+
-    '<button class="btn btn-p" ontouchstart="saveBewertung(\''+a.id+'\')" onclick="saveBewertung(\''+a.id+'\')">Bewertung speichern</button>'+
+    '<button class="btn btn-p" ontouchstart="tsTap(event,this,function(){saveBewertung(\''+a.id+'\')})" onclick="tsKlick(function(){saveBewertung(\''+a.id+'\')})">Bewertung speichern</button>'+
     '</div>';
   box.innerHTML=html;
   box.style.display='';
@@ -11874,7 +11923,7 @@ function filterVerwBH(){
     html+='<div class="bh-card">'+
       '<div class="az-card-title">'+escH(b.mitarbeiter_name||'--')+' &middot; '+bhPeriodeLabel(b.periode_start)+'</div>'+
       '<div style="margin-top:6px">'+bhStatusPill(b)+'</div>'+
-      '<div style="margin-top:8px"><button class="btn" ontouchstart="toggleVerwBH(\''+b.id+'\')" onclick="toggleVerwBH(\''+b.id+'\')">Ansehen</button></div>'+
+      '<div style="margin-top:8px"><button class="btn" ontouchstart="tsTap(event,this,function(){toggleVerwBH(\''+b.id+'\')})" onclick="tsKlick(function(){toggleVerwBH(\''+b.id+'\')})">Ansehen</button></div>'+
       '<div id="vbh-det-'+b.id+'" style="display:none;margin-top:10px"></div>'+
       '</div>';
   });
@@ -11906,8 +11955,8 @@ function toggleVerwBH(id){
     h+='<div style="border-top:1px dashed var(--b);margin-top:10px;padding-top:10px">'+
       '<div class="row"><div class="fg w100"><label>Kommentar an den Azubi</label><textarea id="bhk-'+b.id+'" style="min-height:60px">'+escH(b.ausbilder_kommentar||'')+'</textarea></div></div>'+
       '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
-      '<button class="btn" ontouchstart="bhKommentarSpeichern(\''+b.id+'\')" onclick="bhKommentarSpeichern(\''+b.id+'\')">Kommentar speichern</button>'+
-      (b.status!=='gezeichnet'?'<button class="btn btn-p" ontouchstart="bhGegenzeichnen(\''+b.id+'\')" onclick="bhGegenzeichnen(\''+b.id+'\')">Gegenzeichnen</button>':'')+
+      '<button class="btn" ontouchstart="tsTap(event,this,function(){bhKommentarSpeichern(\''+b.id+'\')})" onclick="tsKlick(function(){bhKommentarSpeichern(\''+b.id+'\')})">Kommentar speichern</button>'+
+      (b.status!=='gezeichnet'?'<button class="btn btn-p" ontouchstart="tsTap(event,this,function(){bhGegenzeichnen(\''+b.id+'\')})" onclick="tsKlick(function(){bhGegenzeichnen(\''+b.id+'\')})">Gegenzeichnen</button>':'')+
       '</div></div>';
   }
   box.innerHTML=h;
