@@ -797,6 +797,18 @@ body:not(.theme-light) .fab-wrap .send-status{background:var(--s1);}
 #bas-inhalt input,#bas-inhalt select{max-width:100%;box-sizing:border-box;}
 @media(min-width:640px){.bas-reihe{grid-template-columns:repeat(4,1fr);}.bas-reihe .bas-breit{grid-column:span 2;}}
 @media(max-width:380px){.bas-projwahl{grid-template-columns:1fr;}.bas-reihe.bas-drei{grid-template-columns:1fr 1fr;}}
+/* Baustellen-Band: zeigt immer, fuer welche Baustelle gerade eingetragen wird */
+.bas-band{position:sticky;top:0;z-index:3;color:#fff;border-radius:10px;padding:12px 14px;margin:0 0 14px;box-shadow:0 4px 12px rgba(0,0,0,.18);}
+.bas-band-nr{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:1.5px;font-weight:700;opacity:.92;}
+.bas-band-name{font-size:21px;font-weight:700;line-height:1.25;margin-top:2px;}
+.bas-band-was{font-size:14px;margin-top:4px;opacity:.95;}
+.bas-wechsel-kreis{width:92px;height:92px;margin:0 auto 14px;border-radius:50%;color:#fff;font-size:50px;font-weight:700;line-height:92px;}
+.bas-wechsel-fertig{display:inline-block;margin-top:10px;padding:6px 12px;border-radius:16px;background:var(--gg);color:var(--gd);font-size:14px;}
+.bas-plan{background:var(--s1);border:1px solid var(--b);border-radius:8px;padding:12px;}
+.bas-plan ol{margin:0 0 8px;padding-left:22px;font-size:15px;line-height:1.9;color:var(--t);}
+.bas-punkt{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:8px;vertical-align:-1px;}
+.bas-bwahl{display:flex;gap:8px;}
+.bas-bwahl .btn{flex:1;background:var(--s1);}
 /* Testmodus-Banner und Notch/Dynamic Island: Kopf des Assistenten nicht verdecken */
 #bas-box{padding-top:calc(16px + env(safe-area-inset-top,0px))!important;}
 body.tm-an #bas-box{padding-top:calc(34px + env(safe-area-inset-top,0px))!important;}
@@ -1688,7 +1700,7 @@ function freiBerichtCard(b){
     '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">'+
     '<div style="flex:1;min-width:140px">'+
     '<div style="font-size:12px;font-weight:600;color:var(--c)">'+pLabel+'</div>'+
-    '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--g)">'+fmtD(b.datum)+' · '+b.mitarbeiter_name+' · '+(b.netto_gesamt_h||b.netto_arbeit_h||'--')+'h · '+(b.rolle==='va'?'VA':b.rolle==='ws'?'WS':'AR')+'</div>'+
+    '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--g)">'+fmtD(b.datum)+' · '+b.mitarbeiter_name+' · '+fmtStd(b.netto_gesamt_h||b.netto_arbeit_h)+' h · '+(b.rolle==='va'?'VA':b.rolle==='ws'?'WS':'AR')+'</div>'+
     '<div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap">'+
     '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;padding:2px 7px;border-radius:8px;'+(bl?'background:var(--earthg);color:var(--earth)':'background:var(--s2);color:var(--m)')+'">'+(bl?'BL abgenommen ✓ ('+(b.abgenommen_von||'')+')':'BL offen')+'</span>'+
     '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;padding:2px 7px;border-radius:8px;'+(bh?'background:var(--gg);color:var(--gl)':'background:var(--rg);color:var(--r)')+'">'+(bh?'BH freigegeben ✓ ('+(b.bh_freigegeben_von||'')+')':'BH offen')+'</span>'+
@@ -2104,7 +2116,7 @@ async function filterBer(){
     '<div style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--s3);border:1px solid var(--b);border-radius:var(--rad);margin-bottom:4px;cursor:pointer;flex-wrap:wrap" ontouchstart="tsTap(event,this,function(){adminOpenBericht(\''+b.id+'\')})" onclick="tsKlick(function(){adminOpenBericht(\''+b.id+'\')})">'+
     '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--g);width:72px">'+fmtD(b.datum)+'</div>'+
     '<div style="flex:1;min-width:100px"><div style="font-size:12px;font-weight:600;color:var(--c)">'+b.mitarbeiter_name+' <span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m)">#'+(b.mitarbeiter_nr||'--')+'</span></div>'+
-    '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m)">'+b.projekt_nr+' · '+(b.netto_gesamt_h||b.netto_arbeit_h||'--')+'h</div></div>'+
+    '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m)">'+b.projekt_nr+' · '+fmtStd(b.netto_gesamt_h||b.netto_arbeit_h)+' h</div></div>'+
     (b.pdf_url?'<a href="'+b.pdf_url+'" target="_blank" style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--sky);text-decoration:none;padding:3px 7px;border:1px solid rgba(61,143,168,.3);border-radius:4px" ontouchstart="event.stopPropagation()" onclick="event.stopPropagation()">Drive</a>':'')+
     (b.rueckfrage_offen?'<span style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;padding:2px 7px;border-radius:8px;background:rgba(212,120,42,.15);color:var(--o)">Rueckfrage offen</span>':'')+
     '<button class="btn" style="font-size:9px;padding:3px 7px" ontouchstart="event.stopPropagation();rueckfrageOeffnen(\''+b.id+'\')" onclick="event.stopPropagation();rueckfrageOeffnen(\''+b.id+'\')">Rueckfrage</button>'+
@@ -7409,7 +7421,7 @@ async function filterPLBer(){
     '<div class="pl-bericht-header">'+
     '<div><div style="font-size:12px;font-weight:600;color:var(--c)">'+b.mitarbeiter_name+'</div>'+
     '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--g)">'+fmtD(b.datum)+' · '+b.projekt_nr+'</div>'+
-    '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m)">'+(b.netto_gesamt_h||b.netto_arbeit_h||'--')+'h · '+(b.rolle==='va'?'VA':b.rolle==='ws'?'WS':'AR')+'</div></div>'+
+    '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m)">'+fmtStd(b.netto_gesamt_h||b.netto_arbeit_h)+' h · '+(b.rolle==='va'?'VA':b.rolle==='ws'?'WS':'AR')+'</div></div>'+
     '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">'+
     '<div class="pl-check '+(b.abgenommen?'done':'')+'" ontouchstart="event.stopPropagation();plToggleAbnahme(\''+b.id+'\','+b.abgenommen+')" onclick="event.stopPropagation();plToggleAbnahme(\''+b.id+'\','+b.abgenommen+')">'+(b.abgenommen?'&#x2713;':'')+'</div>'+
     (b.abgenommen?'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;color:var(--g)">'+b.abgenommen_von+'</div>':'')+
@@ -7487,7 +7499,7 @@ async function loadProjektBerichte(projektId){
     data.map(b=>'<div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--s3);border:1px solid var(--b);border-radius:var(--rad);margin-bottom:4px;cursor:pointer;flex-wrap:wrap" ontouchstart="tsTap(event,this,function(){plOpenBericht(\''+b.id+'\')})" onclick="tsKlick(function(){plOpenBericht(\''+b.id+'\')})">'+
       '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--g);width:70px">'+fmtD(b.datum)+'</div>'+
       '<div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--c)">'+b.mitarbeiter_name+'</div>'+
-      '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m)">'+(b.netto_gesamt_h||b.netto_arbeit_h||'--')+'h · '+(b.rolle==='va'?'VA':'AR')+'</div></div>'+
+      '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--m)">'+fmtStd(b.netto_gesamt_h||b.netto_arbeit_h)+' h · '+(b.rolle==='va'?'VA':'AR')+'</div></div>'+
       (b.pdf_url?'<a href="'+b.pdf_url+'" target="_blank" style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--sky)" ontouchstart="event.stopPropagation()" onclick="event.stopPropagation()">Drive</a>':'')+
       (b.abgenommen?'<span style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;color:var(--g)">&#x2713;</span>':'')+
       '</div>'
@@ -7640,7 +7652,7 @@ async function saveAndSendVA(){
     toast('Nicht gesendet: Name nicht in Stammdaten (rot markiert) - bitte aus der Liste waehlen: '+badNames.join(', '),'err');
     return;
   }
-  const totalH=zeitRows.reduce((s,w)=>s+(parseFloat((w.gesamt||'0').replace(',','.'))||0),0);
+  const totalH=Math.round(zeitRows.reduce((s,w)=>s+(parseFloat((w.gesamt||'0').replace(',','.'))||0),0)*100)/100;
   const zusatzProjekte=getZusatzProjekte();
   const d={
     mitarbeiter_id:currentUser.id,mitarbeiter_name:currentUser.name,mitarbeiter_nr:currentUser.mitarbeiter_nr,
@@ -7830,7 +7842,7 @@ async function saveAndSendVASplit(base,zeitRows,hauptProjektId,projIds){
     const zr=zeitRows.filter(z=>(z.projektId||hauptProjektId)===pid);
     const mr=allMach.filter(m=>{const mp=m.projektId||hauptProjektId;return mp===pid||(istHaupt&&!sortedIds.includes(mp));});
     const stps=allSteps.filter(s=>{const sp=s.projektId||hauptProjektId;return sp===pid||(istHaupt&&!sortedIds.includes(sp));});
-    const totalH=zr.reduce((s,w)=>s+(parseFloat((w.gesamt||'0').replace(',','.'))||0),0);
+    const totalH=Math.round(zr.reduce((s,w)=>s+(parseFloat((w.gesamt||'0').replace(',','.'))||0),0)*100)/100;
     if(st){st.className='send-status show sending';st.textContent='Speichern '+(idx+1)+'/'+sortedIds.length+' ('+(proj?.nr||'?')+')...';}
     // Bereich/Bauherr fuer die weitere Baustelle aus dem "Weitere Baustelle"-Block uebernehmen (falls ausgefuellt)
     const zInfo=istHaupt?null:((base.zusatz_projekte||[]).find(z=>z.projektId===pid)||null);
@@ -7899,9 +7911,9 @@ function basNeuerStand(datum,kat,projektId){
 // Reine Funktion: Liste der Schritte aus der Zahl der Projekte.
 function basSchrittListe(anzProjekte){
   var l=[{typ:'projekte'}],i;
-  for(i=0;i<anzProjekte;i++)l.push({typ:'zeiten',i:i});
+  for(i=0;i<anzProjekte;i++){if(i>0)l.push({typ:'wechsel',phase:'zeiten',i:i});l.push({typ:'zeiten',i:i});}
   l.push({typ:'geraete'});
-  for(i=0;i<anzProjekte;i++)l.push({typ:'bericht',i:i});
+  for(i=0;i<anzProjekte;i++){if(i>0)l.push({typ:'wechsel',phase:'bericht',i:i});l.push({typ:'bericht',i:i});}
   l.push({typ:'material'});l.push({typ:'fertig'});
   return l;
 }
@@ -8208,6 +8220,18 @@ function basZurueck(){
 }
 
 // ---- Darstellung ----
+// Jede Baustelle hat eine eigene Farbe, die ueberall wiederkehrt (Band, Zwischenseite, Geraete, Uebersicht).
+var BAS_FARBEN=['#3d6b1f','#1f5f8b','#8a5a1c','#6b4b9a','#8b2f4a'];
+function basFarbe(i){return BAS_FARBEN[i%BAS_FARBEN.length];}
+function basKurzname(i){return _dfEsc(getProjektLabel(_bas.projekte[i].projektId));}
+// Farbiges Band oben auf jeder Seite, die nur EINE Baustelle betrifft. Bleibt beim Scrollen stehen.
+function basBand(i,was){
+  var n=_bas.projekte.length;
+  return '<div class="bas-band" style="background:'+basFarbe(i)+'">'+
+    '<div class="bas-band-nr">'+(n>1?'BAUSTELLE '+(i+1)+' VON '+n:'BAUSTELLE')+'</div>'+
+    '<div class="bas-band-name">'+basKurzname(i)+'</div>'+
+    (n>1?'<div class="bas-band-was">'+was+'</div>':'')+'</div>';
+}
 function basProjektTitel(i){
   var n=_bas.projekte.length;
   return (n>1?'Bericht '+(i+1)+' von '+n+' &middot; ':'')+_dfEsc(getProjektLabel(_bas.projekte[i].projektId));
@@ -8218,7 +8242,7 @@ function basKopf(titel,unter){
     '<div class="bas-lbl" style="color:var(--earth);margin:0">NEUER BERICHT &middot; SCHRITT '+pos+' VON '+l.length+'</div>'+
     '<button class="btn bas-klein" '+tsAttr('basAbbrechen()')+'>Abbrechen</button></div>'+
     '<div style="height:5px;background:var(--s3);border-radius:3px;margin-bottom:12px;overflow:hidden"><div style="height:5px;width:'+proz+'%;background:var(--g)"></div></div>'+
-    '<div class="bas-titel" style="margin-bottom:'+(unter?'2':'12')+'px">'+titel+'</div>'+
+    (titel?'<div class="bas-titel" style="margin-bottom:'+(unter?'2':'12')+'px">'+titel+'</div>':'')+
     (unter?'<div class="bas-unter">'+unter+'</div>':'');
 }
 function basFuss(weiterTxt,weiterAufruf){
@@ -8227,8 +8251,8 @@ function basFuss(weiterTxt,weiterAufruf){
     '<button class="btn btn-p" style="flex:2;min-width:150px" '+tsAttr(weiterAufruf||'basWeiter()')+'>'+(weiterTxt||'Weiter')+'</button></div>';
 }
 
-function basKarte(inhalt,haupt){
-  return '<div style="background:var(--s3);border:1px solid '+(haupt?'var(--gd)':'var(--b)')+';border-radius:6px;padding:10px;margin-bottom:8px">'+inhalt+'</div>';
+function basKarte(inhalt,haupt,farbe){
+  return '<div style="background:var(--s3);border:1px solid '+(farbe||(haupt?'var(--gd)':'var(--b)'))+';'+(farbe?'border-left:6px solid '+farbe+';':'')+'border-radius:6px;padding:10px;margin-bottom:8px">'+inhalt+'</div>';
 }
 function basZeitFelder(von,bis,pause,aufrufVon,aufrufBis,aufrufPause){
   return '<div class="bas-zeit">'+
@@ -8241,14 +8265,25 @@ function basZeitFelder(von,bis,pause,aufrufVon,aufrufBis,aufrufPause){
 function basInfoProjekte(){
   var el=document.getElementById('bas-info-proj');if(!el)return;
   var n=_bas.projekte.filter(function(p){return p.projektId;}).length;
-  el.innerHTML=n>1?'<b>'+n+' Projekte = '+n+' Berichte.</b> Du wirst erst durch die Zeiten jedes Projekts gefuehrt, danach durch jeden Bericht. Beim Senden entsteht je Projekt ein eigenes PDF.':
-    'Ein Projekt = ein Bericht. Warst du heute auf mehreren Baustellen, fuege hier jedes weitere Projekt hinzu.';
+  if(n>1){
+    var pl=[],k;
+    for(k=0;k<_bas.projekte.length;k++)pl.push('<li><span class="bas-punkt" style="background:'+basFarbe(k)+'"></span>Zeiten Baustelle '+(k+1)+(_bas.projekte[k].projektId?': '+basKurzname(k):'')+'</li>');
+    pl.push('<li><span class="bas-punkt" style="background:#888"></span>Geraete und Fahrzeuge</li>');
+    for(k=0;k<_bas.projekte.length;k++)pl.push('<li><span class="bas-punkt" style="background:'+basFarbe(k)+'"></span>Bericht Baustelle '+(k+1)+(_bas.projekte[k].projektId?': '+basKurzname(k):'')+'</li>');
+    pl.push('<li><span class="bas-punkt" style="background:#888"></span>Material, pruefen und senden</li>');
+    el.innerHTML='<div class="bas-plan"><div class="bas-name" style="margin-bottom:6px">'+n+' Baustellen = '+n+' Berichte. So geht es weiter:</div><ol>'+pl.join('')+'</ol>'+
+      '<div class="bas-hinweis">Die farbige Leiste oben zeigt dir immer, fuer welche Baustelle du gerade eintraegst.</div></div>';
+    return;
+  }
+  el.innerHTML=
+'Ein Projekt = ein Bericht. Warst du heute auf mehreren Baustellen, fuege hier jedes weitere Projekt hinzu.';
 }
 function basRender(){
   var el=document.getElementById('bas-inhalt');if(!el||!_bas)return;
   basBereinigen();
   var s=basAktuell(),h='';
   if(s.typ==='projekte')h=basRenderProjekte();
+  else if(s.typ==='wechsel')h=basRenderWechsel(s.phase,s.i);
   else if(s.typ==='zeiten')h=basRenderZeiten(s.i);
   else if(s.typ==='geraete')h=basRenderGeraete();
   else if(s.typ==='bericht')h=basRenderBericht(s.i);
@@ -8267,21 +8302,35 @@ function basRenderProjekte(){
   _bas.projekte.forEach(function(p,i){
     h+=basKarte(
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'+
-      '<div class="bas-lbl">'+(i===0?'PROJEKT 1 (HAUPTPROJEKT)':'PROJEKT '+(i+1))+'</div>'+
+      '<div class="bas-lbl" style="margin:0;color:'+basFarbe(i)+';font-weight:700;font-size:12px">BAUSTELLE '+(i+1)+(i===0?' (HAUPTPROJEKT)':'')+'</div>'+
       (i>0?'<button class="delbtn" style="color:var(--r)" '+tsAttr('basProjektWeg('+i+')')+'>&#x2715;</button>':'')+'</div>'+
       '<div class="bas-projwahl">'+
       '<select onchange="basSetzeP('+i+',\'kat\',this.value)"><option value="bau"'+(p.kat!=='pflege'?' selected':'')+'>Bau</option><option value="pflege"'+(p.kat==='pflege'?' selected':'')+'>Pflege</option></select>'+
-      '<select onchange="basSetzeP('+i+',\'projektId\',this.value)">'+projektOptsByKat(p.kat==='pflege'?'pflege':'bau',p.projektId||'')+'</select></div>',i===0);
+      '<select onchange="basSetzeP('+i+',\'projektId\',this.value)">'+projektOptsByKat(p.kat==='pflege'?'pflege':'bau',p.projektId||'')+'</select></div>',i===0,basFarbe(i));
   });
   h+='<button class="btn" '+tsAttr('basProjektPlus()')+'>+ weiteres Projekt hinzufuegen</button>'+
     '<div id="bas-info-proj" class="bas-hinweis" style="margin-top:10px"></div>'+
     basFuss('Weiter zu den Zeiten');
   return h;
 }
+function basRenderWechsel(phase,i){
+  var n=_bas.projekte.length,f=basFarbe(i);
+  var txt=phase==='zeiten'?
+    'Jetzt kommen die Zeiten nur fuer diese Baustelle. Die Kolonne von Baustelle '+i+' ist schon uebernommen - wer nicht dabei war, nimmst du raus.':
+    'Jetzt beschreibst du nur die Arbeiten auf dieser Baustelle.';
+  return basKopf('')+
+    '<div class="bas-mitte" style="padding-top:4vh">'+
+    '<div class="bas-wechsel-kreis" style="background:'+f+'">'+(i+1)+'</div>'+
+    '<div class="bas-band-nr" style="color:'+f+'">BAUSTELLE '+(i+1)+' VON '+n+'</div>'+
+    '<div class="bas-titel" style="font-size:28px;margin:6px 0 4px">'+basKurzname(i)+'</div>'+
+    '<div class="bas-wechsel-fertig">'+(phase==='zeiten'?'Zeiten':'Bericht')+' fuer Baustelle '+i+' ('+basKurzname(i-1)+') ist erledigt.</div>'+
+    '<div class="bas-hinweis" style="font-size:16px;margin-top:14px;color:var(--t)">'+txt+'</div></div>'+
+    basFuss('Los: Baustelle '+(i+1));
+}
 function basRenderZeiten(i){
   var p=_bas.projekte[i];
-  return basKopf('Wer war dabei, und wie lange?',basProjektTitel(i))+
-    basKarte('<div class="bas-lbl">1. ARBEITSZEIT AUF DIESEM PROJEKT</div>'+
+  return basKopf('Wer war dabei, und wie lange?')+basBand(i,'Hier nur die Zeiten fuer diese Baustelle eintragen.')+
+    basKarte('<div class="bas-lbl">1. ARBEITSZEIT AUF DIESER BAUSTELLE</div>'+
       basZeitFelder(p.von,p.bis,p.pause,'basSetzeP('+i+',\'von\',this.value)','basSetzeP('+i+',\'bis\',this.value)','basSetzeP('+i+',\'pause\',this.value)')+
       '<div class="bas-hinweis" style="margin-top:6px">Gilt fuer alle. Wer spaeter kam oder frueher ging, bekommt unten eine eigene Zeit.</div>',true)+
     '<div class="bas-lbl" id="bas-ma-zahl" style="margin-top:14px"></div>'+
@@ -8289,7 +8338,7 @@ function basRenderZeiten(i){
     '<div class="bas-lbl" style="margin-top:14px">3. PERSON HINZUFUEGEN</div>'+
     '<input type="text" placeholder="Name suchen..." value="'+_dfEsc(_bas.filter)+'" oninput="basFilter('+i+',this.value)" style="margin-bottom:6px">'+
     '<div id="bas-ma-liste" class="bas-liste"></div>'+
-    basFuss(i<_bas.projekte.length-1?'Weiter zu Projekt '+(i+2):'Weiter zu den Geraeten');
+    basFuss(i<_bas.projekte.length-1?'Weiter zu Baustelle '+(i+2):'Weiter zu den Geraeten');
 }
 
 function basFahrtKnopf(i,id,wert,txt,aktiv){
@@ -8369,8 +8418,8 @@ function basRenderGeraete(){
       GERAETE.map(function(x){return '<option value="'+x.nr+'"'+(g.geraetNr===x.nr?' selected':'')+'>'+x.nr+' - '+_dfEsc(x.bez)+'</option>';}).join('')+'</select></div>'+
       '<div class="fg"><label>Kfz/Nr.</label><input type="text" value="'+_dfEsc(g.fahrzeugnr||'')+'" onchange="basSetzeG('+k+',\'fahrzeugnr\',this.value)"></div>'+
       '<div class="fg"><label>Stunden</label><input type="number" inputmode="decimal" min="0" step="any" value="'+_dfEsc(g.netto||'')+'" onchange="basSetzeG('+k+',\'netto\',this.value)"></div>'+
-      (mehrere?'<div class="fg bas-breit"><label>Projekt</label><select onchange="basSetzeG('+k+',\'pIdx\',this.value)">'+
-        _bas.projekte.map(function(p,i){return '<option value="'+i+'"'+(g.pIdx===i?' selected':'')+'>'+_dfEsc(getProjektLabel(p.projektId))+'</option>';}).join('')+'</select></div>':'')+
+      (mehrere?'<div class="fg bas-breit"><label>Auf welcher Baustelle?</label><div class="bas-bwahl">'+
+        _bas.projekte.map(function(p,i){var an=(g.pIdx===i);return '<button class="btn bas-klein" style="'+(an?'background:'+basFarbe(i)+';color:#fff;border-color:'+basFarbe(i):'border-color:'+basFarbe(i)+';color:'+basFarbe(i))+'" '+tsAttr('basSetzeG('+k+',\'pIdx\','+i+')')+'>'+(an?'&#x2713; ':'')+'Baustelle '+(i+1)+'</button>';}).join('')+'</div></div>':'')+
       '</div>'+
       (g.auto?'<div class="bas-hinweis" style="margin-top:6px">Stunden vorgeschlagen aus der Fahrzeit zum Projekt (Hin und Rueck). War das Fahrzeug laenger im Einsatz, bitte aendern.</div>':''));
   });
@@ -8381,7 +8430,7 @@ function basRenderGeraete(){
 }
 function basRenderBericht(i){
   var p=_bas.projekte[i];
-  var h=basKopf('Was wurde gemacht?',basProjektTitel(i));
+  var h=basKopf('Was wurde gemacht?')+basBand(i,'Hier nur die Arbeiten auf dieser Baustelle eintragen.');
   p.schritte.forEach(function(s,k){
     h+=basKarte('<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'+
       '<div class="bas-lbl">ARBEITSSCHRITT '+(k+1)+'</div>'+
@@ -8410,7 +8459,7 @@ function basRenderBericht(i){
     h+=basKarte(z);
   }
   h+='<div class="bas-hinweis" style="margin-top:10px">Nichts hier ist Pflicht. Maengel, Fotos und LV-Positionen kannst du am Ende ueber &quot;Noch etwas ergaenzen&quot; eintragen.</div>'+
-    basFuss(i<_bas.projekte.length-1?'Weiter zu Bericht '+(i+2):'Weiter zum Material');
+    basFuss(i<_bas.projekte.length-1?'Weiter zu Baustelle '+(i+2):'Weiter zum Material');
   return h;
 }
 function basRenderMaterial(){
@@ -8447,10 +8496,10 @@ function basUebersichtKarten(){
     var std=rows.reduce(function(s2,w){return s2+(parseFloat(String(w.gesamt||'0').replace(',','.'))||0);},0);
     var anzS=st.filter(function(x){return (x.projektId||haupt)===p.projektId;}).length;
     var anzG=mr.filter(function(m){return (m.projektId||haupt)===p.projektId;}).length;
-    h+=basKarte('<div class="bas-name">'+basProjektTitel(i)+'</div>'+
+    h+=basKarte('<div class="bas-lbl" style="margin:0 0 2px;color:'+basFarbe(i)+';font-weight:700">'+(_bas.projekte.length>1?'BAUSTELLE '+(i+1)+' VON '+_bas.projekte.length:'BAUSTELLE')+'</div><div class="bas-name">'+basKurzname(i)+'</div>'+
       '<div class="bas-summe">'+rows.length+' Person'+(rows.length===1?'':'en')+' &middot; '+std.toFixed(2).replace('.',',')+' h<br>'+
       anzS+' Arbeitsschritt'+(anzS===1?'':'e')+' &middot; '+anzG+' Geraet'+(anzG===1?'':'e')+
-      (i===0&&_bas.material==='ja'?' &middot; '+_bas.lief.filter(function(l){return l.mat||l.firma;}).length+' Lieferung(en)':'')+'</div>',i===0);
+      (i===0&&_bas.material==='ja'?' &middot; '+_bas.lief.filter(function(l){return l.mat||l.firma;}).length+' Lieferung(en)':'')+'</div>',i===0,basFarbe(i));
   });
   return h;
 }
@@ -8707,8 +8756,8 @@ async function generatePDF(report){
     const fs=report.fahrtStatus||report.fahrt_status||'fahrer';
     const fl={'fahrer':'Fahrer (100%)','beifahrer':'Beifahrer (50%)','privat':'Privat (0%)'}[fs];
     const fzMin=report.fahrzeitMin||report.fahrzeit_min||0;
-    const zVals=isWS?[report.von||'--',report.bis||'--',(report.pause||report.pause_min||30)+' min',(report.nettoWork||report.netto_arbeit_h||'--')+'h',(report.netto||report.netto_gesamt_h||'--')+'h']:
-      [report.von||'--',report.bis||'--',(report.pause||report.pause_min||30)+' min',(report.nettoWork||report.netto_arbeit_h||'--')+'h',fzMin+' min',fl,(report.netto||report.netto_gesamt_h||'--')+'h'];
+    const zVals=isWS?[report.von||'--',report.bis||'--',(report.pause||report.pause_min||30)+' min',(report.nettoWork||report.netto_arbeit_h||'--')+'h',fmtStd(report.netto||report.netto_gesamt_h)+' h']:
+      [report.von||'--',report.bis||'--',(report.pause||report.pause_min||30)+' min',(report.nettoWork||report.netto_arbeit_h||'--')+'h',fzMin+' min',fl,fmtStd(report.netto||report.netto_gesamt_h)+' h'];
     const zCols=isWS?[C.dunkel,C.dunkel,C.grau,C.dunkel,C.wsgrau]:[C.dunkel,C.dunkel,C.grau,C.dunkel,C.grau,C.blau,C.gruen];
     const zBold=isWS?[false,false,false,true,true]:[false,false,false,true,false,true,true];
     zVals.forEach((v,i)=>{doc.setFont('helvetica',zBold[i]?'bold':'normal');doc.setFontSize(zBold[i]?10:9);doc.setTextColor(...zCols[i]);doc.text(clean(String(v)),x2+1,y+5.5);x2+=zW[i];});
@@ -9089,7 +9138,7 @@ function renderARDetail(r){
     '<div class="srow">'+
     '<div class="sc"><div class="sv">'+(r.netto_arbeit_h||'--')+'h</div><div class="sl">Arbeit</div></div>'+
     '<div class="sc"><div class="sv" style="color:'+fc+'">'+fa+'h</div><div class="sl">Fahrzeit</div></div>'+
-    '<div class="sc"><div class="sv" style="color:var(--gl)">'+(r.netto_gesamt_h||r.netto_arbeit_h||'--')+'h</div><div class="sl">Gesamt</div></div>'+
+    '<div class="sc"><div class="sv" style="color:var(--gl)">'+fmtStd(r.netto_gesamt_h||r.netto_arbeit_h)+' h</div><div class="sl">Gesamt</div></div>'+
     '</div>'+
     '<div class="ib"><div class="ib-t">Zeiten</div><div class="ib-c">'+(r.von||'--')+' - '+(r.bis||'--')+' - Pause: '+(r.pause_min||30)+'min</div></div>'+
     (r.taetigkeit_text?'<div class="ib"><div class="ib-t">Details</div><div class="ib-c">'+r.taetigkeit_text+'</div></div>':'')+
@@ -9532,6 +9581,7 @@ function getARTaetigkeiten(){return[...document.querySelectorAll('#ar-taetigkeit
 function getVATaetigkeiten(){return[...document.querySelectorAll('#va-taetigkeiten-tags .tg.a')].map(t=>t.textContent);}
 function getWSTaetigkeiten(){return[...document.querySelectorAll('#ws-taetigkeiten-tags .tg.a')].map(t=>t.textContent);}
 function todayStr(){return new Date().toISOString().split('T')[0];}
+function fmtStd(v){var n=parseFloat(v);if(v===null||v===undefined||v===''||isNaN(n))return '--';return (Math.round(n*100)/100).toFixed(2).replace('.',',');}
 function fmtD(d){if(!d)return'--';const p=String(d).split('-');return p.length===3?p[2]+'.'+p[1]+'.'+p[0]:d;}
 // Datum mit Wochentag fuer den PDF-Kopf, z.B. "Montag, 05.10.2026". Faellt bei unbekanntem Format auf fmtD zurueck.
 function fmtDWd(d){if(!d)return'--';const p=String(d).substring(0,10).split('-');if(p.length!==3)return fmtD(d);const dt=new Date(parseInt(p[0],10),parseInt(p[1],10)-1,parseInt(p[2],10));if(isNaN(dt.getTime()))return fmtD(d);const WT=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];return WT[dt.getDay()]+', '+p[2]+'.'+p[1]+'.'+p[0];}
