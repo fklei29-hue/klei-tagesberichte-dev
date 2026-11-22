@@ -9573,10 +9573,15 @@ async function generatePDF(report){
         needPage(20);RECT(M,y,cw,7,C.heller);LINE(M,y,W-M,y,C.rahmen);
         doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...C.gruen);doc.text(String(i+1)+'.',M+2,y+5);
         const sLabel=getProjektLabel(s.projektId||s.projektNr||'');
-        if(sLabel!=='--'){const sFit=FIT(sLabel,s.pos?84:(s.menge?120:cw-18),8,false);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...C.dunkel);doc.text(sFit,M+12,y+5);}
-        if(s.pos){doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...C.blau);doc.text('Pos. '+clean(s.pos),M+100,y+5);}
-        if(s.menge){doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...C.gruen);doc.text(clean(s.menge+' '+(s.eh||'')),W-M-4,y+5,{align:'right'});}
+        const mengeTxt=s.menge?clean(s.menge+' '+(s.eh||'')).trim():'';
+        doc.setFont('helvetica','bold');doc.setFontSize(9);
+        const mengeW=mengeTxt?doc.getTextWidth(mengeTxt):0,mengeKopf=!!mengeTxt&&mengeW<=60;
+        let rechts=W-M-4; // rechter Rand der Kopfzeile, wandert nach links
+        if(mengeKopf){doc.setTextColor(...C.gruen);doc.text(mengeTxt,rechts,y+5,{align:'right'});rechts-=mengeW+5;}
+        if(s.pos){const posFit=FIT('Pos. '+s.pos,40,8,false);const posW=doc.getTextWidth(posFit);doc.setTextColor(...C.blau);doc.text(posFit,rechts,y+5,{align:'right'});rechts-=posW+5;}
+        if(sLabel!=='--'){const sFit=FIT(sLabel,Math.max(20,rechts-(M+12)),8,false);doc.setTextColor(...C.dunkel);doc.text(sFit,M+12,y+5);}
         LINE(M,y+7,W-M,y+7,C.rahmen);y+=10;
+        if(mengeTxt&&!mengeKopf){WP('Menge: '+mengeTxt,M+3,cw-6,8,C.gruen,4.5,'bold');y+=0.5;}
         if(s.leistung){WP('Leistung: '+s.leistung,M+3,cw-6,8,C.gruen,4.5,'bold');y+=0.5;}
         WP(s.txt,M+3,cw-6,9,C.dunkel,5);y+=3;
         if(s.mitarbeiter?.length){const maText='Mitarbeiter: '+s.mitarbeiter.map(m=>clean(m.name)+(m.stunden?' ('+m.stunden+'h)':'')).join(', ');WP(maText,M+3,cw-6,8,C.grau,4);y+=2;}
